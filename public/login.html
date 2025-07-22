@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCM - Connexion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .auth-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px 30px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .auth-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .auth-form {
+            padding: 40px 30px;
+        }
+
+        .form-toggle {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            padding: 4px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .toggle-btn.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control.error {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .select-group {
+            position: relative;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .error-message {
+            background: #fff5f5;
+            color: #dc3545;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #dc3545;
+            display: none;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            color: #28a745;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-to-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-home:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                margin: 10px;
+            }
+            
+            .auth-form {
+                padding: 30px 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-to-home">← Accueil</a>
+    
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="logo">MCM</div>
+            <h1>Système de Gestion MCM</h1>
+            <p>Connectez-vous pour accéder à votre espace</p>
+        </div>
+
+        <div class="auth-form">
+            <div class="form-toggle">
+                <button class="toggle-btn active" onclick="showLogin()">Connexion</button>
+                <button class="toggle-btn" onclick="showRegister()">Créer un compte</button>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            
+            <div class="loading" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Chargement...</p>
+            </div>
+
+            <!-- Formulaire de connexion -->
+            <form class="form-section active" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Adresse email</label>
+                    <input type="email" class="form-control" id="loginEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <div class="password-group">
+                        <input type="password" class="form-control" id="loginPassword" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                            👁
+                        </button>
+                    </div>
+                </div>
+
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe">
+                    <label for="rememberMe">Se souvenir de moi</label>
+                </div>
+
+                <button type="submit" class="auth-btn">Se connecter</button>
+            </form>
+
+            <!-- Formulaire d'inscription -->
+            <form class="form-section" id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="registerNom">Nom</label>
+                        <input type="text" class="form-control" id="registerNom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPrenom">Prénom</label>
+                        <input type="text" class="form-control" id="registerPrenom" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">Adresse email</label>
+                    <input type="email" class="form-control" id="registerEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Mot de passe</label>
+                    <div class="password-group">
+                        <input type="password" class="form-control" id="registerPassword" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
+                            👁
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerRole">Rôle</label>
+                    <select class="form-select" id="registerRole" required onchange="handleRoleChange()">
+                        <option value="">Sélectionnez un rôle</option>
+                        <option value="admin">Admin de service</option>
+                        <option value="adminCom">Admin de commission</option>
+                        <option value="superadmin">Super Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="commissionGroup" style="display: none;">
+                    <label for="registerCommission">Commission</label>
+                    <select class="form-select" id="registerCommission" onchange="loadServices()">
+                        <option value="">Sélectionnez une commission</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="serviceGroup" style="display: none;">
+                    <label for="registerService">Service</label>
+                    <select class="form-select" id="registerService">
+                        <option value="">Evangélisation</option>
+                        <option value="">Multimedia et audiovisuel</option>
+                        <option value="">Presse et documentation</option>
+                        <option value="">Chœur</option>
+                        <option value="">Accueil</option>
+                        <option value="">Comptabilité</option>
+                        <option value="">Organisation et Logistique</option>
+                        <option value="">Liturgie MCM bénin service délégué</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="auth-btn">Créer le compte</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Configuration API
+        const API_BASE_URL = 'http://localhost:3000/api';
+
+        // Variables globales
+        let commissions = [];
+        let services = [];
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCommissions();
+            loadRememberedCredentials();
+            
+            // Event listeners pour les formulaires
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+        });
+
+        // Fonctions de navigation entre les formulaires
+        function showLogin() {
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('loginForm').classList.add('active');
+            clearMessages();
+        }
+
+        function showRegister() {
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('registerForm').classList.add('active');
+            clearMessages();
+        }
+
+        // Fonction pour toggle la visibilité du mot de passe
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.nextElementSibling;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                field.type = 'password';
+                button.textContent = '👁';
+            }
+        }
+
+        // Gestion du changement de rôle
+        function handleRoleChange() {
+            const role = document.getElementById('registerRole').value;
+            const commissionGroup = document.getElementById('commissionGroup');
+            const serviceGroup = document.getElementById('serviceGroup');
+            
+            if (role === 'adminCom') {
+                commissionGroup.style.display = 'block';
+                serviceGroup.style.display = 'none';
+                document.getElementById('registerService').value = '';
+            } else if (role === 'admin') {
+                commissionGroup.style.display = 'block';
+                serviceGroup.style.display = 'block';
+            } else {
+                commissionGroup.style.display = 'none';
+                serviceGroup.style.display = 'none';
+                document.getElementById('registerCommission').value = '';
+                document.getElementById('registerService').value = '';
+            }
+        }
+
+        // Charger les commissions
+        async function loadCommissions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/commissions`);
+                if (response.ok) {
+                    commissions = await response.json();
+                    const select = document.getElementById('registerCommission');
+                    select.innerHTML = '<option value="">Evangélisation</option>';
+                    select.innerHTML = '<option value="">Multimédia et Audiovisuel</option>';
+                    select.innerHTML = '<option value="">Presse et Documentation</option>';
+                    select.innerHTML = '<option value="">Chœur</option>';
+                    select.innerHTML = '<option value="">Accueil</option>';
+                    select.innerHTML = '<option value="">Comptabilité</option>';
+                    select.innerHTML = '<option value="">Organisation et Logistique</option>';
+                    select.innerHTML = '<option value="">Liturgie MCM bénin service délégué</option>';
+                    
+                    commissions.forEach(commission => {
+                        const option = document.createElement('option');
+                        option.value = commission.id;
+                        option.textContent = commission.nom;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des commissions:', error);
+            }
+        }
+
+        // Charger les services d'une commission
+        async function loadServices() {
+            const commissionId = document.getElementById('registerCommission').value;
+            const serviceSelect = document.getElementById('registerService');
+            
+            serviceSelect.innerHTML = '<option value="">Sélectionnez un service</option>';
+            
+            if (!commissionId) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/services/commission/${commissionId}`);
+                if (response.ok) {
+                    const services = await response.json();
+                    services.forEach(service => {
+                        const option = document.createElement('option');
+                        option.value = service.id;
+                        option.textContent = service.nom;
+                        serviceSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des services:', error);
+            }
+        }
+
+        // Gestion de la connexion
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showError('Veuillez remplir tous les champs');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        mot_de_passe: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Sauvegarder le token et les informations utilisateur
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Sauvegarder les identifiants si demandé
+                    if (document.getElementById('rememberMe').checked) {
+                        localStorage.setItem('rememberedEmail', email);
+                        localStorage.setItem('rememberedPassword', password);
+                    }
+                    
+                    showSuccess('Connexion réussie ! Redirection...');
+                    
+                    // Redirection selon le rôle
+                    setTimeout(() => {
+                        switch (data.user.role) {
+                            case 'superadmin':
+                                window.location.href = 'superadmin.html';
+                                break;
+                            case 'adminCom':
+                                window.location.href = 'admincom.html';
+                                break;
+                            case 'admin':
+                                window.location.href = 'admin.html';
+                                break;
+                            default:
+                                window.location.href = '/dashboard.html';
+                        }
+                    }, 1500);
+                } else {
+                    showError(data.error || 'Erreur de connexion');
+                    
+                    // Marquer les champs en erreur
+                    if (data.error.includes('Email') || data.error.includes('mot de passe')) {
+                        document.getElementById('loginEmail').classList.add('error');
+                        document.getElementById('loginPassword').classList.add('error');
+                    }
+                }
+            } catch (error) {
+                showError('Erreur de connexion au serveur');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Gestion de l'inscription
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            const formData = {
+                nom: document.getElementById('registerNom').value,
+                prenom: document.getElementById('registerPrenom').value,
+                email: document.getElementById('registerEmail').value,
+                mot_de_passe: document.getElementById('registerPassword').value,
+                role: document.getElementById('registerRole').value,
+                commission_id: document.getElementById('registerCommission').value || null,
+                service_id: document.getElementById('registerService').value || null
+            };
+
+            // Validation
+            if (!formData.nom || !formData.prenom || !formData.email || !formData.mot_de_passe || !formData.role) {
+                showError('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            if (formData.role === 'adminCom' && !formData.commission_id) {
+                showError('Veuillez sélectionner une commission');
+                return;
+            }
+
+            if (formData.role === 'admin' && (!formData.commission_id || !formData.service_id)) {
+                showError('Veuillez sélectionner une commission et un service');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+                    
+                    // Réinitialiser le formulaire et basculer vers la connexion
+                    document.getElementById('registerForm').reset();
+                    handleRoleChange(); // Masquer les champs conditionnels
+                    
+                    setTimeout(() => {
+                        showLogin();
+                    }, 2000);
+                } else {
+                    showError(data.error || 'Erreur lors de la création du compte');
+                }
+            } catch (error) {
+                showError('Erreur de connexion au serveur');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Charger les identifiants sauvegardés
+        function loadRememberedCredentials() {
+            const rememberedEmail = localStorage.getItem('rememberedEmail');
+            const rememberedPassword = localStorage.getItem('rememberedPassword');
+            
+            if (rememberedEmail && rememberedPassword) {
+                document.getElementById('loginEmail').value = rememberedEmail;
+                document.getElementById('loginPassword').value = rememberedPassword;
+                document.getElementById('rememberMe').checked = true;
+            }
+        }
+
+        // Fonctions utilitaires
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+            
+            // Masquer automatiquement après 5 secondes
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Masquer automatiquement après 5 secondes
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function clearMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            
+            // Retirer les classes d'erreur
+            document.querySelectorAll('.form-control.error').forEach(field => {
+                field.classList.remove('error');
+            });
+        }
+
+        function showLoading(show) {
+            const loadingDiv = document.getElementById('loadingSpinner');
+            const forms = document.querySelectorAll('.form-section');
+            const buttons = document.querySelectorAll('.auth-btn');
+            
+            if (show) {
+                loadingDiv.style.display = 'block';
+                forms.forEach(form => form.style.opacity = '0.5');
+                buttons.forEach(btn => btn.disabled = true);
+            } else {
+                loadingDiv.style.display = 'none';
+                forms.forEach(form => form.style.opacity = '1');
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard AdminCom - MCM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-info {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            background: #34495e;
+            border-radius: 5px;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            color: #333;
+            min-width: 200px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-dropdown.active {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-dropdown a:hover {
+            background: #f8f9fa;
+        }
+
+        .logout-btn {
+            background: #e74c3c !important;
+            color: white !important;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .section {
+            background: white;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .service-card {
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .service-card:hover {
+            background: #f8f9fa;
+            border-color: #3498db;
+        }
+
+        .service-card h3 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .members-count {
+            font-size: 0.9rem;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .members-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .member-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .member-info h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .member-info p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">MCM - AdminCom</div>
+        <div class="user-menu">
+            <div class="user-info" onclick="toggleUserMenu()">
+                <span id="userName">Chargement...</span> ▼
+            </div>
+            <div class="user-dropdown" id="userDropdown">
+                <a href="#" onclick="openProfileModal()">Modifier le profil</a>
+                <a href="#" class="logout-btn" onclick="logout()">Déconnexion</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Alert -->
+        <div class="alert" id="alert"></div>
+
+        <!-- Services de la commission -->
+        <div class="section">
+            <h2>Services de ma commission</h2>
+            <div class="services-grid" id="servicesGrid">
+                <!-- Services chargés dynamiquement -->
+            </div>
+        </div>
+
+        <!-- Ajouter un membre -->
+        <div class="section">
+            <h2>Ajouter un membre</h2>
+            <form id="addMemberForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" id="nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="prenom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sexe</label>
+                        <select id="sexe" required>
+                            <option value="">Sélectionner</option>
+                            <option value="Homme">Homme</option>
+                            <option value="Femme">Femme</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date de naissance</label>
+                        <input type="date" id="dateNaissance" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="email">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="tel" id="telephone">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Service</label>
+                    <select id="serviceSelect" required>
+                        <option value="">Choisir un service</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Ajouter le membre</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal service details -->
+    <div class="modal" id="serviceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="serviceTitle">Service</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="serviceDetails">
+                <!-- Détails chargés dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal profil -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Modifier le profil</h3>
+                <span class="close" onclick="closeProfileModal()">&times;</span>
+            </div>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" id="profileNom" required>
+                </div>
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" id="profilePrenom" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Nouveau mot de passe (optionnel)</label>
+                    <input type="password" id="profilePassword">
+                </div>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let services = [];
+
+        // Vérifier l'authentification
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // Décoder le token pour récupérer les infos utilisateur
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.role !== 'adminCom') {
+                alert('Accès non autorisé');
+                window.location.href = '/login';
+                return;
+            }
+
+            currentUser = payload;
+            loadUserInfo();
+            loadServices();
+        });
+
+        function loadUserInfo() {
+            document.getElementById('userName').textContent = `${currentUser.nom || ''} ${currentUser.prenom || ''}`.trim() || currentUser.email;
+        }
+
+        async function loadServices() {
+            try {
+                const response = await fetch(`/api/services/commission/${currentUser.commission_id}`, {
+                    headers: {
+                        'Authorization': Bearer `${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    services = await response.json();
+                    displayServices();
+                    populateServiceSelect();
+                }
+            } catch (error) {
+                showAlert('Erreur lors du chargement des services', 'error');
+            }
+        }
+
+        function displayServices() {
+            const grid = document.getElementById('servicesGrid');
+            grid.innerHTML = '';
+
+            services.forEach(service => {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                card.onclick = () => openServiceModal(service);
+                card.innerHTML = `
+                    <h3>${service.nom}</h3>
+                    <div class="admin-info">Admin: <span id="admin-${service.id}">Chargement...</span></div>
+                    <div class="members-count" id="count-${service.id}">0 membre(s)</div>
+                `;
+                grid.appendChild(card);
+                
+                // Charger les détails
+                loadServiceDetails(service.id);
+            });
+        }
+
+        async function loadServiceDetails(serviceId) {
+            try {
+                const response = await fetch(`/api/membres/service/${serviceId}`, {
+                    headers: {
+                        'Authorization': Bearer `${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const members = await response.json();
+                    `document.getElementById(count-${serviceId}).textContent = ${members.length} membre(s)`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function populateServiceSelect() {
+            const select = document.getElementById('serviceSelect');
+            select.innerHTML = '<option value="">Choisir un service</option>';
+            
+            services.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.id;
+                option.textContent = service.nom;
+                select.appendChild(option);
+            });
+        }
+
+        async function openServiceModal(service) {
+            const modal = document.getElementById('serviceModal');
+            const title = document.getElementById('serviceTitle');
+            const details = document.getElementById('serviceDetails');
+
+            title.textContent = service.nom;
+            details.innerHTML = '<p>Chargement...</p>';
+            modal.classList.add('active');
+
+            try {
+                const response = await fetch(`/api/membres/service/${service.id}`, {
+                    headers: {
+                        'Authorization': Bearer `${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const members = await response.json();
+                    displayServiceMembers(members, details);
+                }
+            } catch (error) {
+                details.innerHTML = '<p>Erreur lors du chargement</p>';
+            }
+        }
+
+        function displayServiceMembers(members, container) {
+            if (members.length === 0) {
+                container.innerHTML = '<p>Aucun membre dans ce service</p>';
+                return;
+            }
+
+            let html = '<div class="members-list">';
+            members.forEach(member => {
+                html += `
+                    <div class="member-item">
+                        <div class="member-info">
+                            <h4>${member.nom} ${member.prenom}</h4>
+                            <p>${member.sexe} • ${member.email || 'Pas d\'email'} • ${member.telephone || 'Pas de téléphone'}</p>
+                        </div>
+                        <div class="member-actions">
+                            <button class="btn btn-primary btn-small" onclick="editMember(${member.id})">Modifier</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteMember(${member.id})">Supprimer</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Form handlers
+        document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const memberData = {
+                nom: document.getElementById('nom').value,
+                prenom: document.getElementById('prenom').value,
+                sexe: document.getElementById('sexe').value,
+                date_naissance: document.getElementById('dateNaissance').value,
+                email: document.getElementById('email').value,
+                telephone: document.getElementById('telephone').value,
+                service_id: parseInt(document.getElementById('serviceSelect').value)
+            };
+
+            try {
+                const response = await fetch(`'/api/membres'`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': Bearer `${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(memberData)
+                });
+
+                if (response.ok) {
+                    showAlert('Membre ajouté avec succès', 'success');
+                    this.reset();
+                    loadServices(); // Recharger pour mettre à jour les compteurs
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur lors de l\'ajout', 'error');
+            }
+        });
+
+        // Utility functions
+        function toggleUserMenu() {
+            document.getElementById('userDropdown').classList.toggle('active');
+        }
+
+        function closeModal() {
+            document.getElementById('serviceModal').classList.remove('active');
+        }
+
+        function openProfileModal() {
+            document.getElementById('userDropdown').classList.remove('active');
+            const modal = document.getElementById('profileModal');
+            modal.classList.add('active');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = alert `alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+
+        // Fermer les dropdowns quand on clique ailleurs
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('userDropdown').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

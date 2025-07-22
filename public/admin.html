@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - MCM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .navbar {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-name {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .user-name:hover {
+            background: #34495e;
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            color: black;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .user-dropdown.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background: #d68910;
+        }
+
+        .members-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .member-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 1rem;
+            background: #f9f9f9;
+        }
+
+        .member-info {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .member-details h4 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .member-details p {
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">MCM - Admin</div>
+        <div class="user-menu">
+            <span class="user-name" id="userNameDisplay">Admin</span>
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-item" onclick="openProfileModal()">Modifier Profil</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Déconnexion</button>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    <div class="container">
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="container">
+        <!-- Section Ajouter Membre -->
+        <div class="section">
+            <h2>Ajouter un Membre</h2>
+            <form id="addMemberForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" id="memberNom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="memberPrenom" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Sexe</label>
+                        <select id="memberSexe" required>
+                            <option value="">Sélectionner</option>
+                            <option value="Homme">Homme</option>
+                            <option value="Femme">Femme</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date de Naissance</label>
+                        <input type="date" id="memberDateNaissance" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="memberEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="tel" id="memberTelephone">
+                    </div>
+                </div>
+                <button type="submit" class="btn">Ajouter le Membre</button>
+            </form>
+        </div>
+
+        <!-- Section Liste des Membres -->
+        <div class="section">
+            <h2>Membres de mon Service</h2>
+            <div class="members-list" id="membersList">
+                <!-- Les membres seront chargés ici -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modification Membre -->
+    <div class="modal" id="editMemberModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Modifier Membre</h3>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editMemberForm">
+                <input type="hidden" id="editMemberId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" id="editMemberNom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="editMemberPrenom" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Sexe</label>
+                        <select id="editMemberSexe" required>
+                            <option value="Homme">Homme</option>
+                            <option value="Femme">Femme</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date de Naissance</label>
+                        <input type="date" id="editMemberDateNaissance" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="editMemberEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="tel" id="editMemberTelephone">
+                    </div>
+                </div>
+                <button type="submit" class="btn">Modifier</button>
+                <button type="button" class="btn btn-danger" onclick="closeEditModal()">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Profil -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Modifier Mon Profil</h3>
+                <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" id="profileNom" required>
+                </div>
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" id="profilePrenom" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Nouveau Mot de Passe (optionnel)</label>
+                    <input type="password" id="profilePassword">
+                </div>
+                <button type="submit" class="btn">Sauvegarder</button>
+                <button type="button" class="btn btn-danger" onclick="closeProfileModal()">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 MCM - Système de Gestion des Membres</p>
+    </footer>
+
+    <script>
+        const API_BASE = '/api';
+        let currentUser = null;
+        let authToken = localStorage.getItem('mcm_token');
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!authToken) {
+                window.location.href = '/login';
+                return;
+            }
+            loadUserProfile();
+            loadMembers();
+        });
+
+        // Gestion utilisateur
+        function loadUserProfile() {
+            const userData = JSON.parse(localStorage.getItem('mcm_user') || '{}');
+            if (userData.nom) {
+                currentUser = userData;
+                document.getElementById('userNameDisplay').textContent = `${userData.nom} ${userData.prenom}`;
+                document.getElementById('profileNom').value = userData.nom;
+                document.getElementById('profilePrenom').value = userData.prenom;
+                document.getElementById('profileEmail').value = userData.email;
+            }
+        }
+
+        // Menu utilisateur
+        document.getElementById('userNameDisplay').addEventListener('click', function() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        });
+
+        // Fermer dropdown si clic ailleurs
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('userDropdown').classList.remove('active');
+            }
+        });
+
+        // Déconnexion
+        function logout() {
+            localStorage.removeItem('mcm_token');
+            localStorage.removeItem('mcm_user');
+            window.location.href = '/login';
+        }
+
+        // Charger les membres
+        async function loadMembers() {
+            try {
+                const response = await fetch(`${API_BASE}/membres`, {
+                    headers: { 'Authorization': Bearer `${authToken}` }
+                });
+                const members = await response.json();
+                displayMembers(members);
+            } catch (error) {
+                showError('Erreur lors du chargement des membres');
+            }
+        }
+
+        // Afficher les membres
+        function displayMembers(members) {
+            const container = document.getElementById('membersList');
+            container.innerHTML = '';
+            
+            members.forEach(member => {
+                const memberCard = `
+                    <div class="member-card">
+                        <div class="member-info">
+                            <div class="member-details">
+                                <h4>${member.nom} ${member.prenom}</h4>
+                                <p><strong>Sexe:</strong> ${member.sexe}</p>
+                                <p><strong>Date de naissance:</strong> ${member.date_naissance}</p>
+                                <p><strong>Email:</strong> ${member.email || 'N/A'}</p>
+                                <p><strong>Téléphone:</strong> ${member.telephone || 'N/A'}</p>
+                            </div>
+                            <div class="member-actions">
+                                <button class="btn btn-warning" onclick="editMember(${member.id})">Modifier</button>
+                                <button class="btn btn-danger" onclick="deleteMember(${member.id})">Supprimer</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += memberCard;
+            });
+        }
+
+        // Ajouter membre
+        document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const memberData = {
+                nom: document.getElementById('memberNom').value,
+                prenom: document.getElementById('memberPrenom').value,
+                sexe: document.getElementById('memberSexe').value,
+                date_naissance: document.getElementById('memberDateNaissance').value,
+                email: document.getElementById('memberEmail').value,
+                telephone: document.getElementById('memberTelephone').value,
+                service_id: currentUser.service_id
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/membres`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': Bearer `${authToken}`
+                    },
+                    body: JSON.stringify(memberData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Membre ajouté avec succès');
+                    document.getElementById('addMemberForm').reset();
+                    loadMembers();
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Erreur lors de l\'ajout du membre');
+            }
+        });
+
+        // Modifier membre
+        function editMember(id) {
+            // Récupérer les données du membre et ouvrir la modal
+            fetch(`${API_BASE}/membres`, {
+                headers: { 'Authorization': Bearer `${authToken}` }
+            })
+            .then(response => response.json())
+            .then(members => {
+                const member = members.find(m => m.id === id);
+                if (member) {
+                    document.getElementById('editMemberId').value = member.id;
+                    document.getElementById('editMemberNom').value = member.nom;
+                    document.getElementById('editMemberPrenom').value = member.prenom;
+                    document.getElementById('editMemberSexe').value = member.sexe;
+                    document.getElementById('editMemberDateNaissance').value = member.date_naissance;
+                    document.getElementById('editMemberEmail').value = member.email;
+                    document.getElementById('editMemberTelephone').value = member.telephone;
+                    document.getElementById('editMemberModal').classList.add('active');
+                }
+            });
+        }
+
+        // Formulaire modification membre
+        document.getElementById('editMemberForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('editMemberId').value;
+            const memberData = {
+                nom: document.getElementById('editMemberNom').value,
+                prenom: document.getElementById('editMemberPrenom').value,
+                sexe: document.getElementById('editMemberSexe').value,
+                date_naissance: document.getElementById('editMemberDateNaissance').value,
+                email: document.getElementById('editMemberEmail').value,
+                telephone: document.getElementById('editMemberTelephone').value,
+                service_id: currentUser.service_id
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/membres/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': Bearer `${authToken}`
+                    },
+                    body: JSON.stringify(memberData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Membre modifié avec succès');
+                    closeEditModal();
+                    loadMembers();
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Erreur lors de la modification');
+            }
+        });
+
+        // Supprimer membre
+        async function deleteMember(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/membres/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': Bearer `${authToken}` }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Membre supprimé avec succès');
+                    loadMembers();
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Erreur lors de la suppression');
+            }
+        }
+
+        // Gestion des modals
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.add('active');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editMemberModal').classList.remove('active');
+        }
+
+        // Formulaire profil
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const profileData = {
+                nom: document.getElementById('profileNom').value,
+                prenom: document.getElementById('profilePrenom').value,
+                email: document.getElementById('profileEmail').value
+            };
+
+            const password = document.getElementById('profilePassword').value;
+            if (password) {
+                profileData.mot_de_passe = password;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': Bearer `${authToken}`
+                    },
+                    body: JSON.stringify(profileData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Profil modifié avec succès');
+                    currentUser.nom = profileData.nom;
+                    currentUser.prenom = profileData.prenom;
+                    currentUser.email = profileData.email;
+                    localStorage.setItem('mcm_user', JSON.stringify(currentUser));
+                    loadUserProfile();
+                    closeProfileModal();
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Erreur lors de la modification du profil');
+            }
+        });
+
+        // Messages
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => successDiv.style.display = 'none', 5000);
+        }
+    </script>
+</body>
+</html>
