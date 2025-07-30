@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCM || Dashboard SuperAdmin</title>
+    <title>MCM - Dashboard SuperAdmin</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -65,11 +65,11 @@
             background: #ff6b6b;
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 1.4rem;
             border-radius: 20px;
             cursor: pointer;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all 0.5s ease;
         }
 
         .logout-btn:hover {
@@ -156,35 +156,128 @@
             gap: 1rem;
         }
 
-        .service-card {
+        .commission-card {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             padding: 1.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #764ba2;
+            position: relative;
         }
 
-        .service-card:hover {
+        .commission-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
 
-        .service-name {
+        .commission-name {
             font-weight: bold;
             margin-bottom: 0.5rem;
             color: #333;
+            font-size: 1.1rem;
         }
 
-        .service-commission {
+        .commission-services {
             color: #666;
             font-size: 0.9rem;
             margin-bottom: 0.5rem;
         }
 
-        .service-members {
-            color: #667eea;
+        .commission-members {
+            color: #764ba2;
             font-weight: 500;
+        }
+
+        /* Improved member display */
+        .member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s ease;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .member-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .member-item.admin-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: none;
+        }
+
+        .member-item.admin-header:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+        }
+
+        .member-info h4 {
+            margin-bottom: 0.4rem;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .member-item.admin-header .member-info h4 {
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .member-info p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .member-item.admin-header .member-info p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .member-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .admin-badge {
+            background: #ff9800;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .member-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+        }
+
+        .contact-item i {
+            width: 12px;
+            color: #667eea;
         }
 
         /* Action Panels */
@@ -245,11 +338,36 @@
             font-weight: 500;
             transition: all 0.3s ease;
             width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .btn:hover {
             background: #5a6fd8;
             transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Modal */
@@ -346,7 +464,7 @@
             transform: scale(1.1);
         }
 
-        /* Pour l'animation avec confetti */
+        /* Toast Notifications */
         #toast-container {
             position: fixed;
             bottom: 20px;
@@ -365,33 +483,104 @@
             opacity: 0;
             transform: translateY(20px);
             animation: fadeInUp 0.5s forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+        }
+
+        .toast.warning {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
         }
 
         @keyframes fadeInUp {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes shake {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  20% { transform: translate(-3px, 0px) rotate(1deg); }
-  30% { transform: translate(3px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-  60% { transform: translate(-3px, 1px) rotate(0deg); }
-  70% { transform: translate(3px, 1px) rotate(-1deg); }
-  80% { transform: translate(-1px, -1px) rotate(1deg); }
-  90% { transform: translate(1px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
-}
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
 
-.shake {
-  animation: shake 0.5s;
-  animation-timing-function: ease-in-out;
-}
+        .shake {
+            animation: shake 0.5s;
+            animation-timing-function: ease-in-out;
+        }
+
+        /* User Profile Modal */
+        .user-profile-modal .modal-content {
+            max-width: 500px;
+        }
+
+        .profile-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .service-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .service-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .service-commission {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-members {
+            color: #667eea;
+            font-weight: 500;
+        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -420,17 +609,17 @@
     <nav class="navbar">
         <div class="logo">
             <i class="fas fa-church"></i>
-            MCM Dashboard
+            Tableau de Bord 
         </div>
         <div class="user-menu">
-            <div class="user-info" onclick="toggleUserMenu()">
+            <div class="user-info" onclick="openUserProfile()" style="cursor: pointer;">
                 <i class="fas fa-user-circle"></i>
-                <span id="userName">Admin Principal</span>
+                <span id="userName">Chargement...</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <button class="logout-btn" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i>
-                Déconnexion
+                Se déconnecter
             </button>
         </div>
     </nav>
@@ -448,7 +637,7 @@
                 <div class="stat-number" id="totalMembers">0</div>
                 <div class="stat-label">Total Membres</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="showAdministrators()">
                 <div class="stat-icon">
                     <i class="fas fa-user-tie"></i>
                 </div>
@@ -479,6 +668,17 @@
             </h2>
             <div class="services-grid" id="servicesGrid">
                 <!-- Services will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Commissions Section -->
+        <div class="services-section">
+            <h2 class="section-title">
+                <i class="fas fa-users-cog"></i>
+                Commissions et leurs Services
+            </h2>
+            <div class="services-grid" id="commissionsGrid">
+                <!-- Commissions will be loaded here -->
             </div>
         </div>
 
@@ -519,15 +719,15 @@
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" class="form-control" id="memberEmail">
+                        <input type="email" class="form-control" id="memberEmail" placeholder="johndoe@example.com" required>
                     </div>
                     <div class="form-group">
                         <label>Téléphone</label>
-                        <input type="tel" class="form-control" id="memberTelephone">
+                        <input type="tel" class="form-control" id="memberTelephone" required>
                     </div>
-                    <button type="submit" class="btn">
+                    <button type="submit" class="btn" id="addMemberBtn">
                         <i class="fas fa-plus"></i>
-                        Ajouter le Membre
+                        <span>Ajouter le Membre</span>
                     </button>
                 </form>
             </div>
@@ -541,7 +741,7 @@
                 <form id="manageUserForm">
                     <div class="form-group">
                         <label>Email de l'utilisateur</label>
-                        <input type="email" class="form-control" id="userEmail" placeholder="email@example.com" required>
+                        <input type="email" class="form-control" id="userEmail" placeholder="johndoe@example.com" required>
                     </div>
                     <div class="form-group">
                         <label>Nom</label>
@@ -576,33 +776,134 @@
                             <option value="">Sélectionner un service</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn">
+                    <button type="submit" class="btn" id="createUserBtn">
                         <i class="fas fa-user-plus"></i>
-                        Créer l'Utilisateur
+                        <span>Créer l'Utilisateur</span>
                     </button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Modal for Service Details -->
-    <div id="serviceModal" class="modal">
+        <!-- Modal for Commission Details -->
+        <div id="commissionModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="commissionModalTitle">Membres de la Commission</h2>
+                    <button class="close-btn" onclick="closeCommissionModal()">&times;</button>
+                </div>
+                <div id="commissionModalBody">
+                    <!-- Commission members will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+    <!-- Modal for Edit Member -->
+    <div id="editMemberModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Membres du Service</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <h2>Modifier le Membre</h2>
+                <button class="close-btn" onclick="closeEditMemberModal()">&times;</button>
             </div>
-            <div id="modalBody">
-                <!-- Members will be loaded here -->
+            <form id="editMemberForm">
+                <div class="form-group">
+                    <label>Service</label>
+                    <select class="form-control" id="editMemberService" required>
+                        <option value="">Sélectionner un service</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" class="form-control" id="editMemberNom" required>
+                </div>
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" class="form-control" id="editMemberPrenom" required>
+                </div>
+                <div class="form-group">
+                    <label>Sexe</label>
+                    <select class="form-control" id="editMemberSexe" required>
+                        <option value="">Sélectionner</option>
+                        <option value="Homme">Homme</option>
+                        <option value="Femme">Femme</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date de naissance</label>
+                    <input type="date" class="form-control" id="editMemberDateNaissance" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" id="editMemberEmail" placeholder="johndoe@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    <input type="tel" class="form-control" id="editMemberTelephone" required>
+                </div>
+                <button type="submit" class="btn">
+                    <i class="fas fa-save"></i>
+                    <span>Sauvegarder les Modifications</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Administrators -->
+    <div id="administratorsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Liste des Administrateurs</h2>
+                <button class="close-btn" onclick="closeAdministratorsModal()">&times;</button>
+            </div>
+            <div id="administratorsBody">
+                <!-- Administrators will be loaded here -->
             </div>
         </div>
     </div>
+
+    <!-- Modal for User Profile -->
+    <div id="userProfileModal" class="modal user-profile-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Mon Profil</h2>
+                <button class="close-btn" onclick="closeUserProfileModal()">&times;</button>
+            </div>
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <form id="userProfileForm" class="profile-form">
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" class="form-control" id="profileNom" required>
+                </div>
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" class="form-control" id="profilePrenom" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" id="profileEmail" placeholder="johndoe@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Nouveau mot de passe (optionnel)</label>
+                    <input type="password" class="form-control" id="profilePassword" placeholder="Laisser vide pour ne pas changer">
+                </div>
+                <button type="submit" class="btn" id="updateProfileBtn">
+                    <i class="fas fa-save"></i>
+                    <span>Mettre à jour mon profil</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div id="toast-container"></div>
 
     <script>
         // Configuration API
         const API_BASE = '/api';
         let token = localStorage.getItem('token');
+        let currentUser = null;
+        let currentEditingMember = null;
         
         // Headers avec token
         const getAuthHeaders = () => ({
@@ -612,10 +913,82 @@
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
             await loadDashboardData();
             await loadServices();
             await loadCommissions();
         });
+
+         // Load current user info
+        async function loadCurrentUser() {
+            try {
+                // Essayons d'abord l'endpoint principal
+                let response = await fetch(`${API_BASE}/users/me`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (!response.ok) {
+                    // Si ça ne marche pas, essayons de décoder le token JWT
+                    try {
+                        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+                        console.log('Token payload:', tokenPayload);
+                        
+                        // Essayons de récupérer les infos utilisateur via l'ID du token
+                        if (tokenPayload.id) {
+                            response = await fetch(`${API_BASE}/users/${tokenPayload.id}`, {
+                                headers: getAuthHeaders()
+                            });
+                        }
+                        
+                        if (!response.ok) {
+                            // Utilisons les données du token directement
+                            currentUser = {
+                                id: tokenPayload.id,
+                                nom: tokenPayload.nom || '',
+                                prenom: tokenPayload.prenom || '',
+                                email: tokenPayload.email || '',
+                                role: tokenPayload.role
+                            };
+                            
+                            const displayName = currentUser.nom && currentUser.prenom 
+                                ? `${currentUser.prenom} ${currentUser.nom}`
+                                : currentUser.email ? currentUser.email.split('@')[0] : 'Admin Principal';
+                                
+                            document.getElementById('userName').textContent = displayName;
+                            return;
+                        }
+                    } catch (tokenError) {
+                        console.error('Erreur lors du décodage du token:', tokenError);
+                        document.getElementById('userName').textContent = 'Admin Principal';
+                        return;
+                    }
+                }
+                
+                if (response.ok) {
+                    currentUser = await response.json();
+                    console.log('Utilisateur chargé:', currentUser);
+                    
+                    // Afficher le nom complet de l'utilisateur
+                    const nom = currentUser.nom || '';
+                    const prenom = currentUser.prenom || '';
+                    
+                    if (nom && prenom) {
+                        document.getElementById('userName').textContent = `${prenom} ${nom}`;
+                    } else if (currentUser.email) {
+                        document.getElementById('userName').textContent = currentUser.email.split('@')[0];
+                    } else {
+                        document.getElementById('userName').textContent = 'Admin Principal';
+                    }
+                } else {
+                    throw new Error('Impossible de récupérer les données utilisateur');
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement des infos utilisateur:', error);
+                showToast('Erreur lors du chargement du profil utilisateur', 'warning');
+                document.getElementById('userName').textContent = 'Admin Principal';
+            }
+        }
 
         // Load dashboard statistics
         async function loadDashboardData() {
@@ -657,15 +1030,26 @@
                 const response = await fetch(`${API_BASE}/services`, {
                     headers: getAuthHeaders()
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const services = await response.json();
                 
                 const servicesGrid = document.getElementById('servicesGrid');
                 const serviceSelect = document.getElementById('memberService');
                 const userServiceSelect = document.getElementById('userService');
+                const editServiceSelect = document.getElementById('editMemberService');
                 
                 servicesGrid.innerHTML = '';
                 serviceSelect.innerHTML = '<option value="">Sélectionner un service</option>';
                 userServiceSelect.innerHTML = '<option value="">Sélectionner un service</option>';
+                editServiceSelect.innerHTML = '<option value="">Sélectionner un service</option>';
+
+                if (!Array.isArray(services)) {
+                    throw new Error('Format de données invalide pour les services');
+                }
 
                 services.forEach(service => {
                     // Create service card
@@ -675,7 +1059,7 @@
                     
                     serviceCard.innerHTML = `
                         <div class="service-name">${service.nom}</div>
-                        <div class="service-commission">${service.commission_nom}</div>
+                        <div class="service-commission">${service.commission_nom || 'Commission non définie'}</div>
                         <div class="service-members">
                             <i class="fas fa-users"></i> 
                             <span id="members-count-${service.id}">0</span> membres
@@ -685,15 +1069,66 @@
                     servicesGrid.appendChild(serviceCard);
                     
                     // Add to selects
-                    serviceSelect.innerHTML += `<option value="${service.id}">${service.nom} - ${service.commission_nom}</option>`;
-                    userServiceSelect.innerHTML += `<option value="${service.id}">${service.nom} - ${service.commission_nom}</option>`;
+                    const optionText = `${service.nom} - ${service.commission_nom || 'Sans commission'}`;
+                    serviceSelect.innerHTML += `<option value="${service.id}">${optionText}</option>`;
+                    userServiceSelect.innerHTML += `<option value="${service.id}">${optionText}</option>`;
+                    editServiceSelect.innerHTML += `<option value="${service.id}">${optionText}</option>`;
                     
                     // Load member count for this service
                     loadServiceMemberCount(service.id);
                 });
 
+                // Load commissions display
+                await loadCommissionsDisplay();
+
             } catch (error) {
                 console.error('Erreur lors du chargement des services:', error);
+                showToast('Erreur lors du chargement des services', 'error');
+            }
+        }
+
+        // Load commissions for display
+        async function loadCommissionsDisplay() {
+            try {
+                const commissionsRes = await fetch(`${API_BASE}/commissions`, {
+                    headers: getAuthHeaders()
+                });
+                const commissions = await commissionsRes.json();
+                
+                const servicesRes = await fetch(`${API_BASE}/services`, {
+                    headers: getAuthHeaders()
+                });
+                const services = await servicesRes.json();
+                
+                const commissionsGrid = document.getElementById('commissionsGrid');
+                commissionsGrid.innerHTML = '';
+
+                commissions.forEach(commission => {
+                    const commissionServices = services.filter(s => s.commission_id === commission.id);
+                    const totalMembers = commissionServices.reduce((sum, service) => {
+                        const countEl = document.getElementById(`members-count-${service.id}`);
+                        return sum + (countEl ? parseInt(countEl.textContent) || 0 : 0);
+                    }, 0);
+
+                    const commissionCard = document.createElement('div');
+                    commissionCard.className = 'commission-card';
+                    commissionCard.onclick = () => showCommissionMembers(commission.id, commission.nom);
+                    
+                    commissionCard.innerHTML = `
+                        <div class="commission-name">${commission.nom}</div>
+                        <div class="commission-services">
+                            <i class="fas fa-cogs"></i> ${commissionServices.length} service(s)
+                        </div>
+                        <div class="commission-members">
+                            <i class="fas fa-users"></i> ${totalMembers} membre(s) total
+                        </div>
+                    `;
+                    
+                    commissionsGrid.appendChild(commissionCard);
+                });
+
+            } catch (error) {
+                console.error('Erreur lors du chargement des commissions:', error);
             }
         }
 
@@ -734,36 +1169,99 @@
             }
         }
 
-        // Show service members in modal
+                // Show service members in modal
         async function showServiceMembers(serviceId, serviceName) {
             try {
-                const response = await fetch(`${API_BASE}/membres/service/${serviceId}`, {
+                const membersRes = await fetch(`${API_BASE}/membres/service/${serviceId}`, {
                     headers: getAuthHeaders()
                 });
-                const members = await response.json();
+                
+                if (!membersRes.ok) {
+                    throw new Error(`Erreur HTTP ${membersRes.status}: ${membersRes.statusText}`);
+                }
+                
+                const members = await membersRes.json();
+                
+                // Get service admin info
+                let serviceAdmin = null;
+                try {
+                    const serviceRes = await fetch(`${API_BASE}/services/${serviceId}`, {
+                        headers: getAuthHeaders()
+                    });
+                    
+                    if (serviceRes.ok) {
+                        const serviceData = await serviceRes.json();
+                        if (serviceData.admin_id) {
+                            const adminRes = await fetch(`${API_BASE}/users/${serviceData.admin_id}`, {
+                                headers: getAuthHeaders()
+                            });
+                            if (adminRes.ok) {
+                                serviceAdmin = await adminRes.json();
+                            }
+                        }
+                    }
+                } catch (adminError) {
+                    console.warn('Impossible de charger les infos admin du service:', adminError);
+                }
                 
                 document.getElementById('modalTitle').textContent = `Membres du Service: ${serviceName}`;
                 
                 const modalBody = document.getElementById('modalBody');
                 modalBody.innerHTML = '';
                 
-                if (members.length === 0) {
-                    modalBody.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aucun membre dans ce service</p>';
+                // Show admin first if exists
+                if (serviceAdmin) {
+                    const adminDiv = document.createElement('div');
+                    adminDiv.className = 'member-item admin-header';
+                    adminDiv.innerHTML = `
+                        <div class="member-info">
+                            <h4>
+                                <i class="fas fa-user-tie"></i>
+                                ${serviceAdmin.nom} ${serviceAdmin.prenom}
+                            </h4>
+                            <p>${serviceAdmin.email}</p>
+                        </div>
+                        <div class="admin-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            Admin du Service
+                        </div>
+                    `;
+                    modalBody.appendChild(adminDiv);
+                }
+                
+                if (!Array.isArray(members) || members.length === 0) {
+                    const noMembersDiv = document.createElement('div');
+                    noMembersDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aucun membre dans ce service</p>';
+                    modalBody.appendChild(noMembersDiv);
                 } else {
                     members.forEach(member => {
                         const memberDiv = document.createElement('div');
                         memberDiv.className = 'member-item';
                         memberDiv.innerHTML = `
                             <div class="member-info">
-                                <h4>${member.nom} ${member.prenom}</h4>
-                                <p>${member.email || 'Pas d\'email'} • ${member.telephone || 'Pas de téléphone'}</p>
-                                <p>Sexe: ${member.sexe} • Né(e) le: ${new Date(member.date_naissance).toLocaleDateString()}</p>
+                                <h4>${member.nom || ''} ${member.prenom || ''}</h4>
+                                <div class="member-contact">
+                                    <div class="contact-item">
+                                        <i class="fas fa-envelope"></i>
+                                        <span>${member.email || 'Pas d\'email'}</span>
+                                    </div>
+                                    <div class="contact-item">
+                                        <i class="fas fa-phone"></i>
+                                        <span>${member.telephone || 'Pas de téléphone'}</span>
+                                    </div>
+                                    <div class="contact-item">
+                                        <i class="fas fa-venus-mars"></i>
+                                        <span>${member.sexe || 'Non spécifié'}</span>
+                                        <i class="fas fa-birthday-cake" style="margin-left: 1rem;"></i>
+                                        <span>${member.date_naissance ? new Date(member.date_naissance).toLocaleDateString() : 'Non spécifiée'}</span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="member-actions">
-                                <button class="action-btn edit-btn" onclick="editMember(${member.id})">
+                                <button class="action-btn edit-btn" onclick="editMember(${member.id})" title="Modifier">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="action-btn delete-btn" onclick="deleteMember(${member.id})">
+                                <button class="action-btn delete-btn" onclick="deleteMember(${member.id})" title="Supprimer">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -773,15 +1271,269 @@
                 }
                 
                 document.getElementById('serviceModal').style.display = 'block';
+                showToast(`${members.length} membre(s) chargé(s) pour ${serviceName}`, 'info');
                 
             } catch (error) {
                 console.error('Erreur lors du chargement des membres:', error);
+                showToast('Erreur lors du chargement des membres du service', 'error');
             }
         }
 
-        // Close modal
+        // Show commission members
+        async function showCommissionMembers(commissionId, commissionName) {
+            try {
+                // Get all services in this commission
+                const servicesRes = await fetch(`${API_BASE}/services`, {
+                    headers: getAuthHeaders()
+                });
+                const allServices = await servicesRes.json();
+                const commissionServices = allServices.filter(s => s.commission_id === commissionId);
+                
+                // Get commission admin
+                const commissionRes = await fetch(`${API_BASE}/commissions/${commissionId}`, {
+                    headers: getAuthHeaders()
+                });
+                let commissionAdmin = null;
+                
+                if (commissionRes.ok) {
+                    const commissionData = await commissionRes.json();
+                    if (commissionData.admin_id) {
+                        const adminRes = await fetch(`${API_BASE}/users/${commissionData.admin_id}`, {
+                            headers: getAuthHeaders()
+                        });
+                        if (adminRes.ok) {
+                            commissionAdmin = await adminRes.json();
+                        }
+                    }
+                }
+                
+                document.getElementById('commissionModalTitle').textContent = `Commission: ${commissionName}`;
+                const modalBody = document.getElementById('commissionModalBody');
+                modalBody.innerHTML = '';
+                
+                // Show commission admin first
+                if (commissionAdmin) {
+                    const adminDiv = document.createElement('div');
+                    adminDiv.className = 'member-item admin-header';
+                    adminDiv.innerHTML = `
+                        <div class="member-info">
+                            <h4>
+                                <i class="fas fa-crown"></i>
+                                ${commissionAdmin.nom} ${commissionAdmin.prenom}
+                            </h4>
+                            <p>${commissionAdmin.email}</p>
+                        </div>
+                        <div class="admin-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            Admin de Commission
+                        </div>
+                    `;
+                    modalBody.appendChild(adminDiv);
+                }
+                
+                // Show each service and its members
+                for (const service of commissionServices) {
+                    // Service header
+                    const serviceHeaderDiv = document.createElement('div');
+                    serviceHeaderDiv.innerHTML = `
+                        <h3 style="color: #667eea; margin: 1.5rem 0 1rem 0; padding: 0.5rem; background: rgba(102, 126, 234, 0.1); border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-cog"></i>
+                            Service: ${service.nom}
+                        </h3>
+                    `;
+                    modalBody.appendChild(serviceHeaderDiv);
+                    
+                    // Get service admin
+                    let serviceAdmin = null;
+                    if (service.admin_id) {
+                        try {
+                            const adminRes = await fetch(`${API_BASE}/users/${service.admin_id}`, {
+                                headers: getAuthHeaders()
+                            });
+                            if (adminRes.ok) {
+                                serviceAdmin = await adminRes.json();
+                            }
+                        } catch (error) {
+                            console.warn('Could not load service admin:', error);
+                        }
+                    }
+                    
+                    // Show service admin
+                    if (serviceAdmin) {
+                        const serviceAdminDiv = document.createElement('div');
+                        serviceAdminDiv.className = 'member-item admin-header';
+                        serviceAdminDiv.style.marginLeft = '1rem';
+                        serviceAdminDiv.innerHTML = `
+                            <div class="member-info">
+                                <h4>
+                                    <i class="fas fa-user-tie"></i>
+                                    ${serviceAdmin.nom} ${serviceAdmin.prenom}
+                                </h4>
+                                <p>${serviceAdmin.email}</p>
+                            </div>
+                            <div class="admin-badge">
+                                <i class="fas fa-cogs"></i>
+                                Admin du Service
+                            </div>
+                        `;
+                        modalBody.appendChild(serviceAdminDiv);
+                    }
+                    
+                    // Get and show service members
+                    try {
+                        const membersRes = await fetch(`${API_BASE}/membres/service/${service.id}`, {
+                            headers: getAuthHeaders()
+                        });
+                        const members = await membersRes.json();
+                        
+                        if (members.length === 0) {
+                            const noMembersDiv = document.createElement('div');
+                            noMembersDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 1rem; margin-left: 1rem; font-style: italic;">Aucun membre dans ce service</p>';
+                            modalBody.appendChild(noMembersDiv);
+                        } else {
+                            members.forEach(member => {
+                                const memberDiv = document.createElement('div');
+                                memberDiv.className = 'member-item';
+                                memberDiv.style.marginLeft = '1rem';
+                                memberDiv.innerHTML = `
+                                    <div class="member-info">
+                                        <h4>${member.nom} ${member.prenom}</h4>
+                                        <div class="member-contact">
+                                            <div class="contact-item">
+                                                <i class="fas fa-envelope"></i>
+                                                <span>${member.email || 'Pas d\'email'}</span>
+                                            </div>
+                                            <div class="contact-item">
+                                                <i class="fas fa-phone"></i>
+                                                <span>${member.telephone || 'Pas de téléphone'}</span>
+                                            </div>
+                                            <div class="contact-item">
+                                                <i class="fas fa-venus-mars"></i>
+                                                <span>${member.sexe}</span>
+                                                <i class="fas fa-birthday-cake" style="margin-left: 1rem;"></i>
+                                                <span>${new Date(member.date_naissance).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="member-badge">Membre</div>
+                                `;
+                                modalBody.appendChild(memberDiv);
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`Erreur lors du chargement des membres du service ${service.id}:`, error);
+                    }
+                }
+                
+                document.getElementById('commissionModal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement des membres de la commission:', error);
+                showToast('Erreur lors du chargement des membres de la commission', 'error');
+            }
+        }
+
+        // Close commission modal
+        function closeCommissionModal() {
+            document.getElementById('commissionModal').style.display = 'none';
+        }
+
+        // Show administrators modal
+        async function showAdministrators() {
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    headers: getAuthHeaders()
+                });
+                const users = await response.json();
+                
+                const administrators = users.filter(u => u.role === 'admin' || u.role === 'adminCom' || u.role === 'superadmin');
+                
+                const administratorsBody = document.getElementById('administratorsBody');
+                administratorsBody.innerHTML = '';
+                
+                if (administrators.length === 0) {
+                    administratorsBody.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aucun administrateur trouvé</p>';
+                } else {
+                    administrators.forEach(admin => {
+                        const adminDiv = document.createElement('div');
+                        adminDiv.className = 'member-item';
+                        adminDiv.innerHTML = `
+                            <div class="member-info">
+                                <h4>${admin.nom} ${admin.prenom}</h4>
+                                <p>${admin.email}</p>
+                                <p>Rôle: ${getRoleDisplayName(admin.role)}</p>
+                            </div>
+                            <div class="member-actions">
+                                <i class="fas fa-shield-alt" style="color: #667eea; font-size: 1.5rem;"></i>
+                            </div>
+                        `;
+                        administratorsBody.appendChild(adminDiv);
+                    });
+                }
+                
+                document.getElementById('administratorsModal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement des administrateurs:', error);
+            }
+        }
+
+        // Get role display name
+        function getRoleDisplayName(role) {
+            switch(role) {
+                case 'admin': return 'Admin de Service';
+                case 'adminCom': return 'Admin de Commission';
+                case 'superadmin': return 'SuperAdmin';
+                default: return role;
+            }
+        }
+
+        // Open user profile modal
+        function openUserProfile() {
+            console.log('Ouverture du profil utilisateur, currentUser:', currentUser);
+            
+            if (currentUser) {
+                // Remplir le formulaire avec les données existantes
+                document.getElementById('profileNom').value = currentUser.nom || '';
+                document.getElementById('profilePrenom').value = currentUser.prenom || '';
+                document.getElementById('profileEmail').value = currentUser.email || '';
+                document.getElementById('profilePassword').value = '';
+                
+                // Afficher le modal
+                document.getElementById('userProfileModal').style.display = 'block';
+            } else {
+                console.warn('Aucune donnée utilisateur disponible');
+                showToast('Impossible de charger les données utilisateur', 'error');
+                
+                // Essayons de recharger les données utilisateur
+                loadCurrentUser().then(() => {
+                    if (currentUser) {
+                        document.getElementById('profileNom').value = currentUser.nom || '';
+                        document.getElementById('profilePrenom').value = currentUser.prenom || '';
+                        document.getElementById('profileEmail').value = currentUser.email || '';
+                        document.getElementById('profilePassword').value = '';
+                        document.getElementById('userProfileModal').style.display = 'block';
+                    }
+                });
+            }
+        }
+
+        // Close modals
         function closeModal() {
             document.getElementById('serviceModal').style.display = 'none';
+        }
+
+        function closeEditMemberModal() {
+            document.getElementById('editMemberModal').style.display = 'none';
+            currentEditingMember = null;
+        }
+
+        function closeAdministratorsModal() {
+            document.getElementById('administratorsModal').style.display = 'none';
+        }
+
+        function closeUserProfileModal() {
+            document.getElementById('userProfileModal').style.display = 'none';
         }
 
         // Role change handler
@@ -789,22 +1541,58 @@
             const role = this.value;
             const commissionGroup = document.getElementById('commissionGroup');
             const serviceGroup = document.getElementById('serviceGroup');
+            const userCommission = document.getElementById('userCommission');
+            const userService = document.getElementById('userService');
+            
+            // Reset les valeurs
+            userCommission.value = '';
+            userService.value = '';
             
             if (role === 'adminCom') {
                 commissionGroup.style.display = 'block';
                 serviceGroup.style.display = 'none';
+                userCommission.required = true;
+                userService.required = false;
             } else if (role === 'admin') {
-                commissionGroup.style.display = 'none';
+                commissionGroup.style.display = 'block';
                 serviceGroup.style.display = 'block';
+                userCommission.required = true;
+                userService.required = true;
             } else {
                 commissionGroup.style.display = 'none';
                 serviceGroup.style.display = 'none';
+                userCommission.required = false;
+                userService.required = false;
             }
         });
+
+        // Button loading state
+        function setButtonLoading(buttonId, isLoading) {
+            const button = document.getElementById(buttonId);
+            const span = button.querySelector('span');
+            const icon = button.querySelector('i');
+            
+            if (isLoading) {
+                button.disabled = true;
+                icon.style.display = 'none';
+                const spinner = document.createElement('div');
+                spinner.className = 'loading-spinner';
+                button.insertBefore(spinner, span);
+                span.textContent = 'Chargement...';
+            } else {
+                button.disabled = false;
+                const spinner = button.querySelector('.loading-spinner');
+                if (spinner) {
+                    spinner.remove();
+                }
+                icon.style.display = 'inline';
+            }
+        }
 
         // Add member form handler
         document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            setButtonLoading('addMemberBtn', true);
             
             const memberData = {
                 service_id: document.getElementById('memberService').value,
@@ -824,24 +1612,31 @@
                 });
                 
                 if (response.ok) {
-                    showToast('Membre ajouté avec succès!');
-                    confetti(); // 🎉
+                    showSuccessAnimation();
+                    showToast('Membre ajouté avec succès!', 'success');
                     document.getElementById('addMemberForm').reset();
                     await loadDashboardData();
                     await loadServiceMemberCount(memberData.service_id);
                 } else {
                     const error = await response.json();
-                    alert('Erreur: ' + error.error);
+                    showErrorAnimation();
+                    showToast('Erreur: ' + error.error, 'error');
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                alert('Erreur lors de l\'ajout du membre');
+                showErrorAnimation();
+                showToast('Erreur lors de l\'ajout du membre', 'error');
+            } finally {
+                setButtonLoading('addMemberBtn', false);
+                // Restore original text
+                document.getElementById('addMemberBtn').querySelector('span').textContent = 'Ajouter le Membre';
             }
         });
 
         // Manage user form handler
         document.getElementById('manageUserForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            setButtonLoading('createUserBtn', true);
             
             const userData = {
                 nom: document.getElementById('userNom').value,
@@ -861,31 +1656,225 @@
                 });
                 
                 if (response.ok) {
-                    alert('Utilisateur créé avec succès!');
-                    confetti(); // 🎉
-                    closeModal();
-                    await loadDashboardData();
+                    showSuccessAnimation();
+                    showToast('Utilisateur créé avec succès!', 'success');
                     document.getElementById('manageUserForm').reset();
                     await loadDashboardData();
                 } else {
                     const error = await response.json();
-                    alert('Erreur: ' + error.error);
+                    showErrorAnimation();
+                    showToast('Erreur: ' + error.error, 'error');
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                alert('Erreur lors de la création de l\'utilisateur');
+                showErrorAnimation();
+                showToast('Erreur lors de la création de l\'utilisateur', 'error');
+            } finally {
+                setButtonLoading('createUserBtn', false);
+                // Restore original text
+                document.getElementById('createUserBtn').querySelector('span').textContent = 'Créer l\'Utilisateur';
             }
         });
 
         // Edit member function
-        function editMember(memberId) {
-            // Implementation for editing member
-            alert('Fonction d\'édition à implémenter pour le membre ID: ' + memberId);
+        async function editMember(memberId) {
+            try {
+                console.log('Editing member ID:', memberId);
+                
+                // Try different endpoints to get member data
+                let response = await fetch(`${API_BASE}/membres/${memberId}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (!response.ok) {
+                    // Try alternative endpoint
+                    response = await fetch(`${API_BASE}/member/${memberId}`, {
+                        headers: getAuthHeaders()
+                    });
+                }
+                
+                if (response.ok) {
+                    const member = await response.json();
+                    console.log('Member data loaded:', member);
+                    
+                    currentEditingMember = memberId;
+                    
+                    // Populate edit form with better error handling
+                    const serviceSelect = document.getElementById('editMemberService');
+                    const nomInput = document.getElementById('editMemberNom');
+                    const prenomInput = document.getElementById('editMemberPrenom');
+                    const sexeSelect = document.getElementById('editMemberSexe');
+                    const dateInput = document.getElementById('editMemberDateNaissance');
+                    const emailInput = document.getElementById('editMemberEmail');
+                    const telephoneInput = document.getElementById('editMemberTelephone');
+                    
+                    if (serviceSelect) serviceSelect.value = member.service_id || '';
+                    if (nomInput) nomInput.value = member.nom || '';
+                    if (prenomInput) prenomInput.value = member.prenom || '';
+                    if (sexeSelect) sexeSelect.value = member.sexe || '';
+                    if (dateInput) {
+                        // Handle different date formats
+                        let dateValue = member.date_naissance;
+                        if (dateValue) {
+                            if (dateValue.includes('T')) {
+                                dateValue = dateValue.split('T')[0];
+                            }
+                            dateInput.value = dateValue;
+                        }
+                    }
+                    if (emailInput) emailInput.value = member.email || '';
+                    if (telephoneInput) telephoneInput.value = member.telephone || '';
+                    
+                    document.getElementById('editMemberModal').style.display = 'block';
+                    
+                    showToast('Données du membre chargées', 'info');
+                } else {
+                    console.error('Response not OK:', response.status, response.statusText);
+                    const errorText = await response.text();
+                    console.error('Error details:', errorText);
+                    
+                    showErrorAnimation();
+                    showToast(`Erreur lors du chargement des données du membre (${response.status})`, 'error');
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des données du membre:', error);
+                showErrorAnimation();
+                showToast('Erreur de connexion lors du chargement des données', 'error');
+            }
         }
+
+        // Edit member form handler
+        document.getElementById('editMemberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentEditingMember) return;
+            
+            const memberData = {
+                service_id: document.getElementById('editMemberService').value,
+                nom: document.getElementById('editMemberNom').value,
+                prenom: document.getElementById('editMemberPrenom').value,
+                sexe: document.getElementById('editMemberSexe').value,
+                date_naissance: document.getElementById('editMemberDateNaissance').value,
+                email: document.getElementById('editMemberEmail').value,
+                telephone: document.getElementById('editMemberTelephone').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/membres/${currentEditingMember}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(memberData)
+                });
+                
+                if (response.ok) {
+                    showSuccessAnimation();
+                    showToast('Membre modifié avec succès!', 'success');
+                    closeEditMemberModal();
+                    closeModal();
+                    await loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showErrorAnimation();
+                    showToast('Erreur: ' + error.error, 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showErrorAnimation();
+                showToast('Erreur lors de la modification du membre', 'error');
+            }
+        });
+
+        // User profile form handler
+        document.getElementById('userProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            setButtonLoading('updateProfileBtn', true);
+            
+            const profileData = {
+                nom: document.getElementById('profileNom').value,
+                prenom: document.getElementById('profilePrenom').value,
+                email: document.getElementById('profileEmail').value
+            };
+            
+            const password = document.getElementById('profilePassword').value;
+            if (password) {
+                profileData.mot_de_passe = password;
+            }
+            
+            try {
+                // Essayons différents endpoints pour la mise à jour du profil
+                let response = await fetch(`${API_BASE}/auth/profile`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(profileData)
+                });
+                
+                // Si le premier endpoint ne marche pas
+                if (!response.ok) {
+                    response = await fetch(`${API_BASE}/users/profile`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(profileData)
+                    });
+                }
+                
+                // Si toujours pas bon, essayons avec PATCH
+                if (!response.ok) {
+                    response = await fetch(`${API_BASE}/auth/me`, {
+                        method: 'PATCH',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(profileData)
+                    });
+                }
+                
+                if (response.ok) {
+                    let updatedUser;
+                    try {
+                        updatedUser = await response.json();
+                    } catch (parseError) {
+                        // Si pas de JSON en retour, on utilise les données du formulaire
+                        updatedUser = profileData;
+                    }
+                    
+                    // Mise à jour des données locales
+                    currentUser = { ...currentUser, ...updatedUser };
+                    
+                    // Mise à jour de l'affichage du nom
+                    const nom = updatedUser.nom || profileData.nom;
+                    const prenom = updatedUser.prenom || profileData.prenom;
+                    document.getElementById('userName').textContent = `${prenom} ${nom}`;
+                    
+                    showSuccessAnimation();
+                    showToast('Profil mis à jour avec succès!', 'success');
+                    closeUserProfileModal();
+                    
+                    console.log('Profil mis à jour:', currentUser);
+                } else {
+                    let errorMessage = 'Erreur lors de la mise à jour du profil';
+                    try {
+                        const error = await response.json();
+                        errorMessage = error.error || error.message || errorMessage;
+                    } catch (parseError) {
+                        // Si on ne peut pas parser l'erreur, on garde le message par défaut
+                    }
+                    
+                    showErrorAnimation();
+                    showToast('Erreur: ' + errorMessage, 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showErrorAnimation();
+                showToast('Erreur lors de la mise à jour du profil', 'error');
+            } finally {
+                setButtonLoading('updateProfileBtn', false);
+                // Restore original text
+                document.getElementById('updateProfileBtn').querySelector('span').textContent = 'Mettre à jour mon profil';
+            }
+        });
 
         // Delete member function
         async function deleteMember(memberId) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer ce membre?')) {
+            // Custom confirmation with animation
+            if (await showConfirmDialog('Êtes-vous sûr de vouloir supprimer ce membre?')) {
                 try {
                     const response = await fetch(`${API_BASE}/membres/${memberId}`, {
                         method: 'DELETE',
@@ -893,27 +1882,100 @@
                     });
                     
                     if (response.ok) {
-                        shakeScreen();
-                        showToast("Membre supprimé avec succès !");
+                        showDeleteAnimation();
+                        showToast("Membre supprimé avec succès !", 'warning');
                         closeModal();
                         await loadDashboardData();
                     } else {
                         const error = await response.json();
-                        alert('Erreur: ' + error.error);
+                        showErrorAnimation();
+                        showToast('Erreur: ' + error.error, 'error');
                     }
                 } catch (error) {
                     console.error('Erreur:', error);
-                    alert('Erreur lors de la suppression');
+                    showErrorAnimation();
+                    showToast('Erreur lors de la suppression', 'error');
                 }
             }
         }
 
         // Logout function
-        function logout() {
-            if (confirm('Êtes-vous sûr de vouloir vous déconnecter?')) {
+        async function logout() {
+            if (await showConfirmDialog('Êtes-vous sûr de vouloir vous déconnecter?')) {
                 localStorage.removeItem('token');
-                window.location.href = './login.html';
+                showToast('Déconnexion réussie', 'info');
+                setTimeout(() => {
+                    window.location.href = './login.html';
+                }, 1000);
             }
+        }
+
+        // Animation functions
+        function showSuccessAnimation() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function showErrorAnimation() {
+            // Shake animation for errors
+            document.body.classList.add('shake');
+            setTimeout(() => {
+                document.body.classList.remove('shake');
+            }, 500);
+        }
+
+        function showDeleteAnimation() {
+            // Red confetti for deletions
+            confetti({
+                particleCount: 80,
+                spread: 60,
+                origin: { y: 0.6 },
+                colors: ['#ff6b6b', '#ff8e8e', '#ffaaaa']
+            });
+        }
+
+        // Enhanced Toast function
+        function showToast(message, type = "success") {
+            const toast = document.createElement("div");
+            toast.classList.add("toast", type);
+            toast.textContent = message;
+
+            // Add icon based on type
+            const icon = document.createElement("i");
+            switch(type) {
+                case "success":
+                    icon.className = "fas fa-check-circle";
+                    break;
+                case "error":
+                    icon.className = "fas fa-exclamation-circle";
+                    break;
+                case "warning":
+                    icon.className = "fas fa-exclamation-triangle";
+                    break;
+                case "info":
+                    icon.className = "fas fa-info-circle";
+                    break;
+            }
+            
+            toast.insertBefore(icon, toast.firstChild);
+            toast.insertBefore(document.createTextNode(" "), toast.childNodes[1]);
+
+            document.getElementById("toast-container").appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        // Custom confirm dialog
+        function showConfirmDialog(message) {
+            return new Promise((resolve) => {
+                const confirmed = confirm(message);
+                resolve(confirmed);
+            });
         }
 
         // Check authentication on page load
@@ -923,44 +1985,17 @@
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('serviceModal');
-            if (event.target === modal) {
-                closeModal();
-            }
+            const modals = ['serviceModal', 'editMemberModal', 'administratorsModal', 'userProfileModal', 'commissionModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    if (modalId === 'editMemberModal') {
+                        currentEditingMember = null;
+                    }
+                }
+            });
         }
-
-        // Pour les animation personnalisé
-        function showToast(message, type = "success") {
-        const toast = document.createElement("div");
-        toast.classList.add("toast");
-
-        // Couleur selon type
-        if (type === "error") {
-            toast.style.backgroundColor = "#e74c3c"; // Rouge
-        } else if (type === "info") {
-            toast.style.backgroundColor = "#3498db"; // Bleu
-        }
-
-        toast.textContent = message;
-
-        // Ajout au conteneur
-        document.getElementById("toast-container").appendChild(toast);
-
-        // Suppression après 3 secondes
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    }
-
-    function shakeScreen() {
-  const body = document.body;
-  body.classList.add("shake");
-
-  setTimeout(() => {
-    body.classList.remove("shake");
-  }, 500); // durée = même que dans le CSS (0.5s)
-}
-
     </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>

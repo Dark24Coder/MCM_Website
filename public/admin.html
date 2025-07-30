@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - MCM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --text-dark: #2d3748;
+            --text-light: #ffffff;
+            --bg-light: #f7fafc;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            --gradient-accent: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,180 +31,375 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
         }
 
+        /* Navbar */
         .navbar {
-            background: #2c3e50;
-            color: white;
+            background: var(--text-light);
+            box-shadow: var(--shadow);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .user-menu {
-            position: relative;
-        }
-
-        .user-name {
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-
-        .user-name:hover {
-            background: #34495e;
-        }
-
-        .user-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            color: black;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            min-width: 200px;
+            position: sticky;
+            top: 0;
             z-index: 1000;
         }
 
-        .user-dropdown.active {
-            display: block;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
         }
 
-        .dropdown-item {
-            padding: 0.75rem 1rem;
+        .logo i {
+            font-size: 2rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-light);
+            border-radius: 50px;
             cursor: pointer;
-            border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        .dropdown-item:hover {
-            background: #f8f9fa;
+        .user-profile:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .user-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .user-info p {
+            font-size: 0.75rem;
+            color: #718096;
         }
 
         .logout-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 1rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .section {
-            background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .section h2 {
-            color: #2c3e50;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 0.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        .btn {
-            background: #3498db;
-            color: white;
+            background: var(--gradient);
+            color: var(--text-light);
             border: none;
             padding: 0.75rem 1.5rem;
-            border-radius: 5px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 1rem;
-            margin-right: 0.5rem;
-        }
-
-        .btn:hover {
-            background: #2980b9;
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-
-        .btn-warning {
-            background: #f39c12;
-        }
-
-        .btn-warning:hover {
-            background: #d68910;
-        }
-
-        .members-list {
-            display: grid;
-            gap: 1rem;
-        }
-
-        .member-card {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 1rem;
-            background: #f9f9f9;
-        }
-
-        .member-info {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .member-details h4 {
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
-        }
-
-        .member-details p {
-            color: #666;
-            margin-bottom: 0.25rem;
-        }
-
-        .member-actions {
+            font-weight: 500;
+            transition: all 0.3s ease;
             display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
 
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--text-light);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-light);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--text-light);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: var(--text-light);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: var(--text-light);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: var(--text-light);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 101, 101, 0.3);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: var(--text-light);
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(237, 137, 54, 0.3);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Loading */
+        .loading {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--text-light);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Members Grid */
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .member-card {
+            background: var(--text-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .member-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .member-card.admin::before {
+            background: var(--gradient-accent);
+        }
+
+        .member-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .member-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .member-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .member-avatar.admin {
+            background: var(--gradient-accent);
+        }
+
+        .member-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .member-badge {
+            background: var(--gradient-accent);
+            color: var(--text-light);
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .member-details {
+            margin-top: 1rem;
+        }
+
+        .member-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .member-detail i {
+            color: var(--primary-color);
+            width: 16px;
+        }
+
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -193,29 +407,59 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
         }
 
         .modal.active {
             display: flex;
             align-items: center;
             justify-content: center;
+            animation: modalFade 0.3s ease-out;
+        }
+
+        @keyframes modalFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
-            background: white;
+            background: var(--text-light);
             padding: 2rem;
-            border-radius: 8px;
+            border-radius: 16px;
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            animation: modalSlide 0.4s ease-out;
+        }
+
+        @keyframes modalSlide {
+            from { 
+                opacity: 0; 
+                transform: translateY(-50px) scale(0.9); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-light);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
         }
 
         .close-btn {
@@ -223,399 +467,576 @@
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
+            color: #718096;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
 
-        .error-message {
-            background: #e74c3c;
-            color: white;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
+        .close-btn:hover {
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        /* Alert */
+        .alert {
             display: none;
-        }
-
-        .success-message {
-            background: #27ae60;
-            color: white;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .footer {
-            background: #2c3e50;
-            color: white;
-            text-align: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--text-light);
             padding: 2rem;
-            margin-top: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            z-index: 3000;
+            text-align: center;
+            min-width: 400px;
+        }
+
+        .alert.active {
+            display: block;
+            animation: alertSlide 0.3s ease-out;
+        }
+
+        @keyframes alertSlide {
+            from { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(0.9); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1); 
+            }
+        }
+
+        .alert-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-icon.warning {
+            color: var(--warning-color);
+        }
+
+        .alert h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .alert p {
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-light);
+            margin-top: 4rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .footer-logo i {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-text {
+            color: #718096;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary-color);
+        }
+
+        .footer-social {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .main-content {
+                padding: 0 1rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .members-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Success Animation */
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--text-light);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            z-index: 3000;
+            text-align: center;
+            animation: successSlide 0.5s ease-out;
+        }
+
+        @keyframes successSlide {
+            0% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(0.8); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1.1); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1); 
+            }
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            80% { transform: translateY(-10px); }
         }
     </style>
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
-        <div class="logo">MCM - Admin</div>
-        <div class="user-menu">
-            <span class="user-name" id="userNameDisplay">Admin</span>
-            <div class="user-dropdown" id="userDropdown">
-                <div class="dropdown-item" onclick="openProfileModal()">Modifier Profil</div>
+        <div class="logo">
+            <i class="fas fa-cube"></i>
+            MCM Admin
+        </div>
+        <div class="user-section">
+            <div class="user-profile" id="userProfile">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <h4 id="userNameDisplay">Admin</h4>
+                    <p>Administrateur</p>
+                </div>
             </div>
-            <button class="logout-btn" onclick="logout()">Déconnexion</button>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Déconnexion
+            </button>
         </div>
     </nav>
 
-    <!-- Messages -->
-    <div class="container">
-        <div class="error-message" id="errorMessage"></div>
-        <div class="success-message" id="successMessage"></div>
-    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Dashboard Administrateur</h1>
+            <p class="page-subtitle">Gérez les membres de votre service efficacement</p>
+        </div>
 
-    <!-- Contenu principal -->
-    <div class="container">
-        <!-- Section Ajouter Membre -->
-        <div class="section">
-            <h2>Ajouter un Membre</h2>
+        <!-- Add Member Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user-plus"></i>
+                    Ajouter un Nouveau Membre
+                </h2>
+            </div>
             <form id="addMemberForm">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-grid">
                     <div class="form-group">
-                        <label>Nom</label>
-                        <input type="text" id="memberNom" required>
+                        <label for="memberNom">Nom</label>
+                        <input type="text" id="memberNom" placeholder="Nom du membre" required>
                     </div>
                     <div class="form-group">
-                        <label>Prénom</label>
-                        <input type="text" id="memberPrenom" required>
+                        <label for="memberPrenom">Prénom</label>
+                        <input type="text" id="memberPrenom" placeholder="Prénom du membre" required>
                     </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label>Sexe</label>
+                        <label for="memberSexe">Sexe</label>
                         <select id="memberSexe" required>
-                            <option value="">Sélectionner</option>
+                            <option value="">Sélectionner le sexe</option>
                             <option value="Homme">Homme</option>
                             <option value="Femme">Femme</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Date de Naissance</label>
+                        <label for="memberDateNaissance">Date de Naissance</label>
                         <input type="date" id="memberDateNaissance" required>
                     </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="memberEmail">
+                        <label for="memberEmail">Email</label>
+                        <input type="email" id="memberEmail" placeholder="email@exemple.com">
                     </div>
                     <div class="form-group">
-                        <label>Téléphone</label>
-                        <input type="tel" id="memberTelephone">
+                        <label for="memberTelephone">Téléphone</label>
+                        <input type="tel" id="memberTelephone" placeholder="+229 XX XX XX XX">
                     </div>
                 </div>
-                <button type="submit" class="btn">Ajouter le Membre</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Ajouter le Membre
+                </button>
             </form>
         </div>
 
-        <!-- Section Liste des Membres -->
-        <div class="section">
-            <h2>Membres de mon Service</h2>
-            <div class="members-list" id="membersList">
-                <!-- Les membres seront chargés ici -->
+        <!-- Members List Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-users"></i>
+                    Membres du Service
+                </h2>
+            </div>
+            <div class="members-grid" id="membersList">
+                <!-- Members will be loaded here -->
             </div>
         </div>
     </div>
 
-    <!-- Modal Modification Membre -->
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-user-cog"></i>
+                    Modifier Mon Profil
+                </h3>
+                <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="profileNom">Nom</label>
+                    <input type="text" id="profileNom" required>
+                </div>
+                <div class="form-group">
+                    <label for="profilePrenom">Prénom</label>
+                    <input type="text" id="profilePrenom" required>
+                </div>
+                <div class="form-group">
+                    <label for="profileEmail">Email</label>
+                    <input type="email" id="profileEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="profilePassword">Nouveau Mot de Passe (optionnel)</label>
+                    <input type="password" id="profilePassword" placeholder="Laisser vide pour ne pas changer">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        Sauvegarder
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeProfileModal()">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member Modal -->
+    <div class="modal" id="memberModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="memberModalTitle">
+                    <i class="fas fa-user"></i>
+                    Détails du Membre
+                </h3>
+                <button class="close-btn" onclick="closeMemberModal()">&times;</button>
+            </div>
+            <div id="memberModalContent">
+                <!-- Member details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Member Modal -->
     <div class="modal" id="editMemberModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Modifier Membre</h3>
-                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+                <h3 class="modal-title">
+                    <i class="fas fa-edit"></i>
+                    Modifier le Membre
+                </h3>
+                <button class="close-btn" onclick="closeEditMemberModal()">&times;</button>
             </div>
             <form id="editMemberForm">
                 <input type="hidden" id="editMemberId">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-grid">
                     <div class="form-group">
-                        <label>Nom</label>
+                        <label for="editMemberNom">Nom</label>
                         <input type="text" id="editMemberNom" required>
                     </div>
                     <div class="form-group">
-                        <label>Prénom</label>
+                        <label for="editMemberPrenom">Prénom</label>
                         <input type="text" id="editMemberPrenom" required>
                     </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label>Sexe</label>
+                        <label for="editMemberSexe">Sexe</label>
                         <select id="editMemberSexe" required>
                             <option value="Homme">Homme</option>
                             <option value="Femme">Femme</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Date de Naissance</label>
+                        <label for="editMemberDateNaissance">Date de Naissance</label>
                         <input type="date" id="editMemberDateNaissance" required>
                     </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label>Email</label>
+                        <label for="editMemberEmail">Email</label>
                         <input type="email" id="editMemberEmail">
                     </div>
                     <div class="form-group">
-                        <label>Téléphone</label>
+                        <label for="editMemberTelephone">Téléphone</label>
                         <input type="tel" id="editMemberTelephone">
                     </div>
                 </div>
-                <button type="submit" class="btn">Modifier</button>
-                <button type="button" class="btn btn-danger" onclick="closeEditModal()">Annuler</button>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        Enregistrer
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeEditMemberModal()">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Profil -->
-    <div class="modal" id="profileModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Modifier Mon Profil</h3>
-                <button class="close-btn" onclick="closeProfileModal()">&times;</button>
-            </div>
-            <form id="profileForm">
-                <div class="form-group">
-                    <label>Nom</label>
-                    <input type="text" id="profileNom" required>
-                </div>
-                <div class="form-group">
-                    <label>Prénom</label>
-                    <input type="text" id="profilePrenom" required>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="profileEmail" required>
-                </div>
-                <div class="form-group">
-                    <label>Nouveau Mot de Passe (optionnel)</label>
-                    <input type="password" id="profilePassword">
-                </div>
-                <button type="submit" class="btn">Sauvegarder</button>
-                <button type="button" class="btn btn-danger" onclick="closeProfileModal()">Annuler</button>
-            </form>
+    <!-- Delete Confirmation Alert -->
+    <div class="alert" id="deleteAlert">
+        <div class="alert-icon warning">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Confirmer la suppression</h3>
+        <p>Êtes-vous sûr de vouloir supprimer ce membre ? Cette action est irréversible.</p>
+        <div class="alert-actions">
+            <button class="btn btn-danger" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i>
+                Supprimer
+            </button>
+            <button class="btn btn-success" onclick="cancelDelete()">
+                <i class="fas fa-times"></i>
+                Annuler
+            </button>
         </div>
     </div>
 
+    <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2024 MCM - Système de Gestion des Membres</p>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-cube"></i>
+                MCM
+            </div>
+            <p class="footer-text">Système de Gestion des Membres - Ministère catholique Miséricorde</p>
+            <div class="footer-links">
+                <a href="#"><i class="fas fa-home"></i> Accueil</a>
+                <a href="#"><i class="fas fa-info-circle"></i> À propos</a>
+                <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+                <a href="#"><i class="fas fa-shield-alt"></i> Confidentialité</a>
+            </div>
+            <div class="footer-social">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            <p style="margin-top: 2rem; color: #a0aec0; font-size: 0.9rem;">
+                &copy; 2025 MCM. All right reserved.
+            </p>
+        </div>
     </footer>
 
     <script>
         const API_BASE = '/api';
         let currentUser = null;
         let authToken = localStorage.getItem('mcm_token');
+        let memberToDelete = null;
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
-            if (!authToken) {
-                window.location.href = '/login';
+            console.log('🔍 Token récupéré:', authToken);
+            console.log('🔍 Données utilisateur:', localStorage.getItem('mcm_user'));
+            
+            if (!authToken || authToken === 'null' || authToken === 'undefined') {
+                console.log('❌ Pas de token valide, redirection vers login');
+                window.location.href = './login.html';
                 return;
             }
+            
+            console.log('✅ Token présent, chargement du dashboard');
             loadUserProfile();
             loadMembers();
+            initializeEventListeners();
         });
 
-        // Gestion utilisateur
+        function initializeEventListeners() {
+            // User profile click
+            document.getElementById('userProfile').addEventListener('click', function(e) {
+                e.preventDefault();
+                openProfileModal();
+            });
+
+            // Close modals when clicking outside
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+
+            // Form submissions
+            document.getElementById('addMemberForm').addEventListener('submit', handleAddMember);
+            document.getElementById('profileForm').addEventListener('submit', handleUpdateProfile);
+            document.getElementById('editMemberForm').addEventListener('submit', handleEditMember);
+        }
+
+        // User Profile Management
         function loadUserProfile() {
-            const userData = JSON.parse(localStorage.getItem('mcm_user') || '{}');
-            if (userData.nom) {
+            try {
+                console.log('📋 Chargement du profil utilisateur');
+                const userDataString = localStorage.getItem('mcm_user');
+                console.log('🔍 Données brutes:', userDataString);
+                
+                if (!userDataString || userDataString === 'null' || userDataString === 'undefined') {
+                    console.log('❌ Pas de données utilisateur, utilisation des valeurs par défaut');
+                    // Ne pas rediriger, juste utiliser des valeurs par défaut
+                    document.getElementById('userNameDisplay').textContent = 'Administrateur';
+                    document.getElementById('userAvatar').textContent = 'AD';
+                    
+                    // Créer un utilisateur par défaut temporaire
+                    currentUser = {
+                        nom: 'Admin',
+                        prenom: 'User',
+                        email: 'admin@mcm.com',
+                        service_id: 1 // Valeur par défaut
+                    };
+                    return;
+                }
+                
+                const userData = JSON.parse(userDataString);
+                console.log('✅ Données utilisateur parsées:', userData);
                 currentUser = userData;
-                document.getElementById('userNameDisplay').textContent = `${userData.nom} ${userData.prenom}`;
-                document.getElementById('profileNom').value = userData.nom;
-                document.getElementById('profilePrenom').value = userData.prenom;
-                document.getElementById('profileEmail').value = userData.email;
-            }
-        }
-
-        // Menu utilisateur
-        document.getElementById('userNameDisplay').addEventListener('click', function() {
-            const dropdown = document.getElementById('userDropdown');
-            dropdown.classList.toggle('active');
-        });
-
-        // Fermer dropdown si clic ailleurs
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.user-menu')) {
-                document.getElementById('userDropdown').classList.remove('active');
-            }
-        });
-
-        // Déconnexion
-        function logout() {
-            localStorage.removeItem('mcm_token');
-            localStorage.removeItem('mcm_user');
-            window.location.href = '/login';
-        }
-
-        // Charger les membres
-        async function loadMembers() {
-            try {
-                const response = await fetch(`${API_BASE}/membres`, {
-                    headers: { 'Authorization': Bearer `${authToken}` }
-                });
-                const members = await response.json();
-                displayMembers(members);
-            } catch (error) {
-                showError('Erreur lors du chargement des membres');
-            }
-        }
-
-        // Afficher les membres
-        function displayMembers(members) {
-            const container = document.getElementById('membersList');
-            container.innerHTML = '';
-            
-            members.forEach(member => {
-                const memberCard = `
-                    <div class="member-card">
-                        <div class="member-info">
-                            <div class="member-details">
-                                <h4>${member.nom} ${member.prenom}</h4>
-                                <p><strong>Sexe:</strong> ${member.sexe}</p>
-                                <p><strong>Date de naissance:</strong> ${member.date_naissance}</p>
-                                <p><strong>Email:</strong> ${member.email || 'N/A'}</p>
-                                <p><strong>Téléphone:</strong> ${member.telephone || 'N/A'}</p>
-                            </div>
-                            <div class="member-actions">
-                                <button class="btn btn-warning" onclick="editMember(${member.id})">Modifier</button>
-                                <button class="btn btn-danger" onclick="deleteMember(${member.id})">Supprimer</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += memberCard;
-            });
-        }
-
-        // Ajouter membre
-        document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const memberData = {
-                nom: document.getElementById('memberNom').value,
-                prenom: document.getElementById('memberPrenom').value,
-                sexe: document.getElementById('memberSexe').value,
-                date_naissance: document.getElementById('memberDateNaissance').value,
-                email: document.getElementById('memberEmail').value,
-                telephone: document.getElementById('memberTelephone').value,
-                service_id: currentUser.service_id
-            };
-
-            try {
-                const response = await fetch(`${API_BASE}/membres`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': Bearer `${authToken}`
-                    },
-                    body: JSON.stringify(memberData)
-                });
-
-                const result = await response.json();
                 
-                if (response.ok) {
-                    showSuccess('Membre ajouté avec succès');
-                    document.getElementById('addMemberForm').reset();
-                    loadMembers();
-                } else {
-                    showError(result.error);
-                }
-            } catch (error) {
-                showError('Erreur lors de l\'ajout du membre');
-            }
-        });
-
-        // Modifier membre
-        function editMember(id) {
-            // Récupérer les données du membre et ouvrir la modal
-            fetch(`${API_BASE}/membres`, {
-                headers: { 'Authorization': Bearer `${authToken}` }
-            })
-            .then(response => response.json())
-            .then(members => {
-                const member = members.find(m => m.id === id);
-                if (member) {
-                    document.getElementById('editMemberId').value = member.id;
-                    document.getElementById('editMemberNom').value = member.nom;
-                    document.getElementById('editMemberPrenom').value = member.prenom;
-                    document.getElementById('editMemberSexe').value = member.sexe;
-                    document.getElementById('editMemberDateNaissance').value = member.date_naissance;
-                    document.getElementById('editMemberEmail').value = member.email;
-                    document.getElementById('editMemberTelephone').value = member.telephone;
-                    document.getElementById('editMemberModal').classList.add('active');
-                }
-            });
-        }
-
-        // Formulaire modification membre
-        document.getElementById('editMemberForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const id = document.getElementById('editMemberId').value;
-            const memberData = {
-                nom: document.getElementById('editMemberNom').value,
-                prenom: document.getElementById('editMemberPrenom').value,
-                sexe: document.getElementById('editMemberSexe').value,
-                date_naissance: document.getElementById('editMemberDateNaissance').value,
-                email: document.getElementById('editMemberEmail').value,
-                telephone: document.getElementById('editMemberTelephone').value,
-                service_id: currentUser.service_id
-            };
-
-            try {
-                const response = await fetch(`${API_BASE}/membres/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': Bearer `${authToken}`
-                    },
-                    body: JSON.stringify(memberData)
-                });
-
-                const result = await response.json();
+                const fullName = `${userData.nom} ${userData.prenom}`;
+                document.getElementById('userNameDisplay').textContent = fullName;
                 
-                if (response.ok) {
-                    showSuccess('Membre modifié avec succès');
-                    closeEditModal();
-                    loadMembers();
-                } else {
-                    showError(result.error);
-                }
-            } catch (error) {
-                showError('Erreur lors de la modification');
-            }
-        });
-
-        // Supprimer membre
-        async function deleteMember(id) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/membres/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': Bearer `${authToken}` }
-                });
-
-                const result = await response.json();
+                const initials = `${userData.nom.charAt(0)}${userData.prenom.charAt(0)}`;
+                document.getElementById('userAvatar').textContent = initials;
                 
-                if (response.ok) {
-                    showSuccess('Membre supprimé avec succès');
-                    loadMembers();
-                } else {
-                    showError(result.error);
-                }
+                // Fill profile form
+                document.getElementById('profileNom').value = userData.nom || '';
+                document.getElementById('profilePrenom').value = userData.prenom || '';
+                document.getElementById('profileEmail').value = userData.email || '';
+                
+                console.log('✅ Profil utilisateur chargé avec succès');
+                
             } catch (error) {
-                showError('Erreur lors de la suppression');
+                console.error('❌ Erreur lors du parsing des données utilisateur:', error);
+                // Ne pas rediriger, juste utiliser des valeurs par défaut
+                document.getElementById('userNameDisplay').textContent = 'Administrateur';
+                document.getElementById('userAvatar').textContent = 'AD';
+                
+                currentUser = {
+                    nom: 'Admin',
+                    prenom: 'User',
+                    email: 'admin@mcm.com',
+                    service_id: 1
+                };
             }
         }
 
-        // Gestion des modals
         function openProfileModal() {
             document.getElementById('profileModal').classList.add('active');
         }
@@ -624,13 +1045,13 @@
             document.getElementById('profileModal').classList.remove('active');
         }
 
-        function closeEditModal() {
-            document.getElementById('editMemberModal').classList.remove('active');
-        }
-
-        // Formulaire profil
-        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+        async function handleUpdateProfile(e) {
             e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="loading"></div> Sauvegarde...';
+            submitBtn.disabled = true;
             
             const profileData = {
                 nom: document.getElementById('profileNom').value,
@@ -648,43 +1069,483 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': Bearer `${authToken}`
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify(profileData)
                 });
 
-                const result = await response.json();
-                
                 if (response.ok) {
-                    showSuccess('Profil modifié avec succès');
                     currentUser.nom = profileData.nom;
                     currentUser.prenom = profileData.prenom;
                     currentUser.email = profileData.email;
                     localStorage.setItem('mcm_user', JSON.stringify(currentUser));
+                    
+                    showSuccessAnimation('Profil modifié avec succès !');
                     loadUserProfile();
                     closeProfileModal();
                 } else {
-                    showError(result.error);
+                    const result = await response.json();
+                    throw new Error(result.error || 'Erreur lors de la modification');
                 }
             } catch (error) {
-                showError('Erreur lors de la modification du profil');
+                console.error('Erreur:', error);
+                alert('Erreur lors de la modification du profil: ' + error.message);
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Members Management
+        async function loadMembers() {
+            try {
+                console.log('📋 Début du chargement des membres');
+                showLoading('membersList');
+                
+                const response = await fetch(`${API_BASE}/membres`, {
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('📡 Réponse API membres:', response.status);
+                
+                if (response.status === 401) {
+                    console.log('❌ Token expiré, redirection vers login');
+                    localStorage.removeItem('mcm_token');
+                    localStorage.removeItem('mcm_user');
+                    window.location.href = './login.html';
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
+                const members = await response.json();
+                console.log('✅ Membres récupérés:', members);
+                displayMembers(members);
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des membres:', error);
+                
+                // Afficher un message d'erreur dans la liste
+                const container = document.getElementById('membersList');
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #718096;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; color: #f56565;"></i>
+                        <h3 style="margin-bottom: 1rem;">Erreur de chargement</h3>
+                        <p style="margin-bottom: 1rem;">${error.message}</p>
+                        <button class="btn btn-primary" onclick="loadMembers()">
+                            <i class="fas fa-refresh"></i>
+                            Réessayer
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayMembers(members) {
+            const container = document.getElementById('membersList');
+            container.innerHTML = '';
+            
+            if (members.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #718096;">
+                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>Aucun membre trouvé dans votre service.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Séparer l'admin et les autres membres
+            const adminMembers = [];
+            const regularMembers = [];
+            
+            members.forEach(member => {
+                // Vérifier si c'est l'admin connecté (même nom et prénom)
+                if (currentUser && 
+                    member.nom === currentUser.nom && 
+                    member.prenom === currentUser.prenom) {
+                    adminMembers.push(member);
+                } else {
+                    regularMembers.push(member);
+                }
+            });
+            
+            // Afficher d'abord les admins puis les membres réguliers
+            [...adminMembers, ...regularMembers].forEach(member => {
+                const initials = `${member.nom.charAt(0)}${member.prenom.charAt(0)}`;
+                const isAdmin = adminMembers.includes(member);
+                
+                const memberCard = document.createElement('div');
+                memberCard.className = `member-card ${isAdmin ? 'admin' : ''}`;
+                memberCard.onclick = () => openMemberModal(member);
+                
+                memberCard.innerHTML = `
+                    <div class="member-header">
+                        <div class="member-avatar ${isAdmin ? 'admin' : ''}">${initials}</div>
+                        <div class="member-info">
+                            <h3>${member.nom} ${member.prenom}</h3>
+                            ${isAdmin ? '<span class="member-badge">Administrateur</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="member-details">
+                        <div class="member-detail">
+                            <i class="fas fa-venus-mars"></i>
+                            <span>${member.sexe}</span>
+                        </div>
+                        <div class="member-detail">
+                            <i class="fas fa-calendar"></i>
+                            <span>${formatDate(member.date_naissance)}</span>
+                        </div>
+                        <div class="member-detail">
+                            <i class="fas fa-envelope"></i>
+                            <span>${member.email || 'Non renseigné'}</span>
+                        </div>
+                        <div class="member-detail">
+                            <i class="fas fa-phone"></i>
+                            <span>${member.telephone || 'Non renseigné'}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(memberCard);
+            });
+        }
+
+        async function handleAddMember(e) {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="loading"></div> Ajout en cours...';
+            submitBtn.disabled = true;
+            
+            // Vérifier que currentUser existe et a un service_id
+            if (!currentUser || !currentUser.service_id) {
+                console.error('❌ Données utilisateur manquantes');
+                alert('Erreur: Données utilisateur manquantes. Veuillez vous reconnecter.');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return;
+            }
+            
+            const memberData = {
+                nom: document.getElementById('memberNom').value,
+                prenom: document.getElementById('memberPrenom').value,
+                sexe: document.getElementById('memberSexe').value,
+                date_naissance: document.getElementById('memberDateNaissance').value,
+                email: document.getElementById('memberEmail').value,
+                telephone: document.getElementById('memberTelephone').value,
+                service_id: currentUser.service_id
+            };
+
+            console.log('📝 Données membre à ajouter:', memberData);
+
+            try {
+                const response = await fetch(`${API_BASE}/membres`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(memberData)
+                });
+
+                console.log('📡 Réponse ajout membre:', response.status);
+
+                if (response.ok) {
+                    document.getElementById('addMemberForm').reset();
+                    showSuccessAnimation('Membre ajouté avec succès !');
+                    loadMembers();
+                } else {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Erreur lors de l\'ajout');
+                }
+            } catch (error) {
+                console.error('❌ Erreur ajout membre:', error);
+                alert('Erreur lors de l\'ajout du membre: ' + error.message);
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Member Modal Management
+        function openMemberModal(member) {
+            const modal = document.getElementById('memberModal');
+            const content = document.getElementById('memberModalContent');
+            
+            const isAdmin = currentUser && 
+                member.nom === currentUser.nom && 
+                member.prenom === currentUser.prenom;
+            
+            content.innerHTML = `
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div class="member-avatar ${isAdmin ? 'admin' : ''}" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1rem;">
+                        ${member.nom.charAt(0)}${member.prenom.charAt(0)}
+                    </div>
+                    <h3 style="margin-bottom: 0.5rem;">${member.nom} ${member.prenom}</h3>
+                    ${isAdmin ? '<span class="member-badge">Administrateur</span>' : ''}
+                </div>
+                
+                <div class="member-details" style="margin-bottom: 2rem;">
+                    <div class="member-detail" style="margin-bottom: 1rem;">
+                        <i class="fas fa-venus-mars"></i>
+                        <span><strong>Sexe:</strong> ${member.sexe}</span>
+                    </div>
+                    <div class="member-detail" style="margin-bottom: 1rem;">
+                        <i class="fas fa-calendar"></i>
+                        <span><strong>Date de naissance:</strong> ${formatDate(member.date_naissance)}</span>
+                    </div>
+                    <div class="member-detail" style="margin-bottom: 1rem;">
+                        <i class="fas fa-envelope"></i>
+                        <span><strong>Email:</strong> ${member.email || 'Non renseigné'}</span>
+                    </div>
+                    <div class="member-detail" style="margin-bottom: 1rem;">
+                        <i class="fas fa-phone"></i>
+                        <span><strong>Téléphone:</strong> ${member.telephone || 'Non renseigné'}</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button class="btn btn-warning" onclick="editMember(${member.id})">
+                        <i class="fas fa-edit"></i>
+                        Modifier
+                    </button>
+                    ${!isAdmin ? `
+                        <button class="btn btn-danger" onclick="deleteMember(${member.id})">
+                            <i class="fas fa-trash"></i>
+                            Supprimer
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeMemberModal() {
+            document.getElementById('memberModal').classList.remove('active');
+        }
+
+        function editMember(id) {
+            // Trouver le membre dans la liste actuelle
+            fetch(`${API_BASE}/membres`, {
+                headers: { 
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(members => {
+                const member = members.find(m => m.id === id);
+                if (member) {
+                    document.getElementById('editMemberId').value = member.id;
+                    document.getElementById('editMemberNom').value = member.nom;
+                    document.getElementById('editMemberPrenom').value = member.prenom;
+                    document.getElementById('editMemberSexe').value = member.sexe;
+                    document.getElementById('editMemberDateNaissance').value = member.date_naissance;
+                    document.getElementById('editMemberEmail').value = member.email || '';
+                    document.getElementById('editMemberTelephone').value = member.telephone || '';
+                    
+                    closeMemberModal();
+                    document.getElementById('editMemberModal').classList.add('active');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors du chargement des données du membre');
+            });
+        }
+
+        function closeEditMemberModal() {
+            document.getElementById('editMemberModal').classList.remove('active');
+        }
+
+        async function handleEditMember(e) {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="loading"></div> Modification...';
+            submitBtn.disabled = true;
+            
+            const id = document.getElementById('editMemberId').value;
+            const memberData = {
+                nom: document.getElementById('editMemberNom').value,
+                prenom: document.getElementById('editMemberPrenom').value,
+                sexe: document.getElementById('editMemberSexe').value,
+                date_naissance: document.getElementById('editMemberDateNaissance').value,
+                email: document.getElementById('editMemberEmail').value,
+                telephone: document.getElementById('editMemberTelephone').value,
+                service_id: currentUser.service_id
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/membres/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(memberData)
+                });
+
+                if (response.ok) {
+                    showSuccessAnimation('Membre modifié avec succès !');
+                    closeEditMemberModal();
+                    loadMembers();
+                } else {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Erreur lors de la modification');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la modification: ' + error.message);
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function deleteMember(id) {
+            memberToDelete = id;
+            document.getElementById('deleteAlert').classList.add('active');
+        }
+
+        async function confirmDelete() {
+            if (!memberToDelete) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/membres/${memberToDelete}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    showSuccessAnimation('Membre supprimé avec succès !');
+                    loadMembers();
+                } else {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Erreur lors de la suppression');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la suppression: ' + error.message);
+            } finally {
+                cancelDelete();
+            }
+        }
+
+        function cancelDelete() {
+            memberToDelete = null;
+            document.getElementById('deleteAlert').classList.remove('active');
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; padding: 3rem; grid-column: 1/-1;">
+                    <div class="loading" style="width: 40px; height: 40px;"></div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            alert(message); // Simple pour l'instant, peut être amélioré
+        }
+
+        function showSuccessAnimation(message) {
+            // Animation de confettis
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#667eea', '#764ba2', '#f093fb']
+            });
+
+            // Animation de succès personnalisée
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-animation';
+            successDiv.innerHTML = `
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 style="color: var(--text-dark); margin-bottom: 0.5rem;">${message}</h3>
+                <p style="color: #718096;">Opération réalisée avec succès</p>
+            `;
+            
+            document.body.appendChild(successDiv);
+            
+            // Supprimer après 3 secondes
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+
+        function logout() {
+            console.log('🚪 Déconnexion en cours');
+            localStorage.removeItem('mcm_token');
+            localStorage.removeItem('mcm_user');
+            console.log('🧹 Données supprimées du localStorage');
+            window.location.href = './login.html';
+        }
+
+        // Fonction de debug temporaire - à supprimer en production
+        window.debugAuth = function() {
+            console.log('=== DEBUG AUTHENTIFICATION ===');
+            console.log('Token:', localStorage.getItem('mcm_token'));
+            console.log('User:', localStorage.getItem('mcm_user'));
+            console.log('currentUser:', currentUser);
+            console.log('authToken:', authToken);
+        };
+
+        // Test de connexion API
+        window.testAPI = async function() {
+            try {
+                const response = await fetch(`${API_BASE}/membres`, {
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log('Test API - Status:', response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Test API - Données:', data);
+                } else {
+                    console.log('Test API - Erreur:', await response.text());
+                }
+            } catch (error) {
+                console.error('Test API - Exception:', error);
+            }
+        };
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // ESC to close modals
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.getElementById('deleteAlert').classList.remove('active');
             }
         });
-
-        // Messages
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            setTimeout(() => errorDiv.style.display = 'none', 5000);
-        }
-
-        function showSuccess(message) {
-            const successDiv = document.getElementById('successMessage');
-            successDiv.textContent = message;
-            successDiv.style.display = 'block';
-            setTimeout(() => successDiv.style.display = 'none', 5000);
-        }
     </script>
 </body>
 </html>
