@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const db = require('./db'); // Assure-toi que le chemin est correct
+const db = require('./server/config/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
