@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard AdminCom - MCM</title>
+    <title>MCM - Dashboard Admin Commission</title>
+    <link rel="icon" type="image/svg" href="./assets/images/logo/logomcm.svg">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -11,176 +16,636 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary-red: #E60012;
+            --dark-red: #B8000E;
+            --light-red: #FF1A2E;
+            --white: #FFFFFF;
+            --off-white: #F8F9FA;
+            --light-gray: #E5E7EB;
+            --gray: #6B7280;
+            --dark-gray: #374151;
+            --black: #1F2937;
+            --success: #16A34A;
+            --warning: #F59E0B;
+            --error: #DC2626;
+            --info: #3B82F6;
+            --navbar-height: 70px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--off-white);
+            color: var(--black);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* Navbar */
         .navbar {
-            background: #2c3e50;
-            color: white;
-            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--navbar-height);
+            background: var(--white);
+            border-bottom: 1px solid var(--light-gray);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 110;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--black);
+            transition: var(--transition);
+            border-radius: 2px;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary-red);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.2rem;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .user-menu {
-            position: relative;
-        }
-
-        .user-info {
-            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             padding: 0.5rem 1rem;
-            background: #34495e;
-            border-radius: 5px;
+            background: var(--off-white);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
         }
 
-        .user-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            color: #333;
-            min-width: 200px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: none;
-            z-index: 1000;
+        .user-menu:hover {
+            background: var(--light-gray);
         }
 
-        .user-dropdown.active {
-            display: block;
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 0.875rem;
         }
 
-        .user-dropdown a {
-            display: block;
-            padding: 0.75rem 1rem;
-            text-decoration: none;
-            color: #333;
-            border-bottom: 1px solid #eee;
-        }
-
-        .user-dropdown a:hover {
-            background: #f8f9fa;
+        .user-name {
+            font-weight: 600;
+            color: var(--black);
+            font-size: 0.875rem;
         }
 
         .logout-btn {
-            background: #e74c3c !important;
-            color: white !important;
+            padding: 0.5rem 1.25rem;
+            background: var(--primary-red);
+            color: var(--white);
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        .logout-btn:hover {
+            background: var(--dark-red);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(230, 0, 18, 0.3);
         }
 
-        .section {
-            background: white;
+        /* Mobile Menu */
+        .mobile-menu {
+            position: fixed;
+            top: var(--navbar-height);
+            right: -100%;
+            width: 280px;
+            height: calc(100vh - var(--navbar-height));
+            background: var(--white);
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            z-index: 99;
+            overflow-y: auto;
+            padding: 2rem 0;
+        }
+
+        .mobile-menu.open {
+            right: 0;
+        }
+
+        .mobile-menu-item {
+            padding: 1rem 2rem;
+            color: var(--dark-gray);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .mobile-menu-item:hover,
+        .mobile-menu-item.active {
+            background: rgba(230, 0, 18, 0.1);
+            color: var(--primary-red);
+        }
+
+        .mobile-menu-item i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: var(--navbar-height);
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-header {
             margin-bottom: 2rem;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .section h2 {
-            color: #2c3e50;
+        .page-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+
+        /* Welcome Card */
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            border-radius: 16px;
+            padding: 2rem;
+            color: var(--white);
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 24px rgba(230, 0, 18, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .welcome-card h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-card p {
+            font-size: 1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--light-gray);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-red), var(--dark-red));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
             margin-bottom: 1rem;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 0.5rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(230, 0, 18, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-red);
+            font-size: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--black);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--light-gray);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--black);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: var(--primary-red);
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            font-size: 0.875rem;
+        }
+
+        .form-control,
+        .form-select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 4px rgba(230, 0, 18, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--dark-red), var(--primary-red));
+            transition: left 0.3s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 0;
+        }
+
+        .btn-primary span,
+        .btn-primary i {
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(230, 0, 18, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         /* Services Grid */
         .services-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
         .service-card {
-            border: 1px solid #ddd;
-            padding: 1rem;
-            border-radius: 5px;
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 2px solid var(--light-gray);
+            transition: var(--transition);
             cursor: pointer;
-            transition: all 0.3s;
+            position: relative;
         }
 
         .service-card:hover {
-            background: #f8f9fa;
-            border-color: #3498db;
+            border-color: var(--primary-red);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
         }
 
-        .service-card h3 {
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
-        }
-
-        .admin-info {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-
-        .members-count {
-            font-size: 0.9rem;
-            color: #3498db;
-            font-weight: bold;
-        }
-
-        /* Form */
-        .form-group {
+        .service-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
             margin-bottom: 1rem;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-            color: #333;
+        .service-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 1.2rem;
         }
 
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .service-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--black);
+        }
+
+        .service-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .service-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+
+        .service-detail i {
+            color: var(--primary-red);
+            width: 16px;
+        }
+
+        /* Members Grid */
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .member-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--light-gray);
+            transition: var(--transition);
+        }
+
+        .member-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .member-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .member-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
             font-size: 1rem;
         }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
+        .member-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: 0.25rem;
+        }
+
+        .member-service {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .member-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .member-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .member-contact-item i {
+            color: var(--primary-red);
+            width: 14px;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 8px;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
         }
 
-        .btn-primary {
-            background: #3498db;
-            color: white;
+        .btn-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
         }
 
-        .btn-primary:hover {
-            background: #2980b9;
-        }
-
-        .btn-success {
-            background: #27ae60;
-            color: white;
+        .btn-warning:hover {
+            background: var(--warning);
+            color: var(--white);
+            transform: translateY(-2px);
         }
 
         .btn-danger {
-            background: #e74c3c;
-            color: white;
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--error);
+        }
+
+        .btn-danger:hover {
+            background: var(--error);
+            color: var(--white);
+            transform: translateY(-2px);
         }
 
         /* Modal */
@@ -189,10 +654,12 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             z-index: 1000;
+            animation: fadeIn 0.3s ease;
         }
 
         .modal.active {
@@ -201,422 +668,794 @@
             justify-content: center;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
+            background: var(--white);
+            border-radius: 20px;
+            padding: 0;
             max-width: 600px;
             width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
+            max-height: 85vh;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .modal-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--light-gray);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            background: var(--off-white);
         }
 
-        .close {
+        .modal-title {
             font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .close:hover {
-            color: #333;
-        }
-
-        .members-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .member-item {
-            padding: 0.75rem;
-            border-bottom: 1px solid #eee;
+            font-weight: 800;
+            color: var(--black);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-
-        .member-info h4 {
-            margin-bottom: 0.25rem;
-        }
-
-        .member-info p {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        .member-actions {
-            display: flex;
             gap: 0.5rem;
         }
 
-        .btn-small {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.8rem;
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--light-gray);
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark-gray);
         }
 
-        .alert {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
+        .close-btn:hover {
+            background: var(--primary-red);
+            color: var(--white);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: calc(var(--navbar-height) + 1rem);
+            right: 1rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--error); }
+        .toast.warning { border-left-color: var(--warning); }
+        .toast.info { border-left-color: var(--info); }
+
+        .toast-icon {
+            font-size: 1.25rem;
+        }
+
+        .toast.success .toast-icon { color: var(--success); }
+        .toast.error .toast-icon { color: var(--error); }
+        .toast.warning .toast-icon { color: var(--warning); }
+        .toast.info .toast-icon { color: var(--info); }
+
+        .toast-message {
+            flex: 1;
+            font-weight: 500;
+            color: var(--black);
+            font-size: 0.9375rem;
+        }
+
+        /* Loading */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Success Overlay */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(22, 163, 74, 0.1);
             display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
         }
 
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .success-overlay.show {
+            display: flex;
         }
 
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .success-icon-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 4rem;
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 60px rgba(22, 163, 74, 0.4);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .navbar-right .logout-btn {
+                display: none;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .services-grid,
+            .members-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .welcome-card {
+                padding: 1.5rem;
+            }
+
+            .welcome-card h2 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar">
-        <div class="logo">MCM - AdminCom</div>
-        <div class="user-menu">
-            <div class="user-info" onclick="toggleUserMenu()">
-                <span id="userName">Chargement...</span> ▼
+        <div class="navbar-left">
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-            <div class="user-dropdown" id="userDropdown">
-                <a href="#" onclick="openProfileModal()">Modifier le profil</a>
-                <a href="#" class="logout-btn" onclick="logout()">Déconnexion</a>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-church"></i>
+                </div>
+                <span>MCM AdminCom</span>
             </div>
+        </div>
+        <div class="navbar-right">
+            <div class="user-menu" onclick="openProfileModal()">
+                <div class="user-avatar">
+                    <span id="userInitials">AC</span>
+                </div>
+                <span class="user-name" id="userName">Chargement...</span>
+                <i class="fas fa-chevron-down" style="color: var(--gray); font-size: 0.75rem;"></i>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </button>
         </div>
     </nav>
 
-    <div class="container">
-        <!-- Alert -->
-        <div class="alert" id="alert"></div>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-item" onclick="scrollToSection('welcome')">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </div>
+        <div class="mobile-menu-item" onclick="scrollToSection('services')">
+            <i class="fas fa-cogs"></i>
+            <span>Services de ma Commission</span>
+        </div>
+        <div class="mobile-menu-item" onclick="scrollToSection('members')">
+            <i class="fas fa-users"></i>
+            <span>Tous les Membres</span>
+        </div>
+        <div class="mobile-menu-item" onclick="scrollToSection('add-member')">
+            <i class="fas fa-user-plus"></i>
+            <span>Ajouter un Membre</span>
+        </div>
+        <div class="mobile-menu-item" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+        </div>
+    </div>
 
-        <!-- Services de la commission -->
-        <div class="section">
-            <h2>Services de ma commission</h2>
-            <div class="services-grid" id="servicesGrid">
-                <!-- Services chargés dynamiquement -->
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header" id="welcome">
+            <h1 class="page-title">Dashboard Administrateur de Commission</h1>
+            <p class="page-subtitle">Gérez les services et les membres de votre commission efficacement</p>
+        </div>
+
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <h2>Bienvenue, <span id="welcomeName">Administrateur</span> !</h2>
+            <p>Vous gérez actuellement la <strong id="commissionName">Commission</strong>. Utilisez ce tableau de bord pour superviser vos services et membres.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number" id="totalServices">0</div>
+                        <div class="stat-label">Moyenne/Service</div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Ajouter un membre -->
-        <div class="section">
-            <h2>Ajouter un membre</h2>
+        <!-- Add Member Form -->
+        <div class="section-card" id="add-member">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-user-plus"></i>
+                    Ajouter un Nouveau Membre
+                </h2>
+            </div>
             <form id="addMemberForm">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-grid">
                     <div class="form-group">
-                        <label>Nom</label>
-                        <input type="text" id="nom" required>
+                        <label class="form-label">Service *</label>
+                        <select class="form-select" id="serviceSelect" required>
+                            <option value="">Choisir un service</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Prénom</label>
-                        <input type="text" id="prenom" required>
+                        <label class="form-label">Nom *</label>
+                        <input type="text" class="form-control" id="memberNom" placeholder="Nom du membre" required>
                     </div>
                     <div class="form-group">
-                        <label>Sexe</label>
-                        <select id="sexe" required>
-                            <option value="">Sélectionner</option>
+                        <label class="form-label">Prénom *</label>
+                        <input type="text" class="form-control" id="memberPrenom" placeholder="Prénom du membre" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sexe *</label>
+                        <select class="form-select" id="memberSexe" required>
+                            <option value="">Sélectionner le sexe</option>
                             <option value="Homme">Homme</option>
                             <option value="Femme">Femme</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Date de naissance</label>
-                        <input type="date" id="dateNaissance" required>
+                        <label class="form-label">Date de Naissance *</label>
+                        <input type="date" class="form-control" id="memberDateNaissance" required>
                     </div>
                     <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="email">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="memberEmail" placeholder="email@exemple.com">
                     </div>
                     <div class="form-group">
-                        <label>Téléphone</label>
-                        <input type="tel" id="telephone">
+                        <label class="form-label">Téléphone</label>
+                        <input type="tel" class="form-control" id="memberTelephone" placeholder="+229 XX XX XX XX XX">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Service</label>
-                    <select id="serviceSelect" required>
-                        <option value="">Choisir un service</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Ajouter le membre</button>
+                <button type="submit" class="btn-primary" id="addMemberBtn">
+                    <i class="fas fa-plus"></i>
+                    <span>Ajouter le Membre</span>
+                </button>
             </form>
         </div>
-    </div>
 
-    <!-- Modal service details -->
-    <div class="modal" id="serviceModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="serviceTitle">Service</h3>
-                <span class="close" onclick="closeModal()">&times;</span>
+        <!-- Services Section -->
+        <div class="section-card" id="services">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-cogs"></i>
+                    Services de ma Commission
+                </h2>
             </div>
-            <div id="serviceDetails">
-                <!-- Détails chargés dynamiquement -->
+            <div class="services-grid" id="servicesGrid">
+                <!-- Services chargés dynamiquement -->
             </div>
         </div>
-    </div>
 
-    <!-- Modal profil -->
+        <!-- All Members Section -->
+        <div class="section-card" id="members">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i>
+                    Tous les Membres de la Commission
+                </h2>
+            </div>
+            <div class="members-grid" id="allMembersGrid">
+                <!-- Tous les membres chargés dynamiquement -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Profile Modal -->
     <div class="modal" id="profileModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Modifier le profil</h3>
-                <span class="close" onclick="closeProfileModal()">&times;</span>
+                <h3 class="modal-title">
+                    <i class="fas fa-user-cog"></i>
+                    Mon Profil
+                </h3>
+                <button class="close-btn" onclick="closeProfileModal()">&times;</button>
             </div>
-            <form id="profileForm">
-                <div class="form-group">
-                    <label>Nom</label>
-                    <input type="text" id="profileNom" required>
-                </div>
-                <div class="form-group">
-                    <label>Prénom</label>
-                    <input type="text" id="profilePrenom" required>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="profileEmail" required>
-                </div>
-                <div class="form-group">
-                    <label>Nouveau mot de passe (optionnel)</label>
-                    <input type="password" id="profilePassword">
-                </div>
-                <button type="submit" class="btn btn-primary">Enregistrer</button>
-            </form>
+            <div class="modal-body">
+                <form id="profileForm">
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="profileNom" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="profilePrenom" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="profileEmail" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="form-label">Nouveau Mot de Passe (optionnel)</label>
+                        <input type="password" class="form-control" id="profilePassword" placeholder="Laisser vide pour ne pas changer">
+                    </div>
+                    <button type="submit" class="btn-primary" id="updateProfileBtn">
+                        <i class="fas fa-save"></i>
+                        <span>Mettre à jour mon profil</span>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <script>
-        let currentUser = null;
-        let services = [];
+    <!-- Service Modal -->
+    <div class="modal" id="serviceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="serviceModalTitle">
+                    <i class="fas fa-cogs"></i>
+                    Détails du Service
+                </h3>
+                <button class="close-btn" onclick="closeServiceModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="serviceModalContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
 
-        // Vérifier l'authentification
-        document.addEventListener('DOMContentLoaded', function() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login';
-                return;
-            }
-
-            // Décoder le token pour récupérer les infos utilisateur
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            if (payload.role !== 'adminCom') {
-                alert('Accès non autorisé');
-                window.location.href = '/login';
-                return;
-            }
-
-            currentUser = payload;
-            loadUserInfo();
-            loadServices();
-        });
-
-        function loadUserInfo() {
-            document.getElementById('userName').textContent = `${currentUser.nom || ''} ${currentUser.prenom || ''}`.trim() || currentUser.email;
-        }
-
-        async function loadServices() {
-            try {
-                const response = await fetch(`/api/services/commission/${currentUser.commission_id}`, {
-                    headers: {
-                        'Authorization': Bearer `${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (response.ok) {
-                    services = await response.json();
-                    displayServices();
-                    populateServiceSelect();
-                }
-            } catch (error) {
-                showAlert('Erreur lors du chargement des services', 'error');
-            }
-        }
-
-        function displayServices() {
-            const grid = document.getElementById('servicesGrid');
-            grid.innerHTML = '';
-
-            services.forEach(service => {
-                const card = document.createElement('div');
-                card.className = 'service-card';
-                card.onclick = () => openServiceModal(service);
-                card.innerHTML = `
-                    <h3>${service.nom}</h3>
-                    <div class="admin-info">Admin: <span id="admin-${service.id}">Chargement...</span></div>
-                    <div class="members-count" id="count-${service.id}">0 membre(s)</div>
-                `;
-                grid.appendChild(card);
-                
-                // Charger les détails
-                loadServiceDetails(service.id);
-            });
-        }
-
-        async function loadServiceDetails(serviceId) {
-            try {
-                const response = await fetch(`/api/membres/service/${serviceId}`, {
-                    headers: {
-                        'Authorization': Bearer `${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (response.ok) {
-                    const members = await response.json();
-                    `document.getElementById(count-${serviceId}).textContent = ${members.length} membre(s)`;
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-            }
-        }
-
-        function populateServiceSelect() {
-            const select = document.getElementById('serviceSelect');
-            select.innerHTML = '<option value="">Choisir un service</option>';
-            
-            services.forEach(service => {
-                const option = document.createElement('option');
-                option.value = service.id;
-                option.textContent = service.nom;
-                select.appendChild(option);
-            });
-        }
-
-        async function openServiceModal(service) {
-            const modal = document.getElementById('serviceModal');
-            const title = document.getElementById('serviceTitle');
-            const details = document.getElementById('serviceDetails');
-
-            title.textContent = service.nom;
-            details.innerHTML = '<p>Chargement...</p>';
-            modal.classList.add('active');
-
-            try {
-                const response = await fetch(`/api/membres/service/${service.id}`, {
-                    headers: {
-                        'Authorization': Bearer `${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (response.ok) {
-                    const members = await response.json();
-                    displayServiceMembers(members, details);
-                }
-            } catch (error) {
-                details.innerHTML = '<p>Erreur lors du chargement</p>';
-            }
-        }
-
-        function displayServiceMembers(members, container) {
-            if (members.length === 0) {
-                container.innerHTML = '<p>Aucun membre dans ce service</p>';
-                return;
-            }
-
-            let html = '<div class="members-list">';
-            members.forEach(member => {
-                html += `
-                    <div class="member-item">
-                        <div class="member-info">
-                            <h4>${member.nom} ${member.prenom}</h4>
-                            <p>${member.sexe} • ${member.email || 'Pas d\'email'} • ${member.telephone || 'Pas de téléphone'}</p>
+    <!-- Edit Member Modal -->
+    <div class="modal" id="editMemberModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-edit"></i>
+                    Modifier le Membre
+                </h3>
+                <button class="close-btn" onclick="closeEditMemberModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editMemberForm">
+                    <input type="hidden" id="editMemberId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="editMemberNom" required>
                         </div>
-                        <div class="member-actions">
-                            <button class="btn btn-primary btn-small" onclick="editMember(${member.id})">Modifier</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteMember(${member.id})">Supprimer</button>
+                        <div class="form-group">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="editMemberPrenom" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sexe</label>
+                            <select class="form-select" id="editMemberSexe" required>
+                                <option value="Homme">Homme</option>
+                                <option value="Femme">Femme</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de Naissance</label>
+                            <input type="date" class="form-control" id="editMemberDateNaissance" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editMemberEmail">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="editMemberTelephone">
                         </div>
                     </div>
-                `;
-            });
-            html += '</div>';
-            container.innerHTML = html;
-        }
+                    <button type="submit" class="btn-primary" style="margin-top: 1.5rem;">
+                        <i class="fas fa-save"></i>
+                        <span>Enregistrer les modifications</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-        // Form handlers
-        document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-            const memberData = {
-                nom: document.getElementById('nom').value,
-                prenom: document.getElementById('prenom').value,
-                sexe: document.getElementById('sexe').value,
-                date_naissance: document.getElementById('dateNaissance').value,
-                email: document.getElementById('email').value,
-                telephone: document.getElementById('telephone').value,
-                service_id: parseInt(document.getElementById('serviceSelect').value)
-            };
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-icon-large">
+            <i class="fas fa-check"></i>
+        </div>
+    </div>
 
-            try {
-                const response = await fetch(`'/api/membres'`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': Bearer `${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(memberData)
-                });
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+    <script>
+        // Configuration
+        const API_BASE = '/api';
+        let currentUser = null;
+        let authToken = localStorage.getItem('mcm_token');
+        let services = [];
+        let allMembers = [];
 
-                if (response.ok) {
-                    showAlert('Membre ajouté avec succès', 'success');
-                    this.reset();
-                    loadServices(); // Recharger pour mettre à jour les compteurs
-                } else {
-                    const error = await response.json();
-                    showAlert(error.error, 'error');
-                }
-            } catch (error) {
-                showAlert('Erreur lors de l\'ajout', 'error');
-            }
+        const getAuthHeaders = () => ({
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
         });
 
-        // Utility functions
-        function toggleUserMenu() {
-            document.getElementById('userDropdown').classList.toggle('active');
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🔍 Token récupéré:', authToken);
+            
+            if (!authToken || authToken === 'null' || authToken === 'undefined') {
+                console.log('Pas de token valide, redirection vers login');
+                window.location.href = './login.html';
+                return;
+            }
+            
+            console.log('✅ Token présent, chargement du dashboard AdminCom');
+            await loadUserProfile();
+            await loadServices();
+            initializeEventListeners();
+        });
+
+        // Event Listeners
+        function initializeEventListeners() {
+            // Hamburger menu
+            document.getElementById('hamburger').addEventListener('click', toggleMobileMenu);
+
+            // Forms
+            document.getElementById('addMemberForm').addEventListener('submit', handleAddMember);
+            document.getElementById('profileForm').addEventListener('submit', handleUpdateProfile);
+            document.getElementById('editMemberForm').addEventListener('submit', handleEditMember);
+
+            // Close modals on outside click
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('active');
+                }
+            });
+
+            // Close mobile menu on outside click
+            document.addEventListener('click', (e) => {
+                const mobileMenu = document.getElementById('mobileMenu');
+                const hamburger = document.getElementById('hamburger');
+                if (!mobileMenu.contains(e.target) && !hamburger.contains(e.target)) {
+                    mobileMenu.classList.remove('open');
+                    hamburger.classList.remove('active');
+                }
+            });
         }
 
-        function closeModal() {
-            document.getElementById('serviceModal').classList.remove('active');
+        // Mobile Menu
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const hamburger = document.getElementById('hamburger');
+            mobileMenu.classList.toggle('open');
+            hamburger.classList.toggle('active');
         }
 
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                toggleMobileMenu();
+            }
+        }
+
+        // Load User Profile
+        async function loadUserProfile() {
+            try {
+                console.log('📋 Chargement du profil utilisateur AdminCom');
+                const userDataString = localStorage.getItem('mcm_user');
+                
+                if (!userDataString || userDataString === 'null' || userDataString === 'undefined') {
+                    console.log('❌ Pas de données utilisateur');
+                    document.getElementById('userName').textContent = 'AdminCom';
+                    document.getElementById('userInitials').textContent = 'AC';
+                    document.getElementById('welcomeName').textContent = 'Administrateur';
+                    return;
+                }
+                
+                const userData = JSON.parse(userDataString);
+                console.log('✅ Données utilisateur parsées:', userData);
+                currentUser = userData;
+                
+                const fullName = `${userData.prenom} ${userData.nom}`;
+                document.getElementById('userName').textContent = fullName;
+                document.getElementById('welcomeName').textContent = fullName;
+                
+                const initials = `${userData.prenom.charAt(0)}${userData.nom.charAt(0)}`;
+                document.getElementById('userInitials').textContent = initials.toUpperCase();
+                
+                // Fill profile form
+                document.getElementById('profileNom').value = userData.nom || '';
+                document.getElementById('profilePrenom').value = userData.prenom || '';
+                document.getElementById('profileEmail').value = userData.email || '';
+                
+                // Load commission name if available
+                if (userData.commission_id) {
+                    loadCommissionName(userData.commission_id);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement du profil:', error);
+                showToast('Erreur lors du chargement du profil', 'error');
+            }
+        }
+
+        async function loadCommissionName(commissionId) {
+            try {
+                const response = await fetch(`${API_BASE}/commissions/${commissionId}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.ok) {
+                    const commission = await response.json();
+                    document.getElementById('commissionName').textContent = commission.nom;
+                }
+            } catch (error) {
+                console.error('Erreur chargement nom commission:', error);
+            }
+        }
+
+        // Profile Modal
         function openProfileModal() {
-            document.getElementById('userDropdown').classList.remove('active');
-            const modal = document.getElementById('profileModal');
-            modal.classList.add('active');
+            document.getElementById('profileModal').classList.add('active');
         }
 
         function closeProfileModal() {
             document.getElementById('profileModal').classList.remove('active');
         }
 
-        function showAlert(message, type) {
-            const alert = document.getElementById('alert');
-            alert.className = alert `alert-${type}`;
-            alert.textContent = message;
-            alert.style.display = 'block';
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('updateProfileBtn');
+            setButtonLoading(btn, true);
+            
+            const profileData = {
+                nom: document.getElementById('profileNom').value,
+                prenom: document.getElementById('profilePrenom').value,
+                email: document.getElementById('profileEmail').value
+            };
+
+            const password = document.getElementById('profilePassword').value;
+            if (password) {
+                profileData.mot_de_passe = password;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/profile`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(profileData)
+                });
+
+                if (response.ok) {
+                    currentUser.nom = profileData.nom;
+                    currentUser.prenom = profileData.prenom;
+                    currentUser.email = profileData.email;
+                    localStorage.setItem('mcm_user', JSON.stringify(currentUser));
+                    
+                    showSuccessAnimation();
+                    showToast('Profil mis à jour avec succès!', 'success');
+                    loadUserProfile();
+                    closeProfileModal();
+                } else {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Erreur lors de la modification');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        // Delete Member
+        async function deleteMember(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/membres/${id}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+
+                if (response.ok) {
+                    showSuccessAnimation();
+                    showToast('Membre supprimé avec succès!', 'warning');
+                    await loadServices();
+                } else {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Erreur lors de la suppression');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            if (!dateString) return 'Non spécifiée';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function setButtonLoading(button, isLoading) {
+            if (isLoading) {
+                button.disabled = true;
+                const icon = button.querySelector('i');
+                if (icon) icon.className = 'fas fa-spinner fa-spin';
+            } else {
+                button.disabled = false;
+                const icon = button.querySelector('i');
+                if (icon) {
+                    if (button.id === 'addMemberBtn') icon.className = 'fas fa-plus';
+                    else if (button.id === 'updateProfileBtn') icon.className = 'fas fa-save';
+                }
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${icons[type]}"></i>
+                </div>
+                <div class="toast-message">${message}</div>
+            `;
+
+            document.getElementById('toastContainer').appendChild(toast);
+
             setTimeout(() => {
-                alert.style.display = 'none';
-            }, 5000);
+                toast.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function showSuccessAnimation() {
+            const overlay = document.getElementById('successOverlay');
+            overlay.classList.add('show');
+            
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            setTimeout(() => {
+                overlay.classList.remove('show');
+            }, 1500);
         }
 
         function logout() {
-            localStorage.removeItem('token');
-            window.location.href = './login.html';
+            if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
+            
+            console.log('🚪 Déconnexion en cours');
+            localStorage.removeItem('mcm_token');
+            localStorage.removeItem('mcm_user');
+            showToast('Déconnexion réussie', 'info');
+            setTimeout(() => {
+                window.location.href = './login.html';
+            }, 1000);
         }
-
-        // Fermer les dropdowns quand on clique ailleurs
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.user-menu')) {
-                document.getElementById('userDropdown').classList.remove('active');
-            }
-        });
     </script>
 </body>
 </html>

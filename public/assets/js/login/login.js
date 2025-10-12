@@ -1,379 +1,481 @@
-// Configuration API
 const API_BASE_URL = 'http://localhost:3000/api';
-
-// Variables globales
 let commissions = [];
 let services = [];
 
-// Initialisation
-document.addEventListener('DOMContentLoaded', () => {
-    loadRememberedCredentials();
-    
-    // Event listeners pour les formulaires
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+// Carousel functionality
+const carouselTrack = document.getElementById('carouselTrack');
+const carouselDots = document.getElementById('carouselDots');
+const carouselText = document.getElementById('carouselText');
+const slides = document.querySelectorAll('.carousel-slide');
+let currentSlide = 0;
+
+const carouselData = [
+    {
+        icon: '🙏',
+        title: 'Bienvenue dans la famille MCM',
+        description: 'Rejoignez notre communauté de foi et découvrez comment vous pouvez contribuer à notre mission d\'évangélisation et de service.'
+    },
+    {
+        icon: '✝️',
+        title: 'Une foi vivante',
+        description: 'Participez à nos célébrations, nos moments de louange et nos activités communautaires pour grandir dans la foi.'
+    },
+    {
+        icon: '❤️',
+        title: 'Servir avec amour',
+        description: 'Engagez-vous dans nos différentes commissions et services pour faire rayonner l\'amour du Christ dans notre communauté.'
+    }
+        ];
+
+// Create carousel dots
+slides.forEach((_, index) => {
+    const dot = document.createElement('div');
+    dot.classList.add('carousel-dot');
+    if (index === 0) dot.classList.add('active');
+    dot.addEventListener('click', () => goToSlide(index));
+    carouselDots.appendChild(dot);
 });
 
-// Navigation entre les formulaires
-function showLogin(event) {
-    event.preventDefault();
-    document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.form-section').forEach(section => (section.style.display = 'none'));
+const dots = document.querySelectorAll('.carousel-dot');
 
-    event.target.classList.add('active');
-    document.getElementById('loginForm').style.display = 'block';
-    clearMessages();
+function updateCarousel() {
+    carouselTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentSlide);
+    });
+    updateCarouselText();
 }
 
-function showRegister(event) {
-    event.preventDefault();
-    document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.form-section').forEach(section => (section.style.display = 'none'));
+function updateCarouselText() {
+    const data = carouselData[currentSlide];
+    carouselText.style.opacity = '0';
+    setTimeout(() => {
+        carouselText.innerHTML = `
+        <div class="carousel-icon">${data.icon}</div>
+        <h2 class="carousel-title">${data.title}</h2>
+        <p class="carousel-description">${data.description}</p>
+        <div class="carousel-dots" id="carouselDots"></div>
+    `;
+        // Re-append dots
+        const newDotsContainer = carouselText.querySelector('#carouselDots');
+        dots.forEach(dot => newDotsContainer.appendChild(dot));
+        carouselText.style.opacity = '1';
+    }, 300);
+        }
 
-    event.target.classList.add('active');
-    document.getElementById('registerForm').style.display = 'block';
-    clearMessages();
-
-    // Charger les commissions fixes pour l'inscription
-    loadCommissionsForRegistration();
+function goToSlide(index) {
+    currentSlide = index;
+    updateCarousel();
 }
 
-// Toggle visibilité mot de passe
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    const button = field.nextElementSibling;
+function nextSlide() {
+    currentSlide = (currentSlide + 1) % slides.length;
+    updateCarousel();
+}
 
-    if (field.type === 'password') {
-        field.type = 'text';
-        button.textContent = '🙈';
+// Auto-play carousel
+setInterval(nextSlide, 5000);
+
+// Form toggle
+document.getElementById('loginToggle').addEventListener('click', () => showSection('login'));
+document.getElementById('registerToggle').addEventListener('click', () => showSection('register'));
+
+function showSection(section) {
+    clearMessages();
+    hideForgotPasswordLink();
+
+    document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
+
+    if (section === 'login') {
+        document.getElementById('loginToggle').classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
     } else {
-        field.type = 'password';
-        button.textContent = '👁';
+        document.getElementById('registerToggle').classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+        loadCommissionsForRegistration();
     }
 }
 
-// Gestion changement rôle inscription
-function handleRoleChange() {
-    const role = document.getElementById('registerRole').value;
+// Password toggle
+document.querySelectorAll('.password-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const target = btn.dataset.target;
+        const input = document.getElementById(target);
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁';
+        }
+    });
+});
+
+// Messages
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    document.getElementById('successMessage').style.display = 'none';
+    document.getElementById('infoMessage').style.display = 'none';
+    setTimeout(() => errorDiv.style.display = 'none', 8000);
+}
+
+function showSuccess(message) {
+    const successDiv = document.getElementById('successMessage');
+    successDiv.textContent = message;
+    successDiv.style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+    document.getElementById('infoMessage').style.display = 'none';
+    setTimeout(() => successDiv.style.display = 'none', 5000);
+}
+
+function showInfo(message) {
+    const infoDiv = document.getElementById('infoMessage');
+    infoDiv.textContent = message;
+    infoDiv.style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+    document.getElementById('successMessage').style.display = 'none';
+    setTimeout(() => infoDiv.style.display = 'none', 5000);
+}
+
+function clearMessages() {
+    document.querySelectorAll('.message').forEach(msg => msg.style.display = 'none');
+    document.querySelectorAll('.form-control.error, .form-select.error').forEach(field => {
+    field.classList.remove('error');
+    });
+}
+
+function showLoading(show) {
+    const loadingDiv = document.getElementById('loadingSpinner');
+    const buttons = document.querySelectorAll('.auth-btn');
+    if (show) {
+        loadingDiv.style.display = 'block';
+        buttons.forEach(btn => btn.disabled = true);
+    } else {
+        loadingDiv.style.display = 'none';
+        buttons.forEach(btn => btn.disabled = false);
+    }
+}
+
+function showForgotPasswordLink() {
+    document.getElementById('forgotPasswordLink').classList.add('show');
+}
+
+function hideForgotPasswordLink() {
+    document.getElementById('forgotPasswordLink').classList.remove('show');
+}
+// Role change handler
+document.getElementById('registerRole').addEventListener('change', function() {
+    const role = this.value;
     const commissionGroup = document.getElementById('commissionGroup');
     const serviceGroup = document.getElementById('serviceGroup');
 
     if (role === 'adminCom') {
         commissionGroup.style.display = 'block';
         serviceGroup.style.display = 'none';
-        document.getElementById('registerService').value = '';
     } else if (role === 'admin') {
         commissionGroup.style.display = 'block';
         serviceGroup.style.display = 'block';
     } else {
         commissionGroup.style.display = 'none';
         serviceGroup.style.display = 'none';
-        document.getElementById('registerCommission').value = '';
-        document.getElementById('registerService').value = '';
     }
-}
+});
 
-// Charger commissions pour inscription (sans token)
-function loadCommissionsForRegistration() {
-    const select = document.getElementById('registerCommission');
-    select.innerHTML = '<option value="">Sélectionnez une commission</option>';
+// Commission change
+    document.getElementById('registerCommission').addEventListener('change', loadServices);
 
-    // Options fixes prédéfinies
-    const fixedCommissions = [
-        { id: 1, nom: 'Evangélisation' },
-        { id: 2, nom: 'Multimédia et Audiovisuel' },
-        { id: 3, nom: 'Presse et Documentation' },
-        { id: 4, nom: 'Chœur' },
-        { id: 5, nom: 'Accueil' },
-        { id: 6, nom: 'Comptabilité' },
-        { id: 7, nom: 'Organisation et Logistique' },
-        { id: 8, nom: 'Liturgie MCM bénin service délégué' }
-    ];
+// Load commissions
+    function loadCommissionsForRegistration() {
+        const select = document.getElementById('registerCommission');
+        select.innerHTML = '<option value="">Sélectionnez une commission</option>';
 
-    fixedCommissions.forEach(commission => {
-        const option = document.createElement('option');
-        option.value = commission.id;
-        option.textContent = commission.nom;
-        select.appendChild(option);
-    });
+        const fixedCommissions = [
+            { id: 1, nom: 'Evangélisation' },
+            { id: 2, nom: 'Multimédia et Audiovisuel' },
+            { id: 3, nom: 'Presse et Documentation' },
+            { id: 4, nom: 'Chœur' },
+            { id: 5, nom: 'Accueil' },
+            { id: 6, nom: 'Comptabilité' },
+            { id: 7, nom: 'Organisation et Logistique' },
+            { id: 8, nom: 'Liturgie MCM bénin service délégué' }
+        ];
 
-    commissions = fixedCommissions;
-}
-
-// Charger services par commission (pour inscription)
-function loadServices() {
-    const commissionId = document.getElementById('registerCommission').value;
-    const serviceSelect = document.getElementById('registerService');
-    serviceSelect.innerHTML = '<option value="">Sélectionnez un service</option>';
-
-    if (!commissionId) return;
-
-    // Services prédéfinis par commission
-    const servicesByCommission = {
-        1: [ // Evangélisation
-            { id: 1, nom: 'Prédication' },
-            { id: 2, nom: 'Formation biblique' },
-            { id: 3, nom: 'Missions' }
-        ],
-        2: [ // Multimédia et Audiovisuel
-            { id: 4, nom: 'Son et éclairage' },
-            { id: 5, nom: 'Vidéo et streaming' },
-            { id: 6, nom: 'Photographie' }
-        ],
-        3: [ // Presse et Documentation
-            { id: 7, nom: 'Rédaction' },
-            { id: 8, nom: 'Archives' },
-            { id: 9, nom: 'Communication' }
-        ],
-        4: [ // Chœur
-            { id: 10, nom: 'Chant principal' },
-            { id: 11, nom: 'Instruments' },
-            { id: 12, nom: 'Direction musicale' }
-        ],
-        5: [ // Accueil
-            { id: 13, nom: 'Réception' },
-            { id: 14, nom: 'Orientation' },
-            { id: 15, nom: 'Information' }
-        ],
-        6: [ // Comptabilité
-            { id: 16, nom: 'Trésorerie' },
-            { id: 17, nom: 'Budget' },
-            { id: 18, nom: 'Contrôle' }
-        ],
-        7: [ // Organisation et Logistique
-            { id: 19, nom: 'Événements' },
-            { id: 20, nom: 'Matériel' },
-            { id: 21, nom: 'Transport' }
-        ],
-        8: [ // Liturgie MCM bénin service délégué
-            { id: 22, nom: 'Cérémonies' },
-            { id: 23, nom: 'Protocole' },
-            { id: 24, nom: 'Sacristie' }
-        ]
-    };
-
-    const servicesForCommission = servicesByCommission[commissionId] || [];
-    
-    servicesForCommission.forEach(service => {
-        const option = document.createElement('option');
-        option.value = service.id;
-        option.textContent = service.nom;
-        serviceSelect.appendChild(option);
-    });
-
-    services = servicesForCommission;
-}
-
-// Gestion connexion
-async function handleLogin(e) {
-    e.preventDefault();
-    clearMessages();
-
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-
-    if (!email || !password) {
-        showError('Veuillez remplir tous les champs');
-        return;
-    }
-
-    showLoading(true);
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, mot_de_passe: password })
+        fixedCommissions.forEach(commission => {
+            const option = document.createElement('option');
+            option.value = commission.id;
+            option.textContent = commission.nom;
+            select.appendChild(option);
         });
 
-        const data = await response.json();
+        commissions = fixedCommissions;
+    }
 
-        if (response.ok) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
+        // Load services
+        function loadServices() {
+            const commissionId = parseInt(document.getElementById('registerCommission').value);
+            const serviceSelect = document.getElementById('registerService');
+            serviceSelect.innerHTML = '<option value="">Sélectionnez un service</option>';
 
-            if (document.getElementById('rememberMe').checked) {
-                localStorage.setItem('rememberedEmail', email);
-                localStorage.setItem('rememberedPassword', password);
-            } else {
-                localStorage.removeItem('rememberedEmail');
-                localStorage.removeItem('rememberedPassword');
+            if (!commissionId) return;
+
+            const servicesByCommission = {
+                1: [
+                    { id: 1, nom: 'Intercession' },
+                    { id: 2, nom: 'Social et humanitaire' }
+                ],
+                2: [
+                    { id: 3, nom: 'Son et éclairage' },
+                    { id: 4, nom: 'Vidéo et streaming' },
+                    { id: 5, nom: 'Photographie' }
+                ],
+                3: [
+                    { id: 6, nom: 'Rédaction' },
+                    { id: 7, nom: 'Archives' },
+                    { id: 8, nom: 'Communication' }
+                ],
+                4: [
+                    { id: 9, nom: 'Louange et adoration' },
+                    { id: 10, nom: 'Logistique musicale' },
+                    { id: 11, nom: 'Liturgie' }
+                ],
+                5: [
+                    { id: 12, nom: 'Protocole /Accueil' },
+                    { id: 13, nom: 'Ordre et sécurité' },
+                    { id: 14, nom: 'Enregistrements' },
+                    { id: 15, nom: 'Intégrations et sacrements' }
+                ],
+                6: [
+                    { id: 16, nom: 'Suivi budgétaire' },
+                    { id: 17, nom: 'Collecte et offrande' }
+                ],
+                7: [
+                    { id: 18, nom: 'Installation et matériel' },
+                    { id: 19, nom: 'Transport et mobilité' },
+                    { id: 20, nom: 'Approvisionnement' },
+                    { id: 21, nom: 'Préparation des événements' }
+                ],
+                8: [
+                    { id: 22, nom: 'Cérémonies' },
+                    { id: 23, nom: 'Protocole' },
+                    { id: 24, nom: 'Sacristie' }
+                ]
+            };
+
+            const servicesForCommission = servicesByCommission[commissionId] || [];
+            servicesForCommission.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.id;
+                option.textContent = service.nom;
+                serviceSelect.appendChild(option);
+            });
+        }
+
+        // Handle Login
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearMessages();
+            hideForgotPasswordLink();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showError('Veuillez remplir tous les champs');
+                return;
             }
 
-            showSuccess('Connexion réussie ! Redirection...');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Veuillez entrer une adresse email valide');
+                return;
+            }
 
-            setTimeout(() => {
-                switch (data.user.role) {
-                    case 'superadmin':
-                        window.location.href = 'superadmin.html';
-                        break;
-                    case 'adminCom':
-                        window.location.href = 'adminCom.html';
-                        break;
-                    case 'admin':
-                        window.location.href = 'admin.html';
-                        break;
-                    default:
-                        window.location.href = 'dashboard.html';
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, mot_de_passe: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (data.token) {
+                        localStorage.setItem('mcm_token', data.token);
+                    }
+                    if (data.user) {
+                        localStorage.setItem('mcm_user', JSON.stringify(data.user));
+                    }
+
+                    const remember = document.getElementById('rememberMe').checked;
+                    if (remember) {
+                        localStorage.setItem('rememberedEmail', email);
+                        localStorage.setItem('rememberedPassword', password);
+                    } else {
+                        localStorage.removeItem('rememberedEmail');
+                        localStorage.removeItem('rememberedPassword');
+                    }
+
+                    showSuccess('Connexion réussie ! Redirection...');
+
+                    setTimeout(() => {
+                        const role = data.user?.role;
+                        switch (role) {
+                            case 'superadmin':
+                                window.location.href = 'superadmin.html';
+                                break;
+                            case 'adminCom':
+                                window.location.href = 'adminCom.html';
+                                break;
+                            case 'admin':
+                                window.location.href = 'admin.html';
+                                break;
+                            default:
+                                window.location.href = 'dashboard.html';
+                        }
+                    }, 900);
+                } else {
+                    showError(data.error || data.message || 'Email ou mot de passe incorrect');
+                    document.getElementById('loginEmail').classList.add('error');
+                    document.getElementById('loginPassword').classList.add('error');
+                    setTimeout(() => showForgotPasswordLink(), 400);
                 }
-            }, 1500);
-        } else {
-            showError(data.error || 'Erreur de connexion');
-            if (data.error && (data.error.includes('Email') || data.error.includes('mot de passe'))) {
-                document.getElementById('loginEmail').classList.add('error');
-                document.getElementById('loginPassword').classList.add('error');
+            } catch (err) {
+                console.error('Erreur connexion:', err);
+                showError(`Erreur de connexion au serveur: ${err.message}`);
+            } finally {
+                showLoading(false);
             }
-        }
-    } catch (err) {
-        showError('Erreur de connexion au serveur');
-        console.error(err);
-    } finally {
-        showLoading(false);
-    }
-}
-
-// Gestion inscription
-async function handleRegister(e) {
-    e.preventDefault();
-    clearMessages();
-
-    const formData = {
-        nom: document.getElementById('registerNom').value.trim(),
-        prenom: document.getElementById('registerPrenom').value.trim(),
-        email: document.getElementById('registerEmail').value.trim(),
-        mot_de_passe: document.getElementById('registerPassword').value.trim(),
-        role: document.getElementById('registerRole').value,
-        commission_id: document.getElementById('registerCommission').value || null,
-        service_id: document.getElementById('registerService').value || null
-    };
-
-    // Validation des champs
-    if (!formData.nom || !formData.prenom || !formData.email || !formData.mot_de_passe || !formData.role) {
-        showError('Veuillez remplir tous les champs obligatoires');
-        return;
-    }
-
-    // Validation email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-        showError('Veuillez entrer une adresse email valide');
-        return;
-    }
-
-    // Validation mot de passe
-    if (formData.mot_de_passe.length < 6) {
-        showError('Le mot de passe doit contenir au moins 6 caractères');
-        return;
-    }
-
-    if (formData.role === 'adminCom' && !formData.commission_id) {
-        showError('Veuillez sélectionner une commission pour un admin de commission');
-        return;
-    }
-
-    if (formData.role === 'admin' && (!formData.commission_id || !formData.service_id)) {
-        showError('Veuillez sélectionner une commission et un service pour un admin de service');
-        return;
-    }
-
-    showLoading(true);
-
-    try {
-        // Inscription sans token - l'inscription est publique
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
         });
 
-        const data = await response.json();
+        // Handle Register
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearMessages();
 
-        if (response.ok) {
-            showSuccess('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+            const nom = document.getElementById('registerNom').value.trim();
+            const prenom = document.getElementById('registerPrenom').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const telephone = document.getElementById('registerTelephone').value.trim();
+            const mot_de_passe = document.getElementById('registerPassword').value;
+            const mot_de_passe_confirm = document.getElementById('registerConfirmPassword').value;
+            const role = document.getElementById('registerRole').value;
+            const commission_id = document.getElementById('registerCommission').value || null;
+            const service_id = document.getElementById('registerService').value || null;
 
-            document.getElementById('registerForm').reset();
-            handleRoleChange(); // Masquer les champs conditionnels
+            if (!nom || !prenom || !email || !telephone || !mot_de_passe || !mot_de_passe_confirm || !role) {
+                showError('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
 
-            setTimeout(() => {
-                showLogin(new Event('click'));
-            }, 2000);
-        } else {
-            showError(data.error || 'Erreur lors de la création du compte');
-            
-            // Gestion des erreurs spécifiques
-            if (data.error && data.error.includes('email')) {
-                document.getElementById('registerEmail').classList.add('error');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Veuillez entrer une adresse email valide');
+                return;
+            }
+
+            if (mot_de_passe.length < 8) {
+                showError('Le mot de passe doit contenir au moins 8 caractères');
+                return;
+            }
+
+            if (mot_de_passe !== mot_de_passe_confirm) {
+                showError('Les mots de passe ne correspondent pas');
+                return;
+            }
+
+            if (role === 'adminCom' && !commission_id) {
+                showError('Veuillez sélectionner une commission');
+                return;
+            }
+
+            if (role === 'admin' && (!commission_id || !service_id)) {
+                showError('Veuillez sélectionner une commission et un service');
+                return;
+            }
+
+            const formData = {
+                nom, prenom, email, telephone, mot_de_passe, role,
+                commission_id: commission_id || null,
+                service_id: service_id || null
+            };
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && (data.success || data.message)) {
+                    showSuccess('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+                    document.getElementById('registerForm').reset();
+                    document.getElementById('commissionGroup').style.display = 'none';
+                    document.getElementById('serviceGroup').style.display = 'none';
+
+                    setTimeout(() => {
+                        showSection('login');
+                        document.getElementById('loginEmail').value = email;
+                    }, 1500);
+                } else {
+                    showError(data.error || data.message || 'Erreur lors de la création du compte');
+                }
+            } catch (err) {
+                console.error('Erreur inscription:', err);
+                showError(`Erreur de connexion au serveur: ${err.message}`);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Load remembered credentials
+        function loadRememberedCredentials() {
+            const rememberedEmail = localStorage.getItem('rememberedEmail');
+            const rememberedPassword = localStorage.getItem('rememberedPassword');
+
+            if (rememberedEmail) {
+                document.getElementById('loginEmail').value = rememberedEmail;
+            }
+            if (rememberedPassword) {
+                document.getElementById('loginPassword').value = rememberedPassword;
+                document.getElementById('rememberMe').checked = true;
             }
         }
-    } catch (err) {
-        showError('Erreur de connexion au serveur. Veuillez réessayer.');
-        console.error('Erreur inscription:', err);
-    } finally {
-        showLoading(false);
-    }
-}
 
-// Charger identifiants mémorisés
-function loadRememberedCredentials() {
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
-    const rememberedPassword = localStorage.getItem('rememberedPassword');
+        // Check URL params
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message');
+            
+            if (message === 'password_reset_success') {
+                showSuccess('Votre mot de passe a été réinitialisé avec succès ! Vous pouvez maintenant vous connecter.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (message === 'password_changed_success') {
+                showSuccess('Votre mot de passe a été changé avec succès ! Vous pouvez maintenant vous connecter.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
 
-    if (rememberedEmail && rememberedPassword) {
-        document.getElementById('loginEmail').value = rememberedEmail;
-        document.getElementById('loginPassword').value = rememberedPassword;
-        document.getElementById('rememberMe').checked = true;
-    }
-}
+            const section = urlParams.get('section');
+            if (section === 'register') showSection('register');
+        }
 
-// Afficher message erreur
-function showError(message) {
-    const errorDiv = document.getElementById('errorMessage');
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-    document.getElementById('successMessage').style.display = 'none';
-
-    setTimeout(() => {
-        errorDiv.style.display = 'none';
-    }, 7000);
-}
-
-// Afficher message succès
-function showSuccess(message) {
-    const successDiv = document.getElementById('successMessage');
-    successDiv.textContent = message;
-    successDiv.style.display = 'block';
-    document.getElementById('errorMessage').style.display = 'none';
-
-    setTimeout(() => {
-        successDiv.style.display = 'none';
-    }, 5000);
-}
-
-// Nettoyer messages et erreurs visuelles
-function clearMessages() {
-    document.getElementById('errorMessage').style.display = 'none';
-    document.getElementById('successMessage').style.display = 'none';
-
-    document.querySelectorAll('.form-control.error, .form-select.error').forEach(field => {
-        field.classList.remove('error');
-    });
-}
-
-// Afficher ou cacher spinner et désactiver boutons
-function showLoading(show) {
-    const loadingDiv = document.getElementById('loadingSpinner');
-    const forms = document.querySelectorAll('.form-section');
-    const buttons = document.querySelectorAll('.auth-btn');
-
-    if (show) {
-        loadingDiv.style.display = 'block';
-        forms.forEach(form => (form.style.opacity = '0.5'));
-        buttons.forEach(btn => (btn.disabled = true));
-    } else {
-        loadingDiv.style.display = 'none';
-        forms.forEach(form => (form.style.opacity = '1'));
-        buttons.forEach(btn => (btn.disabled = false));
-    }
-}
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRememberedCredentials();
+            checkUrlParams();
+        });

@@ -3,46 +3,61 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg" href="./assets/images/logo/mcm_logo.svg" />
-    <link rel="stylesheet" href="./assets/css/login/login.css" />
-    <title>MCM - Login page</title>
+    <link rel="icon" type="image/svg" href="./assets/images/logo/logomcm.svg" />
+    <link rel="stylesheet" href="./assets/css/login/login.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>MCM - Connexion</title>
 </head>
 <body>
-    <a href="index.html" class="back-to-home">← Accueil</a>
+    <a href="index.html" class="back-to-home">
+        ← Retour à l'accueil
+    </a>
 
     <div class="auth-container">
-        <div class="auth-header">
-            <div class="logo">MCM</div>
-            <h1>Système de Gestion MCM</h1>
-            <p>Connectez-vous pour accéder à votre espace</p>
-        </div>
-
-        <div class="auth-form">
-            <div class="form-toggle">
-                <button class="toggle-btn active" onclick="showLogin(event)">Connexion</button>
-                <button class="toggle-btn" onclick="showRegister(event)">Créer un compte</button>
+        <!-- Left Side - Form -->
+        <div class="auth-form-side">
+            <div class="auth-header">
+                <h1 class="auth-title">Système de Gestion MCM</h1>
+                <p class="auth-subtitle">Connectez-vous pour accéder à votre espace</p>
             </div>
 
-            <div class="error-message" id="errorMessage"></div>
-            <div class="success-message" id="successMessage"></div>
+            <!-- Form Toggle -->
+            <div class="form-toggle">
+                <button class="toggle-btn active" id="loginToggle">
+                    Connexion
+                </button>
+                <button class="toggle-btn" id="registerToggle">
+                    Créer un compte
+                </button>
+            </div>
 
-            <div class="loading" id="loadingSpinner" style="display:none;">
+            <!-- Messages -->
+            <div class="error-message message" id="errorMessage"></div>
+            <div class="success-message message" id="successMessage"></div>
+            <div class="info-message message" id="infoMessage"></div>
+
+            <!-- Loading Spinner -->
+            <div class="loading" id="loadingSpinner">
                 <div class="spinner"></div>
                 <p>Chargement...</p>
             </div>
 
-            <!-- Formulaire de connexion -->
+            <!-- Login Form -->
             <form class="form-section active" id="loginForm">
                 <div class="form-group">
                     <label for="loginEmail">Adresse email</label>
-                    <input type="email" class="form-control" id="loginEmail" placeholder="johndoe@example.com" required />
+                    <input type="email" class="form-control" id="loginEmail" 
+                        placeholder="johndoe@example.com" required />
                 </div>
 
                 <div class="form-group">
                     <label for="loginPassword">Mot de passe</label>
                     <div class="password-group">
-                        <input type="password" class="form-control" id="loginPassword" required />
-                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                        <input type="password" class="form-control" id="loginPassword" 
+                            placeholder="Entrez votre mot de passe" required />
+                        <button type="button" class="password-toggle" data-target="loginPassword">
                             👁
                         </button>
                     </div>
@@ -53,32 +68,59 @@
                     <label for="rememberMe">Se souvenir de moi</label>
                 </div>
 
-                <button type="submit" class="auth-btn">Se connecter</button>
+                <button type="submit" class="auth-btn">
+                    <span>Se connecter</span>
+                </button>
+
+                <div class="forgot-password" id="forgotPasswordLink">
+                    <a href="password-recovery.html">Mot de passe oublié ?</a>
+                </div>
             </form>
 
-            <!-- Formulaire d'inscription -->
-            <form class="form-section" id="registerForm" style="display:none;">
+            <!-- Register Form -->
+            <form class="form-section" id="registerForm">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="registerNom">Nom</label>
-                        <input type="text" class="form-control" id="registerNom" required />
+                        <input type="text" class="form-control" id="registerNom" 
+                            placeholder="Doe" required />
                     </div>
                     <div class="form-group">
                         <label for="registerPrenom">Prénom</label>
-                        <input type="text" class="form-control" id="registerPrenom" required />
+                        <input type="text" class="form-control" id="registerPrenom" 
+                            placeholder="John" required />
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="registerEmail">Adresse email</label>
-                    <input type="email" class="form-control" id="registerEmail" placeholder="johndoe@example.com" required />
+                    <input type="email" class="form-control" id="registerEmail" 
+                        placeholder="johndoe@example.com" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="registerTelephone">Numéro de téléphone</label>
+                    <input type="tel" class="form-control" id="registerTelephone" 
+                        placeholder="+229 XX XX XX XX XX" required />
                 </div>
 
                 <div class="form-group">
                     <label for="registerPassword">Mot de passe</label>
                     <div class="password-group">
-                        <input type="password" class="form-control" id="registerPassword" required />
-                        <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
+                        <input type="password" class="form-control" id="registerPassword" 
+                            placeholder="Minimum 8 caractères" required />
+                        <button type="button" class="password-toggle" data-target="registerPassword">
+                            👁
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerConfirmPassword">Confirmer le mot de passe</label>
+                    <div class="password-group">
+                        <input type="password" class="form-control" id="registerConfirmPassword" 
+                            placeholder="Retapez votre mot de passe" required />
+                        <button type="button" class="password-toggle" data-target="registerConfirmPassword">
                             👁
                         </button>
                     </div>
@@ -86,7 +128,7 @@
 
                 <div class="form-group">
                     <label for="registerRole">Rôle</label>
-                    <select class="form-select" id="registerRole" required onchange="handleRoleChange()">
+                    <select class="form-select" id="registerRole" required>
                         <option value="">Sélectionnez un rôle</option>
                         <option value="admin">Chargé de service</option>
                         <option value="adminCom">Admin de commission</option>
@@ -96,7 +138,7 @@
 
                 <div class="form-group" id="commissionGroup" style="display:none;">
                     <label for="registerCommission">Commission</label>
-                    <select class="form-select" id="registerCommission" onchange="loadServices()">
+                    <select class="form-select" id="registerCommission">
                         <option value="">Sélectionnez une commission</option>
                     </select>
                 </div>
@@ -108,8 +150,40 @@
                     </select>
                 </div>
 
-                <button type="submit" class="auth-btn">Créer le compte</button>
+                <button type="submit" class="auth-btn">
+                    <span>Créer le compte</span>
+                </button>
             </form>
+        </div>
+
+        <!-- Right Side - Carousel -->
+        <div class="auth-carousel-side">
+            <div class="carousel-wrapper">
+                <div class="carousel-track" id="carouselTrack">
+                    <div class="carousel-slide">
+                        <img src="./assets/images/holy-communion-concept-with-bible.jpg" alt="MCM Community">
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="./assets/images/holy-communion-concept-with-bible.jpg" alt="MCM Worship">
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="./assets/images/holy-communion-concept-with-bible.jpg" alt="MCM Service">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="carousel-overlay"></div>
+            
+            <div class="carousel-content">
+                <div class="carousel-text" id="carouselText">
+                    <div class="carousel-icon">🙏</div>
+                    <h2 class="carousel-title">Bienvenue dans la famille MCM</h2>
+                    <p class="carousel-description">
+                        Rejoignez notre communauté de foi et découvrez comment vous pouvez contribuer à notre mission d'évangélisation et de service.
+                    </p>
+                    <div class="carousel-dots" id="carouselDots"></div>
+                </div>
+            </div>
         </div>
     </div>
 

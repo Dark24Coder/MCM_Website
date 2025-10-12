@@ -1,71 +1,111 @@
--- 🛠 Création de la base de données
-CREATE DATABASE IF NOT EXISTS mcm_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE mcm_db;
+-- 🛠 Création de la base de données PostgreSQL pour MCM
+-- Exécuter d'abord : CREATE DATABASE mcm_db;
+-- Puis se connecter : \c mcm_db
+
+-- Activer l'extension pour les UUID si nécessaire
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 📁 Table des commissions
 CREATE TABLE IF NOT EXISTS commissions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 📁 Table des services
 CREATE TABLE IF NOT EXISTS services (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
     description TEXT,
-    commission_id INT,
+    commission_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (commission_id) REFERENCES commissions(id) ON DELETE CASCADE
 );
 
 -- 👥 Table des utilisateurs (Admins, AdminCom, Superadmin)
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     nom VARCHAR(100),
     prenom VARCHAR(100),
     email VARCHAR(150) UNIQUE NOT NULL,
+    telephone VARCHAR(20) DEFAULT NULL,
     mot_de_passe VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'adminCom', 'superadmin') NOT NULL,
-    commission_id INT DEFAULT NULL,
-    service_id INT DEFAULT NULL,
+    role VARCHAR(20) CHECK (role IN ('admin', 'adminCom', 'superadmin')) NOT NULL,
+    commission_id INTEGER DEFAULT NULL,
+    service_id INTEGER DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    email_verified BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    last_login TIMESTAMP DEFAULT NULL,
     FOREIGN KEY (commission_id) REFERENCES commissions(id) ON DELETE SET NULL,
     FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL
 );
 
 -- 👤 Table des membres
 CREATE TABLE IF NOT EXISTS membres (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     nom VARCHAR(100),
     prenom VARCHAR(100),
-    sexe ENUM('Homme', 'Femme'),
+    sexe VARCHAR(10) CHECK (sexe IN ('Homme', 'Femme')),
     date_naissance DATE,
     email VARCHAR(150),
     telephone VARCHAR(20),
-    service_id INT,
+    service_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
 );
 
+-- 📊 Création des index pour améliorer les performances
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_services_commission ON services(commission_id);
+CREATE INDEX IF NOT EXISTS idx_membres_service ON membres(service_id);
+
+-- 🔄 Fonction pour mettre à jour automatiquement updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 🔄 Triggers pour updated_at
+CREATE TRIGGER update_commissions_updated_at BEFORE UPDATE ON commissions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_membres_updated_at BEFORE UPDATE ON membres
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ✅ Insertion des commissions
 INSERT INTO commissions (id, nom, description) VALUES
-(1, 'Évangélisation', 'Commission chargée de l\'évangélisation'),
+(1, 'Évangélisation', 'Commission chargée de l''évangélisation'),
 (2, 'Multimédia et audiovisuel', 'Commission en charge de la technique audio et visuelle'),
-(3, 'Presse et documentation', 'Commission de communication et d\'archives'),
+(3, 'Presse et documentation', 'Commission de communication et d''archives'),
 (4, 'Chœur', 'Commission musicale et louange'),
-(5, 'Accueil', 'Commission d\'accueil et d\'hospitalité'),
+(5, 'Accueil', 'Commission d''accueil et d''hospitalité'),
 (6, 'Comptabilité', 'Commission financière et budgétaire'),
 (7, 'Organisation et logistique', 'Commission organisationnelle'),
 (8, 'Liturgie MCM bénin service délégué', 'Commission liturgique')
-ON DUPLICATE KEY UPDATE nom = VALUES(nom), description = VALUES(description);
+ON CONFLICT (id) DO UPDATE SET 
+    nom = EXCLUDED.nom, 
+    description = EXCLUDED.description;
 
--- ✅ Insertion des services (uniquement ceux que tu as listés)
+-- Réinitialiser la séquence des commissions
+SELECT setval('commissions_id_seq', (SELECT MAX(id) FROM commissions));
+
+-- ✅ Insertion des services
 INSERT INTO services (nom, commission_id) VALUES
 -- Évangélisation
 ('Intercession', 1),
@@ -90,9 +130,25 @@ INSERT INTO services (nom, commission_id) VALUES
 ('Installation et matériel', 7),
 ('Transport et mobilité', 7),
 ('Approvisionnement', 7),
-('Préparation des événements', 7);
+('Préparation des événements', 7)
+ON CONFLICT DO NOTHING;
 
--- 👑 Insertion d’un superadmin par défaut (mot de passe hashé: admin123)
+-- 👑 Insertion d'un superadmin par défaut
+-- Mot de passe : admin123 (à changer en production !)
 INSERT INTO users (nom, prenom, email, mot_de_passe, role) VALUES
-('Admin', 'Super', 'admin@mcm.com', '$2a$10$X1vH.J3qfK4R2N7xJ3QXa.1gOJZh3bFGXL3yJ9H3QXa1gOJZh3bFGX', 'superadmin')
-ON DUPLICATE KEY UPDATE nom = VALUES(nom), prenom = VALUES(prenom), role = VALUES(role);
+('Admin', 'Super', 'admin@mcm.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIxKCfHPJm', 'superadmin')
+ON CONFLICT (email) DO UPDATE SET 
+    nom = EXCLUDED.nom, 
+    prenom = EXCLUDED.prenom, 
+    role = EXCLUDED.role;
+
+-- 📊 Vue pour les statistiques (optionnel mais utile)
+CREATE OR REPLACE VIEW vue_statistiques AS
+SELECT 
+    (SELECT COUNT(*) FROM commissions) as total_commissions,
+    (SELECT COUNT(*) FROM services) as total_services,
+    (SELECT COUNT(*) FROM users) as total_users,
+    (SELECT COUNT(*) FROM membres) as total_membres,
+    (SELECT COUNT(*) FROM users WHERE role = 'admin') as total_admins,
+    (SELECT COUNT(*) FROM users WHERE role = 'adminCom') as total_adminCom,
+    (SELECT COUNT(*) FROM users WHERE is_active = true) as users_actifs;
