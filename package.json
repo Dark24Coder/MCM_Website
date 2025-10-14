@@ -4,7 +4,8 @@
   "description": "Système de gestion de membres avec WordPress vitrine + gestion interne des commissions et services.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
@@ -24,5 +25,8 @@
     "pg": "^8.16.3",
     "twilio": "^5.9.0",
     "typewritter": "^1.0.9"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }

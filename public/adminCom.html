@@ -5,894 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCM - Dashboard Admin Commission</title>
     <link rel="icon" type="image/svg" href="./assets/images/logo/logomcm.svg">
+    <link rel="stylesheet" href="./assets/css/adminCom/adminCom.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-red: #E60012;
-            --dark-red: #B8000E;
-            --light-red: #FF1A2E;
-            --white: #FFFFFF;
-            --off-white: #F8F9FA;
-            --light-gray: #E5E7EB;
-            --gray: #6B7280;
-            --dark-gray: #374151;
-            --black: #1F2937;
-            --success: #16A34A;
-            --warning: #F59E0B;
-            --error: #DC2626;
-            --info: #3B82F6;
-            --navbar-height: 70px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--off-white);
-            color: var(--black);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Navbar */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: var(--navbar-height);
-            background: var(--white);
-            border-bottom: 1px solid var(--light-gray);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .navbar-left {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            cursor: pointer;
-            padding: 0.5rem;
-            z-index: 110;
-        }
-
-        .hamburger span {
-            width: 24px;
-            height: 2px;
-            background: var(--black);
-            transition: var(--transition);
-            border-radius: 2px;
-        }
-
-        .hamburger.active span:nth-child(1) {
-            transform: translateY(7px) rotate(45deg);
-        }
-
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger.active span:nth-child(3) {
-            transform: translateY(-7px) rotate(-45deg);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--primary-red);
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-size: 1.2rem;
-        }
-
-        .navbar-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 1rem;
-            background: var(--off-white);
-            border-radius: 50px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .user-menu:hover {
-            background: var(--light-gray);
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-weight: 700;
-            font-size: 0.875rem;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: var(--black);
-            font-size: 0.875rem;
-        }
-
-        .logout-btn {
-            padding: 0.5rem 1.25rem;
-            background: var(--primary-red);
-            color: var(--white);
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logout-btn:hover {
-            background: var(--dark-red);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(230, 0, 18, 0.3);
-        }
-
-        /* Mobile Menu */
-        .mobile-menu {
-            position: fixed;
-            top: var(--navbar-height);
-            right: -100%;
-            width: 280px;
-            height: calc(100vh - var(--navbar-height));
-            background: var(--white);
-            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-            transition: var(--transition);
-            z-index: 99;
-            overflow-y: auto;
-            padding: 2rem 0;
-        }
-
-        .mobile-menu.open {
-            right: 0;
-        }
-
-        .mobile-menu-item {
-            padding: 1rem 2rem;
-            color: var(--dark-gray);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: var(--transition);
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .mobile-menu-item:hover,
-        .mobile-menu-item.active {
-            background: rgba(230, 0, 18, 0.1);
-            color: var(--primary-red);
-        }
-
-        .mobile-menu-item i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-top: var(--navbar-height);
-            padding: 2rem;
-            max-width: 1400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .page-header {
-            margin-bottom: 2rem;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--black);
-            margin-bottom: 0.5rem;
-        }
-
-        .page-subtitle {
-            color: var(--gray);
-            font-size: 1rem;
-        }
-
-        /* Welcome Card */
-        .welcome-card {
-            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
-            border-radius: 16px;
-            padding: 2rem;
-            color: var(--white);
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 24px rgba(230, 0, 18, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-        }
-
-        .welcome-card h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .welcome-card p {
-            font-size: 1rem;
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid var(--light-gray);
-            transition: var(--transition);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--primary-red), var(--dark-red));
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1rem;
-        }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: rgba(230, 0, 18, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-red);
-            font-size: 1.5rem;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--black);
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-label {
-            color: var(--gray);
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        /* Section Cards */
-        .section-card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 2rem;
-            border: 1px solid var(--light-gray);
-            margin-bottom: 2rem;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--black);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .section-title i {
-            color: var(--primary-red);
-        }
-
-        /* Form Styles */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 0;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--dark-gray);
-            font-size: 0.875rem;
-        }
-
-        .form-control,
-        .form-select {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 2px solid var(--light-gray);
-            border-radius: 12px;
-            font-size: 0.9375rem;
-            font-family: 'Inter', sans-serif;
-            transition: var(--transition);
-            background: var(--white);
-            color: var(--black);
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            outline: none;
-            border-color: var(--primary-red);
-            box-shadow: 0 0 0 4px rgba(230, 0, 18, 0.1);
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
-            color: var(--white);
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--dark-red), var(--primary-red));
-            transition: left 0.3s ease;
-        }
-
-        .btn-primary:hover::before {
-            left: 0;
-        }
-
-        .btn-primary span,
-        .btn-primary i {
-            position: relative;
-            z-index: 2;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(230, 0, 18, 0.3);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Services Grid */
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .service-card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 2px solid var(--light-gray);
-            transition: var(--transition);
-            cursor: pointer;
-            position: relative;
-        }
-
-        .service-card:hover {
-            border-color: var(--primary-red);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-        }
-
-        .service-card-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .service-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        .service-title {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: var(--black);
-        }
-
-        .service-details {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .service-detail {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--gray);
-            font-size: 0.875rem;
-        }
-
-        .service-detail i {
-            color: var(--primary-red);
-            width: 16px;
-        }
-
-        /* Members Grid */
-        .members-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .member-card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--light-gray);
-            transition: var(--transition);
-        }
-
-        .member-card:hover {
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-            transform: translateY(-2px);
-        }
-
-        .member-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .member-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-weight: 700;
-            font-size: 1rem;
-        }
-
-        .member-name {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--black);
-            margin-bottom: 0.25rem;
-        }
-
-        .member-service {
-            font-size: 0.8rem;
-            color: var(--gray);
-        }
-
-        .member-contact {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .member-contact-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--gray);
-            font-size: 0.85rem;
-        }
-
-        .member-contact-item i {
-            color: var(--primary-red);
-            width: 14px;
-        }
-
-        .member-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-        }
-
-        .btn-warning {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-        }
-
-        .btn-warning:hover {
-            background: var(--warning);
-            color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: rgba(220, 38, 38, 0.1);
-            color: var(--error);
-        }
-
-        .btn-danger:hover {
-            background: var(--error);
-            color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 0;
-            max-width: 600px;
-            width: 90%;
-            max-height: 85vh;
-            overflow: hidden;
-            animation: slideUp 0.3s ease;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            padding: 2rem;
-            border-bottom: 1px solid var(--light-gray);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--off-white);
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--black);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .close-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--light-gray);
-            border: none;
-            font-size: 1.25rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--dark-gray);
-        }
-
-        .close-btn:hover {
-            background: var(--primary-red);
-            color: var(--white);
-            transform: rotate(90deg);
-        }
-
-        .modal-body {
-            padding: 2rem;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            top: calc(var(--navbar-height) + 1rem);
-            right: 1rem;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .toast {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            min-width: 300px;
-            animation: slideInRight 0.3s ease;
-            border-left: 4px solid;
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .toast.success { border-left-color: var(--success); }
-        .toast.error { border-left-color: var(--error); }
-        .toast.warning { border-left-color: var(--warning); }
-        .toast.info { border-left-color: var(--info); }
-
-        .toast-icon {
-            font-size: 1.25rem;
-        }
-
-        .toast.success .toast-icon { color: var(--success); }
-        .toast.error .toast-icon { color: var(--error); }
-        .toast.warning .toast-icon { color: var(--warning); }
-        .toast.info .toast-icon { color: var(--info); }
-
-        .toast-message {
-            flex: 1;
-            font-weight: 500;
-            color: var(--black);
-            font-size: 0.9375rem;
-        }
-
-        /* Loading */
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--white);
-            animation: spin 0.6s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Success Overlay */
-        .success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(22, 163, 74, 0.1);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .success-overlay.show {
-            display: flex;
-        }
-
-        .success-icon-large {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-size: 4rem;
-            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 20px 60px rgba(22, 163, 74, 0.4);
-        }
-
-        @keyframes scaleIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hamburger {
-                display: flex;
-            }
-
-            .navbar-right .logout-btn {
-                display: none;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-
-            .page-title {
-                font-size: 1.5rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .services-grid,
-            .members-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .user-name {
-                display: none;
-            }
-
-            .welcome-card {
-                padding: 1.5rem;
-            }
-
-            .welcome-card h2 {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Navbar -->
@@ -925,134 +42,166 @@
         </div>
     </nav>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-menu-item" onclick="scrollToSection('welcome')">
-            <i class="fas fa-home"></i>
-            <span>Accueil</span>
-        </div>
-        <div class="mobile-menu-item" onclick="scrollToSection('services')">
-            <i class="fas fa-cogs"></i>
-            <span>Services de ma Commission</span>
-        </div>
-        <div class="mobile-menu-item" onclick="scrollToSection('members')">
-            <i class="fas fa-users"></i>
-            <span>Tous les Membres</span>
-        </div>
-        <div class="mobile-menu-item" onclick="scrollToSection('add-member')">
-            <i class="fas fa-user-plus"></i>
-            <span>Ajouter un Membre</span>
-        </div>
-        <div class="mobile-menu-item" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Déconnexion</span>
-        </div>
-    </div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <div class="sidebar-link active" onclick="showSection('dashboard')">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </div>
+            </li>
+            <li class="sidebar-item">
+                <div class="sidebar-link" onclick="showSection('services')">
+                    <i class="fas fa-cogs"></i>
+                    <span>Services de ma Commission</span>
+                </div>
+            </li>
+            <li class="sidebar-item">
+                <div class="sidebar-link" onclick="showSection('members')">
+                    <i class="fas fa-users"></i>
+                    <span>Tous les Membres</span>
+                </div>
+            </li>
+            <li class="sidebar-item mobile-only" style="display: none;">
+                <div class="sidebar-link" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </div>
+            </li>
+        </ul>
+    </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Page Header -->
-        <div class="page-header" id="welcome">
-            <h1 class="page-title">Dashboard Administrateur de Commission</h1>
-            <p class="page-subtitle">Gérez les services et les membres de votre commission efficacement</p>
-        </div>
+        <!-- Dashboard Section (Par défaut) -->
+        <div id="dashboardSection" class="content-section active">
+            <div class="page-header">
+                <h1 class="page-title">Dashboard Administrateur de Commission</h1>
+                <p class="page-subtitle">Gérez les services et les membres de votre commission efficacement</p>
+            </div>
 
-        <!-- Welcome Card -->
-        <div class="welcome-card">
-            <h2>Bienvenue, <span id="welcomeName">Administrateur</span> !</h2>
-            <p>Vous gérez actuellement la <strong id="commissionName">Commission</strong>. Utilisez ce tableau de bord pour superviser vos services et membres.</p>
-        </div>
+            <!-- Welcome Card -->
+            <div class="welcome-card">
+                <h2>Bienvenue, <span id="welcomeName">Administrateur</span> !</h2>
+                <p>Vous gérez actuellement la <strong id="commissionName">Commission</strong>. Utilisez ce tableau de bord pour superviser vos services et membres.</p>
+            </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div>
-                        <div class="stat-number" id="totalServices">0</div>
-                        <div class="stat-label">Moyenne/Service</div>
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card" onclick="showSection('services')">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number" id="totalServices">0</div>
+                            <div class="stat-label">Services</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
                     </div>
-                    <div class="stat-icon">
-                        <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-card" onclick="showSection('members')">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number" id="totalMembers">0</div>
+                            <div class="stat-label">Total Membres</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number" id="avgMembersPerService">0</div>
+                            <div class="stat-label">Moyenne/Service</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Add Member Form -->
-        <div class="section-card" id="add-member">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-user-plus"></i>
-                    Ajouter un Nouveau Membre
-                </h2>
-            </div>
-            <form id="addMemberForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Service *</label>
-                        <select class="form-select" id="serviceSelect" required>
-                            <option value="">Choisir un service</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Nom *</label>
-                        <input type="text" class="form-control" id="memberNom" placeholder="Nom du membre" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Prénom *</label>
-                        <input type="text" class="form-control" id="memberPrenom" placeholder="Prénom du membre" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Sexe *</label>
-                        <select class="form-select" id="memberSexe" required>
-                            <option value="">Sélectionner le sexe</option>
-                            <option value="Homme">Homme</option>
-                            <option value="Femme">Femme</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Date de Naissance *</label>
-                        <input type="date" class="form-control" id="memberDateNaissance" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" id="memberEmail" placeholder="email@exemple.com">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" id="memberTelephone" placeholder="+229 XX XX XX XX XX">
-                    </div>
+            <!-- Add Member Form -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-plus"></i>
+                        Ajouter un Nouveau Membre
+                    </h2>
                 </div>
-                <button type="submit" class="btn-primary" id="addMemberBtn">
-                    <i class="fas fa-plus"></i>
-                    <span>Ajouter le Membre</span>
-                </button>
-            </form>
+                <form id="addMemberForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Service *</label>
+                            <select class="form-select" id="serviceSelect" required>
+                                <option value="">Choisir un service</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="memberNom" placeholder="Nom du membre" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Prénom *</label>
+                            <input type="text" class="form-control" id="memberPrenom" placeholder="Prénom du membre" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sexe *</label>
+                            <select class="form-select" id="memberSexe" required>
+                                <option value="">Sélectionner le sexe</option>
+                                <option value="Homme">Homme</option>
+                                <option value="Femme">Femme</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de Naissance *</label>
+                            <input type="date" class="form-control" id="memberDateNaissance" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="memberEmail" placeholder="email@exemple.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="memberTelephone" placeholder="+229 XX XX XX XX XX">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" id="addMemberBtn">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter le Membre</span>
+                    </button>
+                </form>
+            </div>
         </div>
 
         <!-- Services Section -->
-        <div class="section-card" id="services">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-cogs"></i>
-                    Services de ma Commission
-                </h2>
+        <div id="servicesSection" class="content-section">
+            <div class="page-header">
+                <h1 class="page-title">Services de ma Commission</h1>
+                <p class="page-subtitle">Gérez et consultez tous les services de votre commission</p>
             </div>
-            <div class="services-grid" id="servicesGrid">
-                <!-- Services chargés dynamiquement -->
+
+            <div class="section-card">
+                <div class="services-grid" id="servicesGrid">
+                    <!-- Services chargés dynamiquement -->
+                </div>
             </div>
         </div>
 
-        <!-- All Members Section -->
-        <div class="section-card" id="members">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-users"></i>
-                    Tous les Membres de la Commission
-                </h2>
+        <!-- Members Section -->
+        <div id="membersSection" class="content-section">
+            <div class="page-header">
+                <h1 class="page-title">Tous les Membres de la Commission</h1>
+                <p class="page-subtitle">Vue d'ensemble de tous les membres de votre commission</p>
             </div>
-            <div class="members-grid" id="allMembersGrid">
-                <!-- Tous les membres chargés dynamiquement -->
+
+            <div class="section-card">
+                <div class="members-grid" id="allMembersGrid">
+                    <!-- Tous les membres chargés dynamiquement -->
+                </div>
             </div>
         </div>
     </main>
@@ -1172,290 +321,5 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-    <script>
-        // Configuration
-        const API_BASE = '/api';
-        let currentUser = null;
-        let authToken = localStorage.getItem('mcm_token');
-        let services = [];
-        let allMembers = [];
-
-        const getAuthHeaders = () => ({
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-        });
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🔍 Token récupéré:', authToken);
-            
-            if (!authToken || authToken === 'null' || authToken === 'undefined') {
-                console.log('Pas de token valide, redirection vers login');
-                window.location.href = './login.html';
-                return;
-            }
-            
-            console.log('✅ Token présent, chargement du dashboard AdminCom');
-            await loadUserProfile();
-            await loadServices();
-            initializeEventListeners();
-        });
-
-        // Event Listeners
-        function initializeEventListeners() {
-            // Hamburger menu
-            document.getElementById('hamburger').addEventListener('click', toggleMobileMenu);
-
-            // Forms
-            document.getElementById('addMemberForm').addEventListener('submit', handleAddMember);
-            document.getElementById('profileForm').addEventListener('submit', handleUpdateProfile);
-            document.getElementById('editMemberForm').addEventListener('submit', handleEditMember);
-
-            // Close modals on outside click
-            window.addEventListener('click', (e) => {
-                if (e.target.classList.contains('modal')) {
-                    e.target.classList.remove('active');
-                }
-            });
-
-            // Close mobile menu on outside click
-            document.addEventListener('click', (e) => {
-                const mobileMenu = document.getElementById('mobileMenu');
-                const hamburger = document.getElementById('hamburger');
-                if (!mobileMenu.contains(e.target) && !hamburger.contains(e.target)) {
-                    mobileMenu.classList.remove('open');
-                    hamburger.classList.remove('active');
-                }
-            });
-        }
-
-        // Mobile Menu
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobileMenu');
-            const hamburger = document.getElementById('hamburger');
-            mobileMenu.classList.toggle('open');
-            hamburger.classList.toggle('active');
-        }
-
-        function scrollToSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                toggleMobileMenu();
-            }
-        }
-
-        // Load User Profile
-        async function loadUserProfile() {
-            try {
-                console.log('📋 Chargement du profil utilisateur AdminCom');
-                const userDataString = localStorage.getItem('mcm_user');
-                
-                if (!userDataString || userDataString === 'null' || userDataString === 'undefined') {
-                    console.log('❌ Pas de données utilisateur');
-                    document.getElementById('userName').textContent = 'AdminCom';
-                    document.getElementById('userInitials').textContent = 'AC';
-                    document.getElementById('welcomeName').textContent = 'Administrateur';
-                    return;
-                }
-                
-                const userData = JSON.parse(userDataString);
-                console.log('✅ Données utilisateur parsées:', userData);
-                currentUser = userData;
-                
-                const fullName = `${userData.prenom} ${userData.nom}`;
-                document.getElementById('userName').textContent = fullName;
-                document.getElementById('welcomeName').textContent = fullName;
-                
-                const initials = `${userData.prenom.charAt(0)}${userData.nom.charAt(0)}`;
-                document.getElementById('userInitials').textContent = initials.toUpperCase();
-                
-                // Fill profile form
-                document.getElementById('profileNom').value = userData.nom || '';
-                document.getElementById('profilePrenom').value = userData.prenom || '';
-                document.getElementById('profileEmail').value = userData.email || '';
-                
-                // Load commission name if available
-                if (userData.commission_id) {
-                    loadCommissionName(userData.commission_id);
-                }
-                
-            } catch (error) {
-                console.error('❌ Erreur lors du chargement du profil:', error);
-                showToast('Erreur lors du chargement du profil', 'error');
-            }
-        }
-
-        async function loadCommissionName(commissionId) {
-            try {
-                const response = await fetch(`${API_BASE}/commissions/${commissionId}`, {
-                    headers: getAuthHeaders()
-                });
-                
-                if (response.ok) {
-                    const commission = await response.json();
-                    document.getElementById('commissionName').textContent = commission.nom;
-                }
-            } catch (error) {
-                console.error('Erreur chargement nom commission:', error);
-            }
-        }
-
-        // Profile Modal
-        function openProfileModal() {
-            document.getElementById('profileModal').classList.add('active');
-        }
-
-        function closeProfileModal() {
-            document.getElementById('profileModal').classList.remove('active');
-        }
-
-        async function handleUpdateProfile(e) {
-            e.preventDefault();
-            
-            const btn = document.getElementById('updateProfileBtn');
-            setButtonLoading(btn, true);
-            
-            const profileData = {
-                nom: document.getElementById('profileNom').value,
-                prenom: document.getElementById('profilePrenom').value,
-                email: document.getElementById('profileEmail').value
-            };
-
-            const password = document.getElementById('profilePassword').value;
-            if (password) {
-                profileData.mot_de_passe = password;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/auth/profile`, {
-                    method: 'PUT',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify(profileData)
-                });
-
-                if (response.ok) {
-                    currentUser.nom = profileData.nom;
-                    currentUser.prenom = profileData.prenom;
-                    currentUser.email = profileData.email;
-                    localStorage.setItem('mcm_user', JSON.stringify(currentUser));
-                    
-                    showSuccessAnimation();
-                    showToast('Profil mis à jour avec succès!', 'success');
-                    loadUserProfile();
-                    closeProfileModal();
-                } else {
-                    const result = await response.json();
-                    throw new Error(result.error || 'Erreur lors de la modification');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showToast('Erreur: ' + error.message, 'error');
-            }
-        }
-
-        // Delete Member
-        async function deleteMember(id) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/membres/${id}`, {
-                    method: 'DELETE',
-                    headers: getAuthHeaders()
-                });
-
-                if (response.ok) {
-                    showSuccessAnimation();
-                    showToast('Membre supprimé avec succès!', 'warning');
-                    await loadServices();
-                } else {
-                    const result = await response.json();
-                    throw new Error(result.error || 'Erreur lors de la suppression');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showToast('Erreur: ' + error.message, 'error');
-            }
-        }
-
-        // Utility Functions
-        function formatDate(dateString) {
-            if (!dateString) return 'Non spécifiée';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-
-        function setButtonLoading(button, isLoading) {
-            if (isLoading) {
-                button.disabled = true;
-                const icon = button.querySelector('i');
-                if (icon) icon.className = 'fas fa-spinner fa-spin';
-            } else {
-                button.disabled = false;
-                const icon = button.querySelector('i');
-                if (icon) {
-                    if (button.id === 'addMemberBtn') icon.className = 'fas fa-plus';
-                    else if (button.id === 'updateProfileBtn') icon.className = 'fas fa-save';
-                }
-            }
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-exclamation-circle',
-                warning: 'fa-exclamation-triangle',
-                info: 'fa-info-circle'
-            };
-
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="fas ${icons[type]}"></i>
-                </div>
-                <div class="toast-message">${message}</div>
-            `;
-
-            document.getElementById('toastContainer').appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.animation = 'slideOutRight 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
-        }
-
-        function showSuccessAnimation() {
-            const overlay = document.getElementById('successOverlay');
-            overlay.classList.add('show');
-            
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-
-            setTimeout(() => {
-                overlay.classList.remove('show');
-            }, 1500);
-        }
-
-        function logout() {
-            if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
-            
-            console.log('🚪 Déconnexion en cours');
-            localStorage.removeItem('mcm_token');
-            localStorage.removeItem('mcm_user');
-            showToast('Déconnexion réussie', 'info');
-            setTimeout(() => {
-                window.location.href = './login.html';
-            }, 1000);
-        }
-    </script>
 </body>
 </html>
