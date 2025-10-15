@@ -58,14 +58,30 @@ document.querySelectorAll('.nav-link').forEach(link => {
     });
 });
 
-// Smooth scrolling
+// Smooth scrolling - SEULEMENT pour les liens internes avec #
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const href = this.getAttribute('href');
+        
+        // Ne pas bloquer les liens vers d'autres pages
+        if (href === '#' || !href) {
+            e.preventDefault();
+            return;
+        }
+        
+        const target = document.querySelector(href);
         if (target) {
+            e.preventDefault();
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+    });
+});
+
+// Gérer spécifiquement les boutons de connexion pour éviter tout conflit
+document.querySelectorAll('.login-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        // Ne rien faire ici, laisser le navigateur gérer la navigation normale
+        // Cela permet au href="login.html" de fonctionner correctement
     });
 });
 
@@ -125,7 +141,7 @@ const observerOptions = {
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-                entry.target.classList.add('animate');
+            entry.target.classList.add('animate');
         }
     });
 }, observerOptions);

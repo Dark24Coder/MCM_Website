@@ -137,25 +137,25 @@ app.use('/api/users', userRoutes);
  * ROUTES FRONTEND
  */
 app.get('/', (req, res) =>
-    res.sendFile(path.join(__dirname, 'index.html'))
+    res.sendFile(path.join(__dirname, 'templates', 'index.html'))
 );
 app.get('/login', (req, res) =>
-    res.sendFile(path.join(__dirname, 'login.html'))
+    res.sendFile(path.join(__dirname, 'templates', 'login.html'))
 );
 app.get('/password-recovery', (req, res) =>
-    res.sendFile(path.join(__dirname, 'password-recovery.html'))
+    res.sendFile(path.join(__dirname, 'templates', 'password-recovery.html'))
 );
 app.get('/superadmin', (req, res) =>
-    res.sendFile(path.join(__dirname, 'superadmin.html'))
+    res.sendFile(path.join(__dirname, 'templates', 'superadmin.html'))
 );
 app.get('/admin', (req, res) =>
-    res.sendFile(path.join(__dirname, 'admin.html'))
+    res.sendFile(path.join(__dirname, 'templates', 'admin.html'))
 );
 app.get('/adminCom', (req, res) =>
-    res.sendFile(path.join(__dirname, 'adminCom.html'))
+    res.sendFile(path.join(__dirname, 'templates', 'adminCom.html'))
 );
 app.get('/dashboard', (req, res) =>
-    res.sendFile(path.join(__dirname, 'dashboard.html'))
+    res.sendFile(path.join(__dirname, 'templates', 'dashboard.html'))
 );
 
 /**

@@ -1,93 +1,112 @@
-const API_BASE = '/api';
+
+        const API_BASE = '/api';
         let currentUser = null;
         let authToken = localStorage.getItem('mcm_token');
-        let memberToDelete = null;
+        let allMembers = [];
+        let currentPage = 1;
+        const membersPerPage = 10;
 
-        // Initialisation
+        // Welcome messages
+        const welcomeMessages = [
+            {
+                title: "Excellente journée à vous ! 🌟",
+                subtitle: "Prêt à accomplir de grandes choses aujourd'hui ?"
+            },
+            {
+                title: "Bienvenue dans votre espace ! 👋",
+                subtitle: "Gérez votre service avec efficacité et simplicité"
+            },
+            {
+                title: "Ravi de vous revoir ! 😊",
+                subtitle: "Continuez votre excellent travail de gestion"
+            },
+            {
+                title: "Bonjour Admin ! ✨",
+                subtitle: "Votre service compte sur votre dévouement"
+            },
+            {
+                title: "Que cette journée soit productive ! 🚀",
+                subtitle: "Ensemble, construisons une communauté forte"
+            }
+        ];
+
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 Token récupéré:', authToken);
-            console.log('🔍 Données utilisateur:', localStorage.getItem('mcm_user'));
-            
             if (!authToken || authToken === 'null' || authToken === 'undefined') {
-                console.log('Pas de token valide, redirection vers login');
                 window.location.href = './login.html';
                 return;
             }
             
-            console.log('✅ Token présent, chargement du dashboard');
-            loadUserProfile();
-            loadMembers();
-            initializeEventListeners();
+            initializeApp();
         });
 
-        function initializeEventListeners() {
-            // User profile click
-            document.getElementById('userProfile').addEventListener('click', function(e) {
-                e.preventDefault();
-                openProfileModal();
-            });
+        async function initializeApp() {
+            loadUserProfile();
+            await loadMembers();
+            displayRandomWelcome();
+            initializeEventListeners();
+        }
 
-            // Close modals when clicking outside
+        function initializeEventListeners() {
+            document.getElementById('hamburger').addEventListener('click', toggleSidebar);
+            document.getElementById('addMemberForm').addEventListener('submit', handleAddMember);
+            document.getElementById('profileForm').addEventListener('submit', handleUpdateProfile);
+            document.getElementById('editMemberForm').addEventListener('submit', handleEditMember);
+
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', function(e) {
                     if (e.target === modal) {
-                        modal.classList.remove('active');
+                        modal.classList.remove('show');
                     }
                 });
             });
 
-            // Form submissions
-            document.getElementById('addMemberForm').addEventListener('submit', handleAddMember);
-            document.getElementById('profileForm').addEventListener('submit', handleUpdateProfile);
-            document.getElementById('editMemberForm').addEventListener('submit', handleEditMember);
+            document.addEventListener('click', (e) => {
+                const sidebar = document.getElementById('sidebar');
+                const hamburger = document.getElementById('hamburger');
+                if (window.innerWidth <= 1024 && 
+                    sidebar && hamburger &&
+                    !sidebar.contains(e.target) && 
+                    !hamburger.contains(e.target) &&
+                    sidebar.classList.contains('open')) {
+                    toggleSidebar();
+                }
+            });
         }
 
-        // User Profile Management
+        function displayRandomWelcome() {
+            const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+            document.getElementById('welcomeMessage').textContent = randomMessage.title;
+            document.getElementById('welcomeSubtext').textContent = randomMessage.subtitle;
+        }
+
         function loadUserProfile() {
             try {
-                console.log('📋 Chargement du profil utilisateur');
                 const userDataString = localStorage.getItem('mcm_user');
-                console.log('🔍 Données brutes:', userDataString);
                 
-                if (!userDataString || userDataString === 'null' || userDataString === 'undefined') {
-                    console.log('❌ Pas de données utilisateur, utilisation des valeurs par défaut');
-                    // Ne pas rediriger, juste utiliser des valeurs par défaut
-                    document.getElementById('userNameDisplay').textContent = 'Administrateur';
-                    document.getElementById('userAvatar').textContent = 'AD';
-                    
-                    // Créer un utilisateur par défaut temporaire
+                if (!userDataString || userDataString === 'null') {
                     currentUser = {
                         nom: 'Admin',
                         prenom: 'User',
                         email: 'admin@mcm.com',
-                        service_id: 1 // Valeur par défaut
+                        service_id: 1
                     };
-                    return;
+                } else {
+                    currentUser = JSON.parse(userDataString);
                 }
                 
-                const userData = JSON.parse(userDataString);
-                console.log('✅ Données utilisateur parsées:', userData);
-                currentUser = userData;
+                const fullName = `${currentUser.prenom} ${currentUser.nom}`;
+                document.getElementById('userName').textContent = fullName;
                 
-                const fullName = `${userData.nom} ${userData.prenom}`;
-                document.getElementById('userNameDisplay').textContent = fullName;
+                const initials = `${currentUser.prenom.charAt(0)}${currentUser.nom.charAt(0)}`;
+                document.getElementById('userAvatar').textContent = initials.toUpperCase();
                 
-                const initials = `${userData.nom.charAt(0)}${userData.prenom.charAt(0)}`;
-                document.getElementById('userAvatar').textContent = initials;
-                
-                // Fill profile form
-                document.getElementById('profileNom').value = userData.nom || '';
-                document.getElementById('profilePrenom').value = userData.prenom || '';
-                document.getElementById('profileEmail').value = userData.email || '';
-                
-                console.log('✅ Profil utilisateur chargé avec succès');
+                document.getElementById('profileNom').value = currentUser.nom || '';
+                document.getElementById('profilePrenom').value = currentUser.prenom || '';
+                document.getElementById('profileEmail').value = currentUser.email || '';
                 
             } catch (error) {
-                console.error('❌ Erreur lors du parsing des données utilisateur:', error);
-                // Ne pas rediriger, juste utiliser des valeurs par défaut
-                document.getElementById('userNameDisplay').textContent = 'Administrateur';
-                document.getElementById('userAvatar').textContent = 'AD';
-                
+                console.error('Erreur chargement profil:', error);
                 currentUser = {
                     nom: 'Admin',
                     prenom: 'User',
@@ -97,71 +116,8 @@ const API_BASE = '/api';
             }
         }
 
-        function openProfileModal() {
-            document.getElementById('profileModal').classList.add('active');
-        }
-
-        function closeProfileModal() {
-            document.getElementById('profileModal').classList.remove('active');
-        }
-
-        async function handleUpdateProfile(e) {
-            e.preventDefault();
-            
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<div class="loading"></div> Sauvegarde...';
-            submitBtn.disabled = true;
-            
-            const profileData = {
-                nom: document.getElementById('profileNom').value,
-                prenom: document.getElementById('profilePrenom').value,
-                email: document.getElementById('profileEmail').value
-            };
-
-            const password = document.getElementById('profilePassword').value;
-            if (password) {
-                profileData.mot_de_passe = password;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify(profileData)
-                });
-
-                if (response.ok) {
-                    currentUser.nom = profileData.nom;
-                    currentUser.prenom = profileData.prenom;
-                    currentUser.email = profileData.email;
-                    localStorage.setItem('mcm_user', JSON.stringify(currentUser));
-                    
-                    showSuccessAnimation('Profil modifié avec succès !');
-                    loadUserProfile();
-                    closeProfileModal();
-                } else {
-                    const result = await response.json();
-                    throw new Error(result.error || 'Erreur lors de la modification');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                alert('Erreur lors de la modification du profil: ' + error.message);
-            } finally {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        }
-
-        // Members Management
         async function loadMembers() {
             try {
-                console.log('📋 Début du chargement des membres');
-                showLoading('membersList');
-                
                 const response = await fetch(`${API_BASE}/membres`, {
                     headers: { 
                         'Authorization': `Bearer ${authToken}`,
@@ -169,10 +125,7 @@ const API_BASE = '/api';
                     }
                 });
                 
-                console.log('📡 Réponse API membres:', response.status);
-                
                 if (response.status === 401) {
-                    console.log('❌ Token expiré, redirection vers login');
                     localStorage.removeItem('mcm_token');
                     localStorage.removeItem('mcm_user');
                     window.location.href = './login.html';
@@ -183,111 +136,226 @@ const API_BASE = '/api';
                     throw new Error(`Erreur HTTP: ${response.status}`);
                 }
                 
-                const members = await response.json();
-                console.log('✅ Membres récupérés:', members);
-                displayMembers(members);
+                allMembers = await response.json();
+                updateStatistics();
+                displayMembers();
                 
             } catch (error) {
-                console.error('❌ Erreur lors du chargement des membres:', error);
+                console.error('Erreur chargement membres:', error);
+                showToast('Erreur lors du chargement des membres', 'error');
                 
-                // Afficher un message d'erreur dans la liste
-                const container = document.getElementById('membersList');
-                container.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #718096;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; color: #f56565;"></i>
-                        <h3 style="margin-bottom: 1rem;">Erreur de chargement</h3>
-                        <p style="margin-bottom: 1rem;">${error.message}</p>
-                        <button class="btn btn-primary" onclick="loadMembers()">
-                            <i class="fas fa-refresh"></i>
-                            Réessayer
-                        </button>
-                    </div>
-                `;
+                // Mode démo si API échoue
+                allMembers = getDemoMembers();
+                updateStatistics();
+                displayMembers();
             }
         }
 
-        function displayMembers(members) {
-            const container = document.getElementById('membersList');
-            container.innerHTML = '';
+        // Données de démonstration
+        function getDemoMembers() {
+            return [
+                {
+                    id: 1,
+                    nom: "Doe",
+                    prenom: "John",
+                    sexe: "Homme",
+                    date_naissance: "1990-05-15",
+                    email: "john.doe@email.com",
+                    telephone: "+229 12 34 56 78",
+                    service_id: 1,
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 2,
+                    nom: "Smith",
+                    prenom: "Jane",
+                    sexe: "Femme", 
+                    date_naissance: "1992-08-22",
+                    email: "jane.smith@email.com",
+                    telephone: "+229 98 76 54 32",
+                    service_id: 1,
+                    created_at: new Date().toISOString()
+                }
+            ];
+        }
+
+        function updateStatistics() {
+            const total = allMembers.length;
+            const males = allMembers.filter(m => m.sexe === 'Homme').length;
+            const females = allMembers.filter(m => m.sexe === 'Femme').length;
             
-            if (members.length === 0) {
+            // Calculate recent members (this month)
+            const now = new Date();
+            const thisMonth = allMembers.filter(m => {
+                const memberDate = new Date(m.created_at || m.date_naissance);
+                return memberDate.getMonth() === now.getMonth() && 
+                       memberDate.getFullYear() === now.getFullYear();
+            }).length;
+
+            // Update dashboard stats
+            document.getElementById('totalMembers').textContent = total;
+            document.getElementById('maleMembers').textContent = males;
+            document.getElementById('femaleMembers').textContent = females;
+            document.getElementById('recentMembers').textContent = thisMonth;
+
+            // Update reports stats
+            document.getElementById('reportTotalMembers').textContent = total;
+            document.getElementById('reportMalePercent').textContent = total > 0 ? Math.round((males / total) * 100) + '%' : '0%';
+            document.getElementById('reportFemalePercent').textContent = total > 0 ? Math.round((females / total) * 100) + '%' : '0%';
+            
+            // Calculate average age
+            if (total > 0) {
+                const avgAge = Math.round(allMembers.reduce((sum, m) => {
+                    const birthDate = new Date(m.date_naissance);
+                    const age = new Date().getFullYear() - birthDate.getFullYear();
+                    return sum + age;
+                }, 0) / total);
+                document.getElementById('reportAvgAge').textContent = avgAge + ' ans';
+            }
+
+            // Additional report stats
+            const emailCount = allMembers.filter(m => m.email && m.email.trim()).length;
+            const phoneCount = allMembers.filter(m => m.telephone && m.telephone.trim()).length;
+            const completionRate = total > 0 ? Math.round(((emailCount + phoneCount) / (total * 2)) * 100) : 0;
+
+            document.getElementById('reportEmailCount').textContent = emailCount;
+            document.getElementById('reportPhoneCount').textContent = phoneCount;
+            document.getElementById('reportCompletionRate').textContent = completionRate + '%';
+        }
+
+        function displayMembers() {
+            const container = document.getElementById('membersTableContainer');
+            
+            if (allMembers.length === 0) {
                 container.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #718096;">
-                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                        <p>Aucun membre trouvé dans votre service.</p>
-                    </div>
+                    <p style="text-align: center; color: var(--gray); padding: 3rem;">
+                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; display: block;"></i>
+                        Aucun membre trouvé dans votre service.
+                    </p>
                 `;
                 return;
             }
-            
-            // Séparer l'admin et les autres membres
-            const adminMembers = [];
-            const regularMembers = [];
-            
-            members.forEach(member => {
-                // Vérifier si c'est l'admin connecté (même nom et prénom)
-                if (currentUser && 
-                    member.nom === currentUser.nom && 
-                    member.prenom === currentUser.prenom) {
-                    adminMembers.push(member);
-                } else {
-                    regularMembers.push(member);
-                }
-            });
-            
-            // Afficher d'abord les admins puis les membres réguliers
-            [...adminMembers, ...regularMembers].forEach(member => {
-                const initials = `${member.nom.charAt(0)}${member.prenom.charAt(0)}`;
-                const isAdmin = adminMembers.includes(member);
-                
-                const memberCard = document.createElement('div');
-                memberCard.className = `member-card ${isAdmin ? 'admin' : ''}`;
-                memberCard.onclick = () => openMemberModal(member);
-                
-                memberCard.innerHTML = `
-                    <div class="member-header">
-                        <div class="member-avatar ${isAdmin ? 'admin' : ''}">${initials}</div>
-                        <div class="member-info">
-                            <h3>${member.nom} ${member.prenom}</h3>
-                            ${isAdmin ? '<span class="member-badge">Administrateur</span>' : ''}
-                        </div>
-                    </div>
-                    <div class="member-details">
-                        <div class="member-detail">
-                            <i class="fas fa-venus-mars"></i>
-                            <span>${member.sexe}</span>
-                        </div>
-                        <div class="member-detail">
-                            <i class="fas fa-calendar"></i>
-                            <span>${formatDate(member.date_naissance)}</span>
-                        </div>
-                        <div class="member-detail">
-                            <i class="fas fa-envelope"></i>
-                            <span>${member.email || 'Non renseigné'}</span>
-                        </div>
-                        <div class="member-detail">
-                            <i class="fas fa-phone"></i>
-                            <span>${member.telephone || 'Non renseigné'}</span>
-                        </div>
-                    </div>
+
+            const startIndex = (currentPage - 1) * membersPerPage;
+            const endIndex = startIndex + membersPerPage;
+            const paginatedMembers = allMembers.slice(startIndex, endIndex);
+
+            let html = `
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>Nom & Prénom</th>
+                            <th>Sexe</th>
+                            <th>Date de Naissance</th>
+                            <th>Contact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            paginatedMembers.forEach(member => {
+                html += `
+                    <tr>
+                        <td>
+                            <div class="member-name">${member.nom} ${member.prenom}</div>
+                        </td>
+                        <td>
+                            <span class="member-badge ${member.sexe.toLowerCase()}">
+                                <i class="fas fa-${member.sexe === 'Homme' ? 'male' : 'female'}"></i>
+                                ${member.sexe}
+                            </span>
+                        </td>
+                        <td>${formatDate(member.date_naissance)}</td>
+                        <td>
+                            <div style="font-size: 0.875rem;">
+                                <div style="margin-bottom: 0.25rem;">
+                                    <i class="fas fa-envelope" style="color: var(--primary-red); width: 16px;"></i>
+                                    ${member.email || 'Non renseigné'}
+                                </div>
+                                <div>
+                                    <i class="fas fa-phone" style="color: var(--primary-red); width: 16px;"></i>
+                                    ${member.telephone || 'Non renseigné'}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn edit" onclick="editMember(${member.id})" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteMember(${member.id})" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
                 `;
-                container.appendChild(memberCard);
             });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+            displayPagination();
+        }
+
+        function displayPagination() {
+            const totalPages = Math.ceil(allMembers.length / membersPerPage);
+            const paginationContainer = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    html += `
+                        <button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    html += '<span style="padding: 0.5rem;">...</span>';
+                }
+            }
+
+            html += `
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+
+            paginationContainer.innerHTML = html;
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(allMembers.length / membersPerPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            displayMembers();
         }
 
         async function handleAddMember(e) {
             e.preventDefault();
             
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<div class="loading"></div> Ajout en cours...';
+            const submitBtn = document.getElementById('addMemberBtn');
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Ajout en cours...</span>';
             submitBtn.disabled = true;
             
-            // Vérifier que currentUser existe et a un service_id
             if (!currentUser || !currentUser.service_id) {
-                console.error('❌ Données utilisateur manquantes');
-                alert('Erreur: Données utilisateur manquantes. Veuillez vous reconnecter.');
-                submitBtn.innerHTML = originalText;
+                showToast('Erreur: Données utilisateur manquantes', 'error');
+                submitBtn.innerHTML = originalHTML;
                 submitBtn.disabled = false;
                 return;
             }
@@ -302,8 +370,6 @@ const API_BASE = '/api';
                 service_id: currentUser.service_id
             };
 
-            console.log('📝 Données membre à ajouter:', memberData);
-
             try {
                 const response = await fetch(`${API_BASE}/membres`, {
                     method: 'POST',
@@ -314,124 +380,48 @@ const API_BASE = '/api';
                     body: JSON.stringify(memberData)
                 });
 
-                console.log('📡 Réponse ajout membre:', response.status);
-
                 if (response.ok) {
                     document.getElementById('addMemberForm').reset();
                     showSuccessAnimation('Membre ajouté avec succès !');
-                    loadMembers();
+                    await loadMembers();
                 } else {
                     const result = await response.json();
-                    throw new Error(result.error || 'Erreur lors de l\'ajout');
+                    showToast('Erreur: ' + (result.error || 'Erreur inconnue'), 'error');
                 }
             } catch (error) {
-                console.error('❌ Erreur ajout membre:', error);
-                alert('Erreur lors de l\'ajout du membre: ' + error.message);
+                console.error('Erreur:', error);
+                showToast('Erreur de connexion au serveur', 'error');
             } finally {
-                submitBtn.innerHTML = originalText;
+                submitBtn.innerHTML = originalHTML;
                 submitBtn.disabled = false;
             }
         }
 
-        // Member Modal Management
-        function openMemberModal(member) {
-            const modal = document.getElementById('memberModal');
-            const content = document.getElementById('memberModalContent');
-            
-            const isAdmin = currentUser && 
-                member.nom === currentUser.nom && 
-                member.prenom === currentUser.prenom;
-            
-            content.innerHTML = `
-                <div style="text-align: center; margin-bottom: 2rem;">
-                    <div class="member-avatar ${isAdmin ? 'admin' : ''}" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1rem;">
-                        ${member.nom.charAt(0)}${member.prenom.charAt(0)}
-                    </div>
-                    <h3 style="margin-bottom: 0.5rem;">${member.nom} ${member.prenom}</h3>
-                    ${isAdmin ? '<span class="member-badge">Administrateur</span>' : ''}
-                </div>
-                
-                <div class="member-details" style="margin-bottom: 2rem;">
-                    <div class="member-detail" style="margin-bottom: 1rem;">
-                        <i class="fas fa-venus-mars"></i>
-                        <span><strong>Sexe:</strong> ${member.sexe}</span>
-                    </div>
-                    <div class="member-detail" style="margin-bottom: 1rem;">
-                        <i class="fas fa-calendar"></i>
-                        <span><strong>Date de naissance:</strong> ${formatDate(member.date_naissance)}</span>
-                    </div>
-                    <div class="member-detail" style="margin-bottom: 1rem;">
-                        <i class="fas fa-envelope"></i>
-                        <span><strong>Email:</strong> ${member.email || 'Non renseigné'}</span>
-                    </div>
-                    <div class="member-detail" style="margin-bottom: 1rem;">
-                        <i class="fas fa-phone"></i>
-                        <span><strong>Téléphone:</strong> ${member.telephone || 'Non renseigné'}</span>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 1rem; justify-content: center;">
-                    <button class="btn btn-warning" onclick="editMember(${member.id})">
-                        <i class="fas fa-edit"></i>
-                        Modifier
-                    </button>
-                    ${!isAdmin ? `
-                        <button class="btn btn-danger" onclick="deleteMember(${member.id})">
-                            <i class="fas fa-trash"></i>
-                            Supprimer
-                        </button>
-                    ` : ''}
-                </div>
-            `;
-            
-            modal.classList.add('active');
-        }
+        async function editMember(id) {
+            const member = allMembers.find(m => m.id === id);
+            if (!member) {
+                showToast('Membre introuvable', 'error');
+                return;
+            }
 
-        function closeMemberModal() {
-            document.getElementById('memberModal').classList.remove('active');
-        }
+            document.getElementById('editMemberId').value = member.id;
+            document.getElementById('editMemberNom').value = member.nom;
+            document.getElementById('editMemberPrenom').value = member.prenom;
+            document.getElementById('editMemberSexe').value = member.sexe;
+            
+            let dateValue = member.date_naissance;
+            if (dateValue && dateValue.includes('T')) {
+                dateValue = dateValue.split('T')[0];
+            }
+            document.getElementById('editMemberDateNaissance').value = dateValue;
+            document.getElementById('editMemberEmail').value = member.email || '';
+            document.getElementById('editMemberTelephone').value = member.telephone || '';
 
-        function editMember(id) {
-            // Trouver le membre dans la liste actuelle
-            fetch(`${API_BASE}/membres`, {
-                headers: { 
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(members => {
-                const member = members.find(m => m.id === id);
-                if (member) {
-                    document.getElementById('editMemberId').value = member.id;
-                    document.getElementById('editMemberNom').value = member.nom;
-                    document.getElementById('editMemberPrenom').value = member.prenom;
-                    document.getElementById('editMemberSexe').value = member.sexe;
-                    document.getElementById('editMemberDateNaissance').value = member.date_naissance;
-                    document.getElementById('editMemberEmail').value = member.email || '';
-                    document.getElementById('editMemberTelephone').value = member.telephone || '';
-                    
-                    closeMemberModal();
-                    document.getElementById('editMemberModal').classList.add('active');
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Erreur lors du chargement des données du membre');
-            });
-        }
-
-        function closeEditMemberModal() {
-            document.getElementById('editMemberModal').classList.remove('active');
+            document.getElementById('editMemberModal').classList.add('show');
         }
 
         async function handleEditMember(e) {
             e.preventDefault();
-            
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<div class="loading"></div> Modification...';
-            submitBtn.disabled = true;
             
             const id = document.getElementById('editMemberId').value;
             const memberData = {
@@ -457,55 +447,152 @@ const API_BASE = '/api';
                 if (response.ok) {
                     showSuccessAnimation('Membre modifié avec succès !');
                     closeEditMemberModal();
-                    loadMembers();
+                    await loadMembers();
                 } else {
                     const result = await response.json();
-                    throw new Error(result.error || 'Erreur lors de la modification');
+                    showToast('Erreur: ' + result.error, 'error');
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                alert('Erreur lors de la modification: ' + error.message);
-            } finally {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+                showToast('Erreur lors de la modification', 'error');
             }
         }
 
-        function deleteMember(id) {
-            memberToDelete = id;
-            document.getElementById('deleteAlert').classList.add('active');
-        }
-
-        async function confirmDelete() {
-            if (!memberToDelete) return;
+        async function deleteMember(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
 
             try {
-                const response = await fetch(`${API_BASE}/membres/${memberToDelete}`, {
+                const response = await fetch(`${API_BASE}/membres/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
 
                 if (response.ok) {
                     showSuccessAnimation('Membre supprimé avec succès !');
-                    loadMembers();
+                    await loadMembers();
                 } else {
                     const result = await response.json();
-                    throw new Error(result.error || 'Erreur lors de la suppression');
+                    showToast('Erreur: ' + (result.error || 'Erreur lors de la suppression'), 'error');
                 }
             } catch (error) {
-                console.error('Erreur:', error);
-                alert('Erreur lors de la suppression: ' + error.message);
-            } finally {
-                cancelDelete();
+                console.error('Erreur suppression:', error);
+                showToast('Erreur de connexion au serveur', 'error');
             }
         }
 
-        function cancelDelete() {
-            memberToDelete = null;
-            document.getElementById('deleteAlert').classList.remove('active');
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            
+            const profileData = {
+                nom: document.getElementById('profileNom').value,
+                prenom: document.getElementById('profilePrenom').value,
+                email: document.getElementById('profileEmail').value
+            };
+
+            const password = document.getElementById('profilePassword').value;
+            if (password) {
+                profileData.mot_de_passe = password;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(profileData)
+                });
+
+                if (response.ok) {
+                    currentUser.nom = profileData.nom;
+                    currentUser.prenom = profileData.prenom;
+                    currentUser.email = profileData.email;
+                    localStorage.setItem('mcm_user', JSON.stringify(currentUser));
+                    
+                    showSuccessAnimation('Profil modifié avec succès !');
+                    loadUserProfile();
+                    closeProfileModal();
+                } else {
+                    const result = await response.json();
+                    showToast('Erreur: ' + (result.error || 'Erreur inconnue'), 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur lors de la modification du profil', 'error');
+            }
         }
 
-        // Utility Functions
+        function showSection(sectionName) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const sectionMap = {
+                'dashboard': 'dashboardSection',
+                'addMember': 'addMemberSection',
+                'members': 'membersSection',
+                'reports': 'reportsSection'
+            };
+            
+            const sectionId = sectionMap[sectionName];
+            const sectionElement = document.getElementById(sectionId);
+            
+            if (sectionElement) {
+                sectionElement.classList.add('active');
+                
+                if (event && event.currentTarget) {
+                    event.currentTarget.classList.add('active');
+                }
+                
+                if (window.innerWidth <= 1024) {
+                    toggleSidebar();
+                }
+
+                // Reload members if navigating to members section
+                if (sectionName === 'members') {
+                    currentPage = 1;
+                    displayMembers();
+                }
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            
+            if (sidebar && hamburger) {
+                sidebar.classList.toggle('open');
+                hamburger.classList.toggle('active');
+                
+                const mobileItems = document.querySelectorAll('.mobile-only');
+                mobileItems.forEach(item => {
+                    if (window.innerWidth <= 1024) {
+                        item.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+                    }
+                });
+            }
+        }
+
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.add('show');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('show');
+        }
+
+        function closeEditMemberModal() {
+            document.getElementById('editMemberModal').classList.remove('show');
+        }
+
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('fr-FR', {
@@ -515,94 +602,67 @@ const API_BASE = '/api';
             });
         }
 
-        function showLoading(containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = `
-                <div style="display: flex; justify-content: center; align-items: center; padding: 3rem; grid-column: 1/-1;">
-                    <div class="loading" style="width: 40px; height: 40px;"></div>
-                </div>
-            `;
-        }
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
 
-        function showError(message) {
-            alert(message); // Simple pour l'instant, peut être amélioré
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${icons[type]}"></i>
+                </div>
+                <div class="toast-message">${message}</div>
+            `;
+
+            document.getElementById('toastContainer').appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
 
         function showSuccessAnimation(message) {
-            // Animation de confettis
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#667eea', '#764ba2', '#f093fb']
-            });
+            if (typeof confetti !== 'undefined') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
 
-            // Animation de succès personnalisée
-            const successDiv = document.createElement('div');
-            successDiv.className = 'success-animation';
-            successDiv.innerHTML = `
-                <div class="success-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3 style="color: var(--text-dark); margin-bottom: 0.5rem;">${message}</h3>
-                <p style="color: #718096;">Opération réalisée avec succès</p>
-            `;
-            
-            document.body.appendChild(successDiv);
-            
-            // Supprimer après 3 secondes
-            setTimeout(() => {
-                if (successDiv.parentNode) {
-                    successDiv.parentNode.removeChild(successDiv);
-                }
-            }, 3000);
+            showToast(message, 'success');
         }
 
         function logout() {
-            console.log('🚪 Déconnexion en cours');
+            if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
+            
             localStorage.removeItem('mcm_token');
             localStorage.removeItem('mcm_user');
-            console.log('🧹 Données supprimées du localStorage');
-            window.location.href = './login.html';
+            showToast('Déconnexion réussie', 'info');
+            setTimeout(() => {
+                window.location.href = './login.html';
+            }, 1000);
         }
 
-        // Fonction de debug temporaire - à supprimer en production
-        window.debugAuth = function() {
-            console.log('=== DEBUG AUTHENTIFICATION ===');
-            console.log('Token:', localStorage.getItem('mcm_token'));
-            console.log('User:', localStorage.getItem('mcm_user'));
-            console.log('currentUser:', currentUser);
-            console.log('authToken:', authToken);
-        };
-
-        // Test de connexion API
-        window.testAPI = async function() {
-            try {
-                const response = await fetch(`${API_BASE}/membres`, {
-                    headers: { 
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
+        // Responsive handling
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            const mobileItems = document.querySelectorAll('.mobile-only');
+            
+            if (window.innerWidth > 1024) {
+                if (sidebar) sidebar.classList.remove('open');
+                if (hamburger) hamburger.classList.remove('active');
+                mobileItems.forEach(item => {
+                    item.style.display = 'none';
                 });
-                console.log('Test API - Status:', response.status);
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Test API - Données:', data);
-                } else {
-                    console.log('Test API - Erreur:', await response.text());
-                }
-            } catch (error) {
-                console.error('Test API - Exception:', error);
-            }
-        };
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // ESC to close modals
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal.active').forEach(modal => {
-                    modal.classList.remove('active');
-                });
-                document.getElementById('deleteAlert').classList.remove('active');
             }
         });
+    

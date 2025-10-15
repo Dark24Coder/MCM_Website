@@ -206,6 +206,9 @@ body {
 }
 
 .login-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
     background: var(--primary-red);
     color: var(--white);
     padding: 0.625rem 1.5rem;
