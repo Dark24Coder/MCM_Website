@@ -137,7 +137,7 @@ app.use('/api/users', userRoutes);
  * ROUTES FRONTEND
  */
 app.get('/', (req, res) =>
-    res.sendFile(path.join(__dirname, 'templates', 'index.html'))
+    res.sendFile(path.join(__dirname, 'templates', 'accueil.html'))
 );
 app.get('/login', (req, res) =>
     res.sendFile(path.join(__dirname, 'templates', 'login.html'))
