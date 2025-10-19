@@ -1,10 +1,10 @@
-const express = require('express');
-const { getPublicCommissions, getCommissions } = require('../controllers/commissionController');
-const { authenticateToken } = require('../middlewares/auth');
+import express from 'express';
+import { getPublicCommissions, getCommissions } from '../controllers/commissionController.js';
+import { authenticateToken } from '../middlewares/auth.js';
 
 const router = express.Router();
 
 router.get('/public', getPublicCommissions);
 router.get('/', authenticateToken, getCommissions);
 
-module.exports = router;
+export default router;

@@ -1,11 +1,12 @@
-const bcrypt = require('bcryptjs');
-const db = require('../config/db');
+import bcrypt from 'bcrypt';
+import db from '../config/db.js';
 
-const getUsers = (req, res) => {
+export const getUsers = (req, res) => {
     console.log(`Récupération des utilisateurs par ${req.user.email} (${req.user.role})`);
     
     const query = `
-        SELECT u.*, c.nom as commission_nom, s.nom as service_nom
+        SELECT u.id, u.nom, u.prenom, u.email, u.telephone, u.role, u.commission_id, u.service_id, u.is_active, u.created_at,
+               c.nom as commission_nom, s.nom as service_nom
         FROM users u
         LEFT JOIN commissions c ON u.commission_id = c.id
         LEFT JOIN services s ON u.service_id = s.id
@@ -18,19 +19,12 @@ const getUsers = (req, res) => {
             return res.status(500).json({ error: 'Erreur serveur' });
         }
         
-        // Ne pas renvoyer les mots de passe
-        const users = results.map(user => {
-            const { mot_de_passe, ...userWithoutPassword } = user;
-            return userWithoutPassword;
-        });
-        
-        console.log(`${users.length} utilisateurs récupérés`);
-        res.json(users);
+        console.log(`${results.rows.length} utilisateurs récupérés`);
+        res.json(results.rows);
     });
 };
 
-// FONCTION AJOUTÉE - Récupérer un utilisateur par ID
-const getUserById = (req, res) => {
+export const getUserById = (req, res) => {
     const { id } = req.params;
     
     console.log(`Récupération de l'utilisateur ID ${id} par ${req.user.email}`);
@@ -45,7 +39,7 @@ const getUserById = (req, res) => {
         FROM users u
         LEFT JOIN commissions c ON u.commission_id = c.id
         LEFT JOIN services s ON u.service_id = s.id
-        WHERE u.id = ?
+        WHERE u.id = $1
     `;
     
     db.query(query, [parseInt(id)], (err, results) => {
@@ -54,18 +48,17 @@ const getUserById = (req, res) => {
             return res.status(500).json({ error: 'Erreur serveur' });
         }
         
-        if (results.length === 0) {
+        if (results.rows.length === 0) {
             console.log(`Utilisateur non trouvé avec l'ID: ${id}`);
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
         
-        console.log(`Utilisateur trouvé: ${results[0].nom} ${results[0].prenom}`);
-        res.json(results[0]);
+        console.log(`Utilisateur trouvé: ${results.rows[0].nom} ${results.rows[0].prenom}`);
+        res.json(results.rows[0]);
     });
 };
 
-// FONCTION AJOUTÉE - Récupérer le profil de l'utilisateur connecté
-const getUserProfile = (req, res) => {
+export const getUserProfile = (req, res) => {
     const userId = req.user.id;
     
     console.log(`Récupération du profil utilisateur ID ${userId}`);
@@ -76,7 +69,7 @@ const getUserProfile = (req, res) => {
         FROM users u
         LEFT JOIN commissions c ON u.commission_id = c.id
         LEFT JOIN services s ON u.service_id = s.id
-        WHERE u.id = ?
+        WHERE u.id = $1
     `;
     
     db.query(query, [userId], (err, results) => {
@@ -85,22 +78,26 @@ const getUserProfile = (req, res) => {
             return res.status(500).json({ error: 'Erreur serveur' });
         }
         
-        if (results.length === 0) {
+        if (results.rows.length === 0) {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
         
-        res.json(results[0]);
+        res.json(results.rows[0]);
     });
 };
 
-const updateUserRole = (req, res) => {
+export const updateUserRole = (req, res) => {
     const { id } = req.params;
     const { role, commission_id, service_id } = req.body;
 
     console.log(`Modification du rôle utilisateur ID ${id} par ${req.user.email}`);
 
-    const query = 'UPDATE users SET role = ?, commission_id = ?, service_id = ?, updated_at = NOW() WHERE id = ?';
-    db.query(query, [role, commission_id, service_id, id], (err, result) => {
+    if (!role) {
+        return res.status(400).json({ error: 'Le rôle est requis' });
+    }
+
+    const query = 'UPDATE users SET role = $1, commission_id = $2, service_id = $3, updated_at = NOW() WHERE id = $4';
+    db.query(query, [role, commission_id || null, service_id || null, id], (err) => {
         if (err) {
             console.error('Erreur updateUserRole:', err);
             return res.status(500).json({ error: 'Erreur lors de la modification' });
@@ -110,18 +107,17 @@ const updateUserRole = (req, res) => {
     });
 };
 
-const deleteUser = (req, res) => {
+export const deleteUser = (req, res) => {
     const { id } = req.params;
 
     console.log(`Suppression utilisateur ID ${id} par ${req.user.email}`);
 
-    // Vérifier qu'on ne supprime pas son propre compte
     if (parseInt(id) === req.user.id) {
         return res.status(400).json({ error: 'Vous ne pouvez pas supprimer votre propre compte' });
     }
 
-    const query = 'DELETE FROM users WHERE id = ?';
-    db.query(query, [id], (err, result) => {
+    const query = 'DELETE FROM users WHERE id = $1';
+    db.query(query, [id], (err) => {
         if (err) {
             console.error('Erreur deleteUser:', err);
             return res.status(500).json({ error: 'Erreur lors de la suppression' });
@@ -131,20 +127,18 @@ const deleteUser = (req, res) => {
     });
 };
 
-const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
     const { nom, prenom, email, mot_de_passe } = req.body;
     const userId = req.user.id;
 
     console.log(`Mise à jour profil utilisateur ID ${userId}`);
 
-    // Validation des données
     if (!nom || !prenom || !email) {
         return res.status(400).json({ error: 'Nom, prénom et email requis' });
     }
 
     try {
-        // Vérifier si l'email n'est pas déjà utilisé par un autre utilisateur
-        const checkEmailQuery = 'SELECT id FROM users WHERE email = ? AND id != ?';
+        const checkEmailQuery = 'SELECT id FROM users WHERE email = $1 AND id != $2';
         
         db.query(checkEmailQuery, [email, userId], async (err, emailResults) => {
             if (err) {
@@ -152,24 +146,26 @@ const updateProfile = async (req, res) => {
                 return res.status(500).json({ error: 'Erreur serveur' });
             }
             
-            if (emailResults.length > 0) {
+            if (emailResults.rows.length > 0) {
                 return res.status(409).json({ error: 'Cet email est déjà utilisé par un autre utilisateur' });
             }
 
             try {
-                let query = 'UPDATE users SET nom = ?, prenom = ?, email = ?, updated_at = NOW()';
+                let query = 'UPDATE users SET nom = $1, prenom = $2, email = $3, updated_at = NOW()';
                 let params = [nom, prenom, email];
+                let paramIndex = 4;
 
                 if (mot_de_passe && mot_de_passe.trim() !== '') {
                     const hashedPassword = await bcrypt.hash(mot_de_passe, 12);
-                    query += ', mot_de_passe = ?';
+                    query += `, mot_de_passe = $${paramIndex}`;
                     params.push(hashedPassword);
+                    paramIndex++;
                 }
 
-                query += ' WHERE id = ?';
+                query += ` WHERE id = $${paramIndex}`;
                 params.push(userId);
 
-                db.query(query, params, (err, result) => {
+                db.query(query, params, (err) => {
                     if (err) {
                         console.error('Erreur updateProfile:', err);
                         return res.status(500).json({ error: 'Erreur lors de la modification' });
@@ -190,13 +186,4 @@ const updateProfile = async (req, res) => {
         console.error('Erreur updateProfile générale:', error);
         res.status(500).json({ error: 'Erreur serveur' });
     }
-};
-
-module.exports = { 
-    getUsers, 
-    getUserById,        
-    getUserProfile,     
-    updateUserRole, 
-    deleteUser, 
-    updateProfile 
 };

@@ -1,8 +1,6 @@
-const express = require('express');
-const rateLimit = require('express-rate-limit');
-
-// Import des contrôleurs
-const { 
+import express from 'express';
+import rateLimit from 'express-rate-limit';
+import { 
     register, 
     login, 
     sendTemporaryPassword, 
@@ -11,7 +9,7 @@ const {
     validateCode,
     resendValidationCode,
     testEmail
-} = require('../controllers/authController');
+} from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -76,11 +74,11 @@ const recoveryLimiter = rateLimit({
 const validateRegisterData = (req, res, next) => {
     const { nom, prenom, email, telephone, mot_de_passe, role } = req.body;
     
-    console.log('🔍 Validation des données d\'inscription:', { nom, prenom, email, role });
+    console.log('Validation des données d\'inscription:', { nom, prenom, email, role });
     
     // Vérifications de base
     if (!nom || !prenom || !email || !telephone || !mot_de_passe || !role) {
-        console.log('❌ Champs manquants dans la validation');
+        console.log('Champs manquants dans la validation');
         return res.status(400).json({
             error: 'Tous les champs obligatoires doivent être remplis',
             requiredFields: ['nom', 'prenom', 'email', 'telephone', 'mot_de_passe', 'role']
@@ -106,7 +104,7 @@ const validateRegisterData = (req, res, next) => {
         });
     }
 
-    console.log('✅ Validation des données d\'inscription réussie');
+    console.log('Validation des données d\'inscription réussie');
     next();
 };
 
@@ -114,10 +112,10 @@ const validateRegisterData = (req, res, next) => {
 const validateLoginData = (req, res, next) => {
     const { email, mot_de_passe } = req.body;
     
-    console.log('🔍 Validation des données de connexion pour:', email);
+    console.log('Validation des données de connexion pour:', email);
     
     if (!email || !mot_de_passe) {
-        console.log('❌ Champs manquants pour la connexion');
+        console.log('Champs manquants pour la connexion');
         return res.status(400).json({
             error: 'Email et mot de passe requis'
         });
@@ -125,8 +123,9 @@ const validateLoginData = (req, res, next) => {
 
     // Nettoyer les données
     req.body.email = email.trim().toLowerCase();
+    req.body.mot_de_passe = mot_de_passe.toString().trim();
     
-    console.log('✅ Validation des données de connexion réussie');
+    console.log('Validation des données de connexion réussie');
     next();
 };
 
@@ -139,11 +138,11 @@ const logAuthAttempt = (action) => {
         const userAgent = req.get('User-Agent');
         const timestamp = new Date().toISOString();
         
-        console.log(`🔐 [${timestamp}] ${action} - IP: ${ip}`);
+        console.log(`[${timestamp}] ${action} - IP: ${ip}`);
         
         // Log les données importantes (sans les mots de passe)
         if (req.body.email) {
-            console.log(`📧 Email: ${req.body.email}`);
+            console.log(`Email: ${req.body.email}`);
         }
         
         next();
@@ -178,7 +177,6 @@ router.post('/send-temporary-password',
     recoveryLimiter,
     logAuthAttempt('RECOVERY_REQUEST'),
     (req, res, next) => {
-        // Validation spécifique pour la récupération
         const { type, target } = req.body;
         
         if (!type || !target) {
@@ -281,7 +279,7 @@ router.post('/resend-validation-code',
 
 // Route de test d'envoi d'email
 router.post('/test-email', 
-    logAuthAttempt('TEST_EMAIL'), 
+    logAuthAttempt('TEST_EMAIL'),
     testEmail
 );
 
@@ -324,7 +322,7 @@ router.get('/password-requirements', (req, res) => {
  * GESTION DES ERREURS GLOBALES POUR LES ROUTES AUTH
  */
 router.use((err, req, res, next) => {
-    console.error('❌ Erreur dans les routes d\'authentification:', err);
+    console.error('Erreur dans les routes d\'authentification:', err);
     
     // Erreur de validation JWT
     if (err.name === 'JsonWebTokenError') {
@@ -354,4 +352,4 @@ router.use((err, req, res, next) => {
     });
 });
 
-module.exports = router;
+export default router;

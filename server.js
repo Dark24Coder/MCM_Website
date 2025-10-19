@@ -1,320 +1,197 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const helmet = require('helmet');
-const morgan = require('morgan');
+/**
+ * ================================
+ * 🌐 MCM Management System Server
+ * ================================
+ */
 
-// Import des routes
-const authRoutes = require('./server/routes/authRoutes');
-const commissionRoutes = require('./server/routes/commissionRoutes');
-const serviceRoutes = require('./server/routes/serviceRoutes');
-const membreRoutes = require('./server/routes/membreRoutes');
-const userRoutes = require('./server/routes/userRoutes');
+import dotenv from 'dotenv';
+dotenv.config({ quiet: true });
 
-// Import de la configuration DB
-require('./server/config/db');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { Pool } from 'pg';
+import nodemailer from 'nodemailer';
+
+// 🚀 IMPORTATION DE TOUTES LES ROUTES
+import authRoutes from './server/routes/authRoutes.js';
+import commissionRoutes from './server/routes/commissionRoutes.js';
+import serviceRoutes from './server/routes/serviceRoutes.js';
+import membreRoutes from './server/routes/membreRoutes.js';
+import userRoutes from './server/routes/userRoutes.js';
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-/**
- * CONFIGURATION DE SÉCURITÉ (Helmet)
- * Ajustée pour autoriser les fichiers CSS externes (comme all.min.css)
- */
-app.use(
-    helmet({
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                styleSrc: [
-                    "'self'",
-                    "'unsafe-inline'",
-                    "fonts.googleapis.com",
-                    "cdnjs.cloudflare.com",
-                    "unpkg.com",
-                ],
-                fontSrc: [
-                    "'self'",
-                    "fonts.gstatic.com",
-                    "cdnjs.cloudflare.com",
-                    "data:",
-                ],
-                imgSrc: ["'self'", "data:", "https:"],
-                scriptSrc: [
-                    "'self'",
-                    "'unsafe-inline'",
-                    "cdnjs.cloudflare.com",
-                    "unpkg.com",
-                    "cdn.jsdelivr.net",
-                ],
-                scriptSrcAttr: ["'unsafe-inline'"],
-            },
-        },
-        crossOriginEmbedderPolicy: false,
-    })
-);
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-/**
- * CONFIGURATION DES LOGS
- */
-if (NODE_ENV === 'production') {
-    app.use(morgan('combined'));
-} else {
-    app.use(morgan('dev'));
+// Fichiers statiques (CSS, JS, images, etc.)
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+
+// Chemin des templates
+const templatesPath = path.join(__dirname, 'public', 'templates');
+
+// =============================
+// 🔗 Connexion PostgreSQL (Neon)
+// =============================
+let pool;
+
+try {
+    // Priority 1: DATABASE_URL (Neon)
+    if (process.env.DATABASE_URL) {
+        console.log("🌍 Mode PRODUCTION - Connexion Neon");
+        pool = new Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false },
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+        });
+    } 
+    // Priority 2: Variables d'environnement locales
+    else if (process.env.DB_HOST) {
+        console.log("💻 Mode DÉVELOPPEMENT - Connexion locale");
+        pool = new Pool({
+            host: process.env.DB_HOST,
+            port: parseInt(process.env.DB_PORT || '5432', 10),
+            user: process.env.DB_USER,
+            password: String(process.env.DB_PASSWORD || '').trim(),
+            database: process.env.DB_NAME,
+            ssl: false
+        });
+    }
+    else {
+        throw new Error("❌ Aucune configuration de base de données trouvée !");
+    }
+
+    // Test connexion
+    const client = await pool.connect();
+    console.log("✅ Connecté à PostgreSQL");
+    console.log(`📍 Base: ${process.env.DB_NAME || 'neondb'}`);
+    client.release();
+} catch (err) {
+    console.error("❌ Erreur de connexion à PostgreSQL:", err.message);
+    process.exit(1);
 }
 
-/**
- * MIDDLEWARE DE BASE
- */
-app.use(
-    cors({
-    origin:
-        NODE_ENV === 'production'
-        ? [
-            'https://votre-domaine.com',
-            'https://www.votre-domaine.com',
-            ]
-        : [
-            'http://localhost:3000',
-            'http://127.0.0.1:3000',
-            'http://localhost:5500',
-            'http://127.0.0.1:5500',
-            'http://localhost:5501',
-            'http://127.0.0.1:5501',
-            ],
-        credentials: true,
-        optionsSuccessStatus: 200,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    })
-);
+// Export pool pour utiliser dans les routes
+export { pool };
 
-app.use(express.json({ limit: '10mb', strict: true }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// =============================
+// 📧 Configuration Email
+// =============================
+let transporter = null;
+if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+    transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD
+        }
+    });
+    console.log("📧 Email configuré: ✅");
+} else {
+    console.log("📧 Email non configuré");
+}
 
-// Servir les fichiers statiques
-app.use(
-    express.static(path.join(__dirname, 'public'), {
-        maxAge: NODE_ENV === 'production' ? '1d' : '0',
-        etag: true,
-    })
-);
+// Export transporter pour utiliser dans les routes
+export { transporter };
 
-/**
- * MIDDLEWARE DE LOGGING DES REQUÊTES
- */
-app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    const ip = req.ip || req.connection.remoteAddress;
+// =============================
+// 🚀 ROUTES API - ENREGISTREMENT
+// =============================
 
-    if (NODE_ENV === 'development') {
-    console.log(`📡 [${timestamp}] ${req.method} ${req.originalUrl} - IP: ${ip}`);
-
-    if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.body) {
-        const logBody = { ...req.body };
-        if (logBody.mot_de_passe) logBody.mot_de_passe = '[MASKED]';
-        if (logBody.password) logBody.password = '[MASKED]';
-        console.log('📦 Body:', JSON.stringify(logBody, null, 2));
-    }
-    }
-
-    next();
-});
-
-/**
- * ROUTES API
- */
-console.log('🔗 Chargement des routes API...');
+// Routes d'authentification
 app.use('/api/auth', authRoutes);
+
+// Routes des commissions
 app.use('/api/commissions', commissionRoutes);
+
+// Routes des services
 app.use('/api/services', serviceRoutes);
+
+// Routes des membres
 app.use('/api/membres', membreRoutes);
+
+// Routes des utilisateurs
 app.use('/api/users', userRoutes);
 
-/**
- * ROUTES FRONTEND
- */
-app.get('/', (req, res) =>
-    res.sendFile(path.join(__dirname, 'templates', 'accueil.html'))
-);
-app.get('/login', (req, res) =>
-    res.sendFile(path.join(__dirname, 'templates', 'login.html'))
-);
-app.get('/password-recovery', (req, res) =>
-    res.sendFile(path.join(__dirname, 'templates', 'password-recovery.html'))
-);
-app.get('/superadmin', (req, res) =>
-    res.sendFile(path.join(__dirname, 'templates', 'superadmin.html'))
-);
-app.get('/admin', (req, res) =>
-    res.sendFile(path.join(__dirname, 'templates', 'admin.html'))
-);
-app.get('/adminCom', (req, res) =>
-    res.sendFile(path.join(__dirname, 'templates', 'adminCom.html'))
-);
-app.get('/dashboard', (req, res) =>
-    res.sendFile(path.join(__dirname, 'templates', 'dashboard.html'))
-);
+// =============================
+// 🧭 ROUTES FRONTEND
+// =============================
 
-/**
- * API DE SANTÉ ET MONITORING
- */
-app.get('/api/health', (req, res) => {
-    res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: NODE_ENV,
-    version: '1.0.0',
-        services: {
-        database: 'connected',
-        auth: 'active',
-        email: process.env.EMAIL_USER ? 'configured' : 'not configured',
-        sms: process.env.TWILIO_ACCOUNT_SID ? 'configured' : 'not configured',
-        },
-    });
+// Page d'accueil
+app.get('/', (req, res) => {
+    res.sendFile(path.join(templatesPath, 'accueil.html'));
 });
 
-app.get('/api/version', (req, res) => {
-    res.json({
-        name: 'MCM Management System',
-        version: '1.0.0',
-        description: 'Système de gestion pour MCM',
-        author: 'Équipe de développement MCM',
-        buildDate: new Date().toISOString(),
-    });
+// Routes d'authentification
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(templatesPath, 'login.html'));
 });
 
-/**
- * ERREUR 404
- */
+app.get('/password-recovery', (req, res) => {
+    res.sendFile(path.join(templatesPath, 'password-recovery.html'));
+});
+
+// Routes des dashboards
+app.get('/superadmin', (req, res) => {
+    res.sendFile(path.join(templatesPath, 'superadmin.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(templatesPath, 'admin.html'));
+});
+
+app.get('/adminCom', (req, res) => {
+    res.sendFile(path.join(templatesPath, 'adminCom.html'));
+});
+
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(templatesPath, 'dashboard.html'));
+});
+
+// Servir les fichiers statiques du dossier templates
+app.use(express.static(path.join(__dirname, 'public', 'templates')));
+
+// =============================
+// ❌ GESTION 404
+// =============================
 app.use((req, res, next) => {
+    // Pour les routes API
     if (req.originalUrl.startsWith('/api/')) {
         console.log(`❌ Route API non trouvée: ${req.method} ${req.originalUrl}`);
-        res.status(404).json({
-        error: 'Endpoint non trouvé',
-        path: req.originalUrl,
-        method: req.method,
-        timestamp: new Date().toISOString(),
-        });
-    } else {
-        res.redirect('/');
-    }
-});
-
-/**
- * GESTION GLOBALE DES ERREURS
- */
-app.use((err, req, res, next) => {
-    const timestamp = new Date().toISOString();
-    const errorId = Math.random().toString(36).substr(2, 9);
-
-    console.error(`❌ [${timestamp}] Erreur ${errorId}:`, err);
-
-    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-        return res.status(400).json({
-        error: 'JSON invalide',
-        errorId,
-        message: 'Veuillez vérifier la syntaxe de votre requête',
+        return res.status(404).json({
+            error: 'Endpoint non trouvé',
+            path: req.originalUrl,
+            method: req.method,
+            timestamp: new Date().toISOString(),
         });
     }
 
-    if (err.code === 'LIMIT_FILE_SIZE' || err.message === 'request entity too large') {
-        return res.status(413).json({
-        error: 'Fichier trop volumineux',
-        errorId,
-        message: 'La taille du fichier dépasse la limite autorisée',
-        });
-    }
-
-    if (err.message && err.message.includes('CORS')) {
-        return res.status(403).json({
-        error: 'Erreur CORS',
-        errorId,
-        message: 'Origine non autorisée',
-        });
-    }
-
-    const statusCode = err.statusCode || err.status || 500;
-    const message =
-        NODE_ENV === 'production'
-        ? "Une erreur inattendue s'est produite"
-        : err.message;
-
-    res.status(statusCode).json({
-        error: 'Erreur serveur',
-        errorId,
-        message,
-        timestamp,
-        ...(NODE_ENV === 'development' && { stack: err.stack }),
+    // Pour les routes frontend
+    console.log(`❌ Page non trouvée: ${req.originalUrl}`);
+    res.status(404).sendFile(path.join(templatesPath, '404.html'), err => {
+        if (err) {
+            console.error('Erreur lors de la lecture de 404.html:', err);
+            res.status(404).send('Page non trouvée');
+        }
     });
 });
 
-/**
- * ARRÊT PROPRE DU SERVEUR
- */
-const gracefulShutdown = (signal) => {
-    console.log(`\n🛑 Signal ${signal} reçu. Arrêt en cours...`);
-
-    const server = app.listen();
-    server.close(() => {
-    console.log('📡 Serveur HTTP fermé.');
-
-    const db = require('./server/config/db');
-    if (db && db.end) {
-        db.end(() => {
-        console.log('🗄️  Connexion base de données fermée.');
-        process.exit(0);
-        });
-    } else {
-        process.exit(0);
-    }
-    });
-
-    setTimeout(() => {
-        console.error('⚠️  Arrêt forcé après timeout.');
-        process.exit(1);
-    }, 10000);
-};
-
-// Gestion des erreurs non capturées
-process.on('uncaughtException', (err) => {
-    console.error('💥 Erreur non gérée:', err);
-    if (NODE_ENV === 'production') {
-        gracefulShutdown('uncaughtException');
-    } else {
-        console.error('Stack trace:', err.stack);
-        process.exit(1);
-    }
+// =============================
+// 🚀 Lancement du serveur
+// =============================
+app.listen(PORT, () => {
+    console.log(`\n🎯 MCM Management System démarré !`);
+    console.log(`🔗 URL locale: http://localhost:${PORT}`);
+    console.log(`📝 Environnement: ${NODE_ENV}\n`);
 });
-
-process.on('unhandledRejection', (err, promise) => {
-    console.error('💥 Promesse rejetée non gérée:', err);
-    if (NODE_ENV === 'production') {
-        gracefulShutdown('unhandledRejection');
-    } else {
-        console.error('Promise:', promise);
-        console.error('Stack trace:', err.stack);
-        process.exit(1);
-    }
-});
-
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-/**
- * DÉMARRAGE DU SERVEUR
- */
-const server = app.listen(PORT, () => {
-    console.log('🎯 MCM Management System démarré !');
-    console.log('🔗 URL locale: http://localhost:' + PORT);
-    console.log('📧 Email configuré:', process.env.EMAIL_USER ? '✅' : '❌');
-    console.log('📱 SMS configuré:', process.env.TWILIO_ACCOUNT_SID ? '✅' : '❌');
-    console.log('🗄️  Base de données:', 'En cours de vérification...');
-});
-
-server.timeout = NODE_ENV === 'production' ? 120000 : 30000;
-
-module.exports = app;

@@ -1,7 +1,8 @@
 {
-  "name": "website_mcm",
+  "type": "module",
+  "name": "mcm-management-system",
   "version": "1.0.0",
-  "description": "Système de gestion de membres avec WordPress vitrine + gestion interne des commissions et services.",
+  "description": "Système de gestion de membres de MCM Bénin avec page de présentation + gestion interne des commissions et services.",
   "main": "index.js",
   "scripts": {
     "start": "node server.js",

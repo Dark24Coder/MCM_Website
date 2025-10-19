@@ -1,42 +1,36 @@
-const { Pool } = require('pg');
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
 
-// Configuration PostgreSQL
-const pool = new Pool({
+// Force reload of env vars
+dotenv.config({ override: true });
+
+// Build config with explicit type conversion
+const config = {
     host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 5432,
+    port: parseInt(process.env.DB_PORT || '5432', 10),
     user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '',
+    password: process.env.DB_PASSWORD ? String(process.env.DB_PASSWORD).trim() : '',
     database: process.env.DB_NAME || 'mcm_db',
-    max: 20, // Nombre maximum de connexions
+    max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
-});
+};
 
-// Test de connexion au démarrage
-pool.connect((err, client, release) => {
-    if (err) {
-        console.error('❌ Erreur de connexion à PostgreSQL:', err.message);
-        console.error('🔍 Vérifiez:');
-        console.error('   1. PostgreSQL est démarré');
-        console.error('   2. Les identifiants dans .env sont corrects');
-        console.error('   3. La base mcm_db existe');
-        return;
-    }
-    console.log('✅ Connecté à PostgreSQL');
-    console.log(`📍 Base: ${process.env.DB_NAME || 'mcm_db'}`);
-    release();
-});
+const pool = new Pool(config);
 
 // Gestion des erreurs du pool
-pool.on('error', (err, client) => {
-    console.error('❌ Erreur inattendue sur le client PostgreSQL:', err.message);
+pool.on('error', (err) => {
+    console.error('❌ Pool Error:', err.message);
 });
 
-// Fonction query compatible avec MySQL (style callback)
+pool.on('connect', () => {
+    console.log('✅ Client connected to pool');
+});
+
+// Function query - Returns the full result object
 const query = (text, params, callback) => {
     const start = Date.now();
     
-    // Si params est une fonction, c'est le callback (pas de paramètres)
     if (typeof params === 'function') {
         callback = params;
         params = [];
@@ -45,41 +39,38 @@ const query = (text, params, callback) => {
     return pool.query(text, params, (err, result) => {
         const duration = Date.now() - start;
         
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`🔍 Query executée en ${duration}ms`);
-        }
-        
         if (err) {
-            console.error('❌ Erreur SQL:', err.message);
-            console.error('📝 Query:', text);
-            if (callback) {
-                return callback(err, null);
-            }
+            console.error('❌ Query Error:', err.message);
+            console.error('   Query:', text);
+            if (callback) return callback(err);
             return;
         }
         
-        // Retourner les rows comme MySQL
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`✓ Query executed in ${duration}ms`);
+        }
+        
         if (callback) {
-            callback(null, result.rows);
+            // Pass result object with rows property for compatibility
+            callback(null, { rows: result.rows });
         }
     });
 };
 
-// Fonction pour fermer le pool proprement
+// Function to close pool
 const end = (callback) => {
-    console.log('🔄 Fermeture du pool PostgreSQL...');
+    console.log('🔌 Closing PostgreSQL pool...');
     pool.end((err) => {
         if (err) {
-            console.error('❌ Erreur lors de la fermeture du pool:', err.message);
+            console.error('❌ Error closing pool:', err.message);
         } else {
-            console.log('✅ Pool PostgreSQL fermé');
+            console.log('✅ Pool closed');
         }
         if (callback) callback(err);
     });
 };
 
-// Export pour compatibilité
-module.exports = {
+export default {
     query,
     end,
     pool

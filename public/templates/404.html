@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Non Trouvée | MCM</title>
+    <link rel="icon" type="image/svg" href="../assets/images/logo/logomcm.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-red: #E60012;
+            --dark-red: #B8000E;
+            --light-red: #FF1A2E;
+            --white: #FFFFFF;
+            --off-white: #F8F9FA;
+            --black: #1F2937;
+            --gray: #6B7280;
+            --dark-gray: #374151;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.5);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.4);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 2s;
+        }
+
+        .blob-3 {
+            width: 250px;
+            height: 250px;
+            background: rgba(255, 255, 255, 0.3);
+            top: 30%;
+            right: 5%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        /* Container */
+        .container-404 {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem 1.5rem;
+            max-width: 700px;
+            width: 100%;
+            margin: auto;
+        }
+
+        /* Logo MCM */
+        .logo-404 {
+            margin-bottom: 2rem;
+            animation: slideInDown 0.8s ease-out;
+        }
+
+        .logo-404 img {
+            width: 80px;
+            height: 80px;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2));
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 404 Number */
+        .error-number {
+            font-size: clamp(80px, 15vw, 180px);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--white), rgba(255, 255, 255, 0.8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 1rem;
+            animation: bounce 2s ease-in-out infinite;
+            text-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            word-break: break-word;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Animated Icon */
+        .error-icon {
+            font-size: clamp(50px, 10vw, 80px);
+            color: var(--white);
+            margin-bottom: 1.5rem;
+            animation: rotate 20s linear infinite;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2));
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Text */
+        .error-title {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-weight: 800;
+            color: var(--white);
+            margin-bottom: 1rem;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideInDown 0.8s ease-out;
+            line-height: 1.2;
+        }
+
+        .error-subtitle {
+            font-size: clamp(0.95rem, 3vw, 1.125rem);
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            animation: slideInUp 0.8s ease-out 0.2s both;
+            font-weight: 300;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border-radius: 50px;
+            border: none;
+            font-size: clamp(0.875rem, 2.5vw, 1rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--white);
+            color: var(--primary-red);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            background: var(--off-white);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+            border: 2px solid var(--white);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            border-color: var(--white);
+        }
+
+        /* Floating Elements */
+        .floating-item {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.08;
+            animation: float 6s ease-in-out infinite;
+            color: var(--white);
+        }
+
+        .floating-item:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+        .floating-item:nth-child(2) { top: 20%; right: 10%; animation-delay: 1s; }
+        .floating-item:nth-child(3) { bottom: 20%; left: 15%; animation-delay: 2s; }
+        .floating-item:nth-child(4) { bottom: 10%; right: 5%; animation-delay: 3s; }
+
+        /* Status Code Info */
+        .status-info {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            animation: slideInUp 1s ease-out 0.6s both;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .status-info h3 {
+            color: var(--white);
+            margin-bottom: 0.5rem;
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+            font-weight: 700;
+        }
+
+        .status-info p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: clamp(0.8rem, 2vw, 0.875rem);
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            margin-top: 2rem;
+            animation: fadeIn 1s ease-out 0.8s both;
+        }
+
+        .breadcrumb p {
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+        }
+
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--white);
+            text-decoration: underline;
+        }
+
+        /* Animations */
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .blob-1 { width: 300px; height: 300px; }
+            .blob-2 { width: 200px; height: 200px; }
+            .blob-3 { width: 150px; height: 150px; }
+
+            .container-404 {
+                padding: 1.5rem 1rem;
+            }
+
+            .logo-404 {
+                margin-bottom: 1.5rem;
+            }
+
+            .logo-404 img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .error-icon {
+                margin-bottom: 1rem;
+            }
+
+            .error-title {
+                margin-bottom: 0.75rem;
+            }
+
+            .error-subtitle {
+                margin-bottom: 1.5rem;
+            }
+
+            .button-group {
+                gap: 0.75rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+                flex: 1 1 calc(50% - 0.375rem);
+                justify-content: center;
+            }
+
+            .btn i {
+                display: none;
+            }
+
+            .status-info {
+                padding: 1rem;
+                margin-top: 1.5rem;
+                border-radius: 15px;
+            }
+
+            .floating-item {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container-404 {
+                padding: 1rem;
+            }
+
+            .logo-404 {
+                margin-bottom: 1rem;
+            }
+
+            .logo-404 img {
+                width: 50px;
+                height: 50px;
+            }
+
+            .error-number {
+                margin-bottom: 0.5rem;
+            }
+
+            .error-icon {
+                margin-bottom: 0.75rem;
+            }
+
+            .error-title {
+                margin-bottom: 0.5rem;
+            }
+
+            .error-subtitle {
+                margin-bottom: 1.25rem;
+                font-size: 0.95rem;
+            }
+
+            .button-group {
+                gap: 0.5rem;
+                margin-bottom: 1.25rem;
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 0.7rem 1.25rem;
+                font-size: 0.85rem;
+                flex: 1 1 auto;
+            }
+
+            .btn span {
+                display: none;
+            }
+
+            .btn i::before {
+                content: attr(aria-label);
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                white-space: nowrap;
+            }
+
+            .status-info {
+                padding: 0.875rem;
+                margin-top: 1.25rem;
+            }
+
+            .status-info h3 {
+                margin-bottom: 0.375rem;
+            }
+
+            .status-info p {
+                font-size: 0.75rem;
+            }
+
+            .breadcrumb p {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Très petits écrans */
+        @media (max-height: 600px) {
+            .blob {
+                display: none;
+            }
+
+            .container-404 {
+                padding: 1rem;
+            }
+
+            .logo-404 {
+                margin-bottom: 0.5rem;
+            }
+
+            .error-number {
+                margin-bottom: 0.25rem;
+            }
+
+            .button-group {
+                margin-bottom: 1rem;
+            }
+
+            .status-info {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-background">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="floating-item">
+            <i class="fas fa-search"></i>
+        </div>
+        <div class="floating-item">
+            <i class="fas fa-map"></i>
+        </div>
+        <div class="floating-item">
+            <i class="fas fa-compass"></i>
+        </div>
+        <div class="floating-item">
+            <i class="fas fa-cross"></i>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container-404">
+        <div class="logo-404">
+            <img src="../assets/images/logo/logomcm.svg" alt="MCM Logo">
+        </div>
+
+        <div class="error-icon">
+            <i class="fas fa-binoculars"></i>
+        </div>
+
+        <div class="error-number">
+            404
+        </div>
+
+        <h1 class="error-title">
+            Oups ! Page Non Trouvée
+        </h1>
+
+        <p class="error-subtitle">
+            La page que vous recherchez semble avoir disparu. Ne vous inquiétez pas, nous vous aiderons à retrouver votre chemin.
+        </p>
+
+        <div class="button-group">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </a>
+            <a href="/#contact" class="btn btn-secondary">
+                <i class="fas fa-envelope"></i>
+                <span>Contact</span>
+            </a>
+        </div>
+
+        <div class="status-info">
+            <h3>
+                <i class="fas fa-info-circle"></i> Besoin d'aide ?
+            </h3>
+            <p>
+                Si le problème persiste, consultez notre documentation ou contactez notre équipe de support.
+            </p>
+        </div>
+
+        <div class="breadcrumb">
+            <p>
+                <a href="/">MCM</a> / 
+                <a href="/">Accueil</a> / 
+                <span style="color: rgba(255, 255, 255, 0.6);">404</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Animation du nombre 404 au mouvement de la souris (desktop uniquement)
+        if (window.matchMedia("(min-width: 769px)").matches) {
+            const errorNumber = document.querySelector('.error-number');
+            window.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth) * 15 - 7.5;
+                const y = (e.clientY / window.innerHeight) * 15 - 7.5;
+                errorNumber.style.transform = `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg)`;
+            });
+
+            window.addEventListener('mouseleave', () => {
+                errorNumber.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,11 +1,11 @@
-const express = require('express');
-const { 
+import express from 'express';
+import { 
     getPublicServicesByCommission, 
     getServices, 
     getServicesByCommission, 
     createService 
-} = require('../controllers/serviceController');
-const { authenticateToken, checkRole } = require('../middlewares/auth');
+} from '../controllers/serviceController.js';
+import { authenticateToken, checkRole } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -14,4 +14,4 @@ router.get('/', authenticateToken, getServices);
 router.get('/commission/:commissionId', authenticateToken, getServicesByCommission);
 router.post('/', authenticateToken, checkRole(['superadmin', 'adminCom']), createService);
 
-module.exports = router;
+export default router;

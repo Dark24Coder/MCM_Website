@@ -1,6 +1,6 @@
-const db = require('../config/db');
+import db from '../config/db.js';
 
-const getMembres = (req, res) => {
+export const getMembres = (req, res) => {
     let query = `
         SELECT m.*, s.nom as service_nom, c.nom as commission_nom
         FROM membres m
@@ -18,16 +18,18 @@ const getMembres = (req, res) => {
         params = [req.user.commission_id];
     }
 
+    query += ' ORDER BY m.nom, m.prenom';
+
     db.query(query, params, (err, results) => {
         if (err) {
             console.error('Erreur getMembres:', err);
             return res.status(500).json({ error: 'Erreur serveur' });
         }
-        res.json(results);
+        res.json(results.rows);
     });
 };
 
-const getMembresByService = (req, res) => {
+export const getMembresByService = (req, res) => {
     const { serviceId } = req.params;
     
     console.log(`Récupération des membres du service ${serviceId} par utilisateur ${req.user.email} (${req.user.role})`);
@@ -43,6 +45,7 @@ const getMembresByService = (req, res) => {
         LEFT JOIN services s ON m.service_id = s.id
         LEFT JOIN commissions c ON s.commission_id = c.id
         WHERE m.service_id = $1
+        ORDER BY m.nom, m.prenom
     `;
     
     db.query(query, [serviceId], (err, results) => {
@@ -50,12 +53,12 @@ const getMembresByService = (req, res) => {
             console.error('Erreur getMembresByService:', err);
             return res.status(500).json({ error: 'Erreur serveur' });
         }
-        console.log(`${results.length} membres trouvés pour le service ${serviceId}`);
-        res.json(results);
+        console.log(`${results.rows.length} membres trouvés pour le service ${serviceId}`);
+        res.json(results.rows);
     });
 };
 
-const getMembreById = (req, res) => {
+export const getMembreById = (req, res) => {
     const { id } = req.params;
     
     console.log(`Récupération du membre ID ${id} par utilisateur ${req.user.email}`);
@@ -78,12 +81,12 @@ const getMembreById = (req, res) => {
             return res.status(500).json({ error: 'Erreur serveur' });
         }
         
-        if (results.length === 0) {
+        if (results.rows.length === 0) {
             console.log(`Membre non trouvé avec l'ID: ${id}`);
             return res.status(404).json({ error: 'Membre non trouvé' });
         }
         
-        const membre = results[0];
+        const membre = results.rows[0];
         
         // Vérifier les permissions
         if (req.user.role === 'admin' && req.user.service_id !== membre.service_id) {
@@ -99,7 +102,7 @@ const getMembreById = (req, res) => {
     });
 };
 
-const createMembre = (req, res) => {
+export const createMembre = (req, res) => {
     const { nom, prenom, sexe, date_naissance, email, telephone, service_id } = req.body;
 
     console.log(`Création d'un membre par ${req.user.email}:`, { nom, prenom, service_id });
@@ -114,47 +117,28 @@ const createMembre = (req, res) => {
         return res.status(403).json({ error: 'Vous ne pouvez ajouter des membres que dans votre service' });
     }
 
-    if (req.user.role === 'adminCom') {
-        // Vérifier que le service appartient à sa commission
-        const checkService = 'SELECT * FROM services WHERE id = $1 AND commission_id = $2';
-        db.query(checkService, [service_id, req.user.commission_id], (err, results) => {
-            if (err) {
-                console.error('Erreur vérification service:', err);
-                return res.status(500).json({ error: 'Erreur serveur' });
-            }
-            if (results.length === 0) {
-                return res.status(403).json({ error: 'Service non autorisé pour votre commission' });
-            }
-            
-            insertMember();
+    const query = `
+        INSERT INTO membres (nom, prenom, sexe, date_naissance, email, telephone, service_id, created_at) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        RETURNING id
+    `;
+    
+    db.query(query, [nom, prenom, sexe, date_naissance, email || null, telephone || null, service_id], (err, result) => {
+        if (err) {
+            console.error('Erreur insertion membre:', err);
+            return res.status(500).json({ error: 'Erreur lors de l\'ajout du membre' });
+        }
+        const insertId = result.rows[0].id;
+        console.log(`Membre ajouté avec succès, ID: ${insertId}`);
+        res.status(201).json({ 
+            message: 'Membre ajouté avec succès', 
+            id: insertId,
+            membre: { id: insertId, nom, prenom, sexe, date_naissance, email, telephone, service_id }
         });
-    } else {
-        insertMember();
-    }
-
-    function insertMember() {
-        const query = `
-            INSERT INTO membres (nom, prenom, sexe, date_naissance, email, telephone, service_id, created_at) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-            RETURNING id
-        `;
-        db.query(query, [nom, prenom, sexe, date_naissance, email, telephone, service_id], (err, result) => {
-            if (err) {
-                console.error('Erreur insertion membre:', err);
-                return res.status(500).json({ error: 'Erreur lors de l\'ajout du membre' });
-            }
-            const insertId = result[0].id;
-            console.log(`Membre ajouté avec succès, ID: ${insertId}`);
-            res.status(201).json({ 
-                message: 'Membre ajouté avec succès', 
-                id: insertId,
-                membre: { id: insertId, nom, prenom, sexe, date_naissance, email, telephone, service_id }
-            });
-        });
-    }
+    });
 };
 
-const updateMembre = (req, res) => {
+export const updateMembre = (req, res) => {
     const { id } = req.params;
     const { nom, prenom, sexe, date_naissance, email, telephone, service_id } = req.body;
 
@@ -178,11 +162,11 @@ const updateMembre = (req, res) => {
             return res.status(500).json({ error: 'Erreur serveur' });
         }
         
-        if (results.length === 0) {
+        if (results.rows.length === 0) {
             return res.status(404).json({ error: 'Membre non trouvé' });
         }
 
-        const member = results[0];
+        const member = results.rows[0];
         
         if (req.user.role === 'admin' && req.user.service_id !== member.service_id) {
             return res.status(403).json({ error: 'Accès non autorisé' });
@@ -198,7 +182,7 @@ const updateMembre = (req, res) => {
             SET nom = $1, prenom = $2, sexe = $3, date_naissance = $4, email = $5, telephone = $6, service_id = $7, updated_at = NOW() 
             WHERE id = $8
         `;
-        db.query(updateQuery, [nom, prenom, sexe, date_naissance, email, telephone, service_id, id], (err, result) => {
+        db.query(updateQuery, [nom, prenom, sexe, date_naissance, email || null, telephone || null, service_id, id], (err) => {
             if (err) {
                 console.error('Erreur mise à jour membre:', err);
                 return res.status(500).json({ error: 'Erreur lors de la modification' });
@@ -212,7 +196,7 @@ const updateMembre = (req, res) => {
     });
 };
 
-const deleteMembre = (req, res) => {
+export const deleteMembre = (req, res) => {
     const { id } = req.params;
 
     console.log(`Suppression du membre ID ${id} par ${req.user.email}`);
@@ -231,11 +215,11 @@ const deleteMembre = (req, res) => {
             return res.status(500).json({ error: 'Erreur serveur' });
         }
         
-        if (results.length === 0) {
+        if (results.rows.length === 0) {
             return res.status(404).json({ error: 'Membre non trouvé' });
         }
 
-        const member = results[0];
+        const member = results.rows[0];
         
         if (req.user.role === 'admin' && req.user.service_id !== member.service_id) {
             return res.status(403).json({ error: 'Accès non autorisé' });
@@ -247,7 +231,7 @@ const deleteMembre = (req, res) => {
 
         // Supprimer le membre
         const deleteQuery = 'DELETE FROM membres WHERE id = $1';
-        db.query(deleteQuery, [id], (err, result) => {
+        db.query(deleteQuery, [id], (err) => {
             if (err) {
                 console.error('Erreur suppression membre:', err);
                 return res.status(500).json({ error: 'Erreur lors de la suppression' });
@@ -256,13 +240,4 @@ const deleteMembre = (req, res) => {
             res.json({ message: 'Membre supprimé avec succès' });
         });
     });
-};
-
-module.exports = { 
-    getMembres, 
-    getMembresByService,
-    getMembreById,
-    createMembre, 
-    updateMembre, 
-    deleteMembre 
 };

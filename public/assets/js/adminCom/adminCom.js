@@ -1,41 +1,21 @@
-// ========================================
-        // CONFIGURATION
-        // ========================================
+
         const API_BASE = '/api';
         let currentUser = null;
         let authToken = window.localStorage.getItem('mcm_token');
         let services = [];
         let allMembers = [];
         let filteredMembers = [];
+        let selectedMembers = [];
         let currentPage = 1;
         const membersPerPage = 10;
 
-        // Welcome messages
         const welcomeMessages = [
-            {
-                title: "Bienvenue dans votre espace Commission ! 🎯",
-                subtitle: "Pilotez vos services avec efficacité et vision stratégique"
-            },
-            {
-                title: "Excellente journée à vous ! ⭐",
-                subtitle: "Votre leadership fait la différence dans cette commission"
-            },
-            {
-                title: "Ravi de vous revoir ! 👋",
-                subtitle: "Continuez votre excellent travail de coordination"
-            },
-            {
-                title: "Bonjour Admin de Commission ! 🚀",
-                subtitle: "Ensemble, construisons une commission forte et unie"
-            },
-            {
-                title: "Prêt à accomplir de grandes choses ! ✨",
-                subtitle: "Votre commission compte sur votre dévouement"
-            },
-            {
-                title: "Une nouvelle journée pleine d'opportunités ! 🌟",
-                subtitle: "Supervisez et développez votre commission avec passion"
-            }
+            { title: "Bienvenue dans votre espace Commission ! 🎯", subtitle: "Pilotez vos services avec efficacité et vision stratégique" },
+            { title: "Excellente journée à vous ! ⭐", subtitle: "Votre leadership fait la différence dans cette commission" },
+            { title: "Ravi de vous revoir ! 👋", subtitle: "Continuez votre excellent travail de coordination" },
+            { title: "Bonjour Admin de Commission ! 🚀", subtitle: "Ensemble, construisons une commission forte et unie" },
+            { title: "Prêt à accomplir de grandes choses ! ✨", subtitle: "Votre commission compte sur votre dévouement" },
+            { title: "Une nouvelle journée pleine d'opportunités ! 🌟", subtitle: "Supervisez et développez votre commission avec passion" }
         ];
 
         const getAuthHeaders = () => ({
@@ -43,9 +23,6 @@
             'Content-Type': 'application/json'
         });
 
-        // ========================================
-        // INITIALIZATION
-        // ========================================
         document.addEventListener('DOMContentLoaded', function() {
             if (!authToken || authToken === 'null' || authToken === 'undefined') {
                 window.location.href = './login.html';
@@ -101,9 +78,6 @@
             });
         }
 
-        // ========================================
-        // SECTION MANAGEMENT
-        // ========================================
         function showSection(sectionName) {
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
@@ -135,10 +109,13 @@
                     toggleSidebar();
                 }
 
-                // Reload data when navigating to members
                 if (sectionName === 'members') {
                     currentPage = 1;
                     displayMembers();
+                }
+
+                if (sectionName === 'reports') {
+                    loadStatsServiceSelect();
                 }
             }
         }
@@ -160,9 +137,6 @@
             }
         }
 
-        // ========================================
-        // USER PROFILE
-        // ========================================
         async function loadUserProfile() {
             try {
                 const userDataString = window.localStorage.getItem('mcm_user');
@@ -194,7 +168,6 @@
                 
             } catch (error) {
                 console.error('Erreur chargement profil:', error);
-                showToast('Erreur lors du chargement du profil', 'error');
             }
         }
 
@@ -245,6 +218,19 @@
                     body: JSON.stringify(profileData)
                 });
 
+                if (response.status === 404) {
+                    currentUser.nom = profileData.nom;
+                    currentUser.prenom = profileData.prenom;
+                    currentUser.email = profileData.email;
+                    window.localStorage.setItem('mcm_user', JSON.stringify(currentUser));
+                    
+                    showSuccessAnimation();
+                    showToast('Profil mis à jour localement', 'info');
+                    await loadUserProfile();
+                    closeProfileModal();
+                    return;
+                }
+
                 if (response.ok) {
                     currentUser.nom = profileData.nom;
                     currentUser.prenom = profileData.prenom;
@@ -256,7 +242,7 @@
                     await loadUserProfile();
                     closeProfileModal();
                 } else {
-                    throw new Error('Erreur lors de la mise à jour');
+                    throw new Error('Erreur serveur');
                 }
             } catch (error) {
                 console.error('Erreur:', error);
@@ -264,9 +250,6 @@
             }
         }
 
-        // ========================================
-        // SERVICES
-        // ========================================
         async function loadServices() {
             try {
                 if (!currentUser || !currentUser.commission_id) {
@@ -365,7 +348,7 @@
         }
 
         function populateServiceSelect() {
-            const selects = ['serviceSelect', 'editMemberService'];
+            const selects = ['serviceSelect', 'editMemberService', 'statsServiceSelect'];
             
             selects.forEach(selectId => {
                 const select = document.getElementById(selectId);
@@ -382,9 +365,182 @@
             });
         }
 
-        // ========================================
-        // MEMBERS
-        // ========================================
+        function loadStatsServiceSelect() {
+            populateServiceSelect();
+        }
+
+        async function displayServiceStatistics() {
+            const serviceId = document.getElementById('statsServiceSelect').value;
+            
+            if (!serviceId) {
+                showToast('Veuillez sélectionner un service', 'info');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/membres/service/${serviceId}`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors du chargement');
+                }
+
+                const members = await response.json();
+                const selectedService = services.find(s => s.id === parseInt(serviceId));
+                
+                renderStatsDisplay(members, selectedService.nom);
+            } catch (error) {
+                showToast('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        function renderStatsDisplay(members, serviceName) {
+            const container = document.getElementById('statsDisplay');
+            const total = members.length;
+            const males = members.filter(m => m.sexe === 'Homme').length;
+            const females = members.filter(m => m.sexe === 'Femme').length;
+            
+            let avgAge = 0;
+            if (total > 0) {
+                avgAge = Math.round(members.reduce((sum, m) => {
+                    if (!m.date_naissance) return sum;
+                    const birthDate = new Date(m.date_naissance);
+                    const age = new Date().getFullYear() - birthDate.getFullYear();
+                    return sum + age;
+                }, 0) / total);
+            }
+
+            const emailCount = members.filter(m => m.email && m.email.trim()).length;
+            const phoneCount = members.filter(m => m.telephone && m.telephone.trim()).length;
+            const completionRate = total > 0 ? Math.round(((emailCount + phoneCount) / (total * 2)) * 100) : 0;
+
+            let html = `
+                <div class="stats-header">
+                    <h2>📊 ${serviceName}</h2>
+                    <p style="color: var(--gray);">Statistiques détaillées du service</p>
+                </div>
+
+                <div class="stats-cards-grid">
+                    <div class="stats-card-large">
+                        <div class="stats-card-content">
+                            <div class="stats-big-number">${total}</div>
+                            <div class="stats-big-label">Membres au total</div>
+                        </div>
+                    </div>
+                    <div class="stats-card-large" style="background: linear-gradient(135deg, #3B82F6, #1D4ED8);">
+                        <div class="stats-card-content">
+                            <div class="stats-big-number">${avgAge}</div>
+                            <div class="stats-big-label">Âge moyen</div>
+                        </div>
+                    </div>
+                    <div class="stats-card-large" style="background: linear-gradient(135deg, #16A34A, #15803D);">
+                        <div class="stats-card-content">
+                            <div class="stats-big-number">${completionRate}%</div>
+                            <div class="stats-big-label">Taux de complétion</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-info-grid">
+                    <div class="stats-info-card">
+                        <div class="stats-info-title">
+                            <i class="fas fa-male"></i> Hommes
+                        </div>
+                        <div class="stats-info-value">${males}</div>
+                        <div style="color: var(--gray); font-size: 0.875rem; margin-top: 0.5rem;">
+                            ${total > 0 ? Math.round((males / total) * 100) : 0}% de la population
+                        </div>
+                    </div>
+                    <div class="stats-info-card" style="border-left-color: #EC4899;">
+                        <div class="stats-info-title" style="color: #EC4899;">
+                            <i class="fas fa-female"></i> Femmes
+                        </div>
+                        <div class="stats-info-value">${females}</div>
+                        <div style="color: var(--gray); font-size: 0.875rem; margin-top: 0.5rem;">
+                            ${total > 0 ? Math.round((females / total) * 100) : 0}% de la population
+                        </div>
+                    </div>
+                    <div class="stats-info-card" style="border-left-color: var(--info);">
+                        <div class="stats-info-title" style="color: var(--info);">
+                            <i class="fas fa-envelope"></i> Emails renseignés
+                        </div>
+                        <div class="stats-info-value">${emailCount}</div>
+                        <div style="color: var(--gray); font-size: 0.875rem; margin-top: 0.5rem;">
+                            ${total > 0 ? Math.round((emailCount / total) * 100) : 0}% de couverture
+                        </div>
+                    </div>
+                    <div class="stats-info-card" style="border-left-color: var(--warning);">
+                        <div class="stats-info-title" style="color: var(--warning);">
+                            <i class="fas fa-phone"></i> Téléphones renseignés
+                        </div>
+                        <div class="stats-info-value">${phoneCount}</div>
+                        <div style="color: var(--gray); font-size: 0.875rem; margin-top: 0.5rem;">
+                            ${total > 0 ? Math.round((phoneCount / total) * 100) : 0}% de couverture
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (members.length > 0) {
+                html += `
+                    <div class="stats-table-wrapper">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--black); font-weight: 700;">
+                            <i class="fas fa-list" style="color: var(--primary-red); margin-right: 0.5rem;"></i>
+                            Liste des Membres
+                        </h3>
+                        <table class="members-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom & Prénom</th>
+                                    <th>Sexe</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Date de Naissance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                members.forEach(member => {
+                    let dateNaissance = '';
+                    if (member.date_naissance) {
+                        const date = new Date(member.date_naissance);
+                        dateNaissance = date.toLocaleDateString('fr-FR');
+                    }
+                    
+                    html += `
+                        <tr>
+                            <td><strong>${member.nom} ${member.prenom}</strong></td>
+                            <td>
+                                <span class="member-badge ${member.sexe.toLowerCase()}">
+                                    <i class="fas fa-${member.sexe === 'Homme' ? 'male' : 'female'}"></i>
+                                    ${member.sexe}
+                                </span>
+                            </td>
+                            <td>${member.email || '-'}</td>
+                            <td>${member.telephone || '-'}</td>
+                            <td>${dateNaissance || '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+            container.classList.add('show');
+            
+            // Scroll to stats
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
         async function loadAllMembers() {
             try {
                 allMembers = [];
@@ -404,14 +560,14 @@
                             allMembers = allMembers.concat(serviceMembers);
                         }
                     } catch (error) {
-                        console.error(`Erreur membres service ${service.id}:`, error);
+                        console.error(`Erreur membres service:`, error);
                     }
                 }
 
                 filteredMembers = [...allMembers];
+                selectedMembers = [];
                 displayMembers();
                 updateStats();
-                updateReportsStats();
                 
             } catch (error) {
                 console.error('Erreur chargement membres:', error);
@@ -430,7 +586,24 @@
                     </p>
                 `;
                 document.getElementById('pagination').innerHTML = '';
+                document.getElementById('bulkActionsContainer').innerHTML = '';
                 return;
+            }
+
+            const bulkContainer = document.getElementById('bulkActionsContainer');
+            if (selectedMembers.length > 0) {
+                bulkContainer.innerHTML = `
+                    <div class="bulk-actions">
+                        <span class="bulk-actions-text">
+                            <i class="fas fa-check-circle"></i> ${selectedMembers.length} membre(s) sélectionné(s)
+                        </span>
+                        <button type="button" class="btn-primary btn-danger" style="width: 200px;" onclick="deleteSelectedMembers()">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                `;
+            } else {
+                bulkContainer.innerHTML = '';
             }
             
             const startIndex = (currentPage - 1) * membersPerPage;
@@ -441,6 +614,7 @@
                 <table class="members-table">
                     <thead>
                         <tr>
+                            <th style="width: 30px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
                             <th>Membre</th>
                             <th>Service</th>
                             <th>Sexe</th>
@@ -452,12 +626,13 @@
             `;
 
             paginated.forEach(member => {
-                const initials = `${member.nom.charAt(0)}${member.prenom.charAt(0)}`;
+                const isSelected = selectedMembers.includes(member.id);
                 html += `
                     <tr>
+                        <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleMemberSelection(${member.id})"></td>
                         <td>
                             <div class="member-info-cell">
-                                <div class="member-avatar-small">${initials}</div>
+                                <div class="member-avatar-small">${member.nom.charAt(0)}${member.prenom.charAt(0)}</div>
                                 <div>
                                     <div class="member-name-text">${member.nom} ${member.prenom}</div>
                                     <div class="member-email-text">${member.email || 'Pas d\'email'}</div>
@@ -497,7 +672,78 @@
             `;
 
             container.innerHTML = html;
+            updateSelectAllCheckbox();
             renderPagination();
+        }
+
+        function toggleSelectAll() {
+            const checkbox = document.getElementById('selectAllCheckbox');
+            const startIndex = (currentPage - 1) * membersPerPage;
+            const endIndex = startIndex + membersPerPage;
+            const paginated = filteredMembers.slice(startIndex, endIndex);
+
+            if (checkbox.checked) {
+                paginated.forEach(member => {
+                    if (!selectedMembers.includes(member.id)) {
+                        selectedMembers.push(member.id);
+                    }
+                });
+            } else {
+                paginated.forEach(member => {
+                    const index = selectedMembers.indexOf(member.id);
+                    if (index > -1) {
+                        selectedMembers.splice(index, 1);
+                    }
+                });
+            }
+            displayMembers();
+        }
+
+        function toggleMemberSelection(memberId) {
+            const index = selectedMembers.indexOf(memberId);
+            if (index > -1) {
+                selectedMembers.splice(index, 1);
+            } else {
+                selectedMembers.push(memberId);
+            }
+            displayMembers();
+        }
+
+        function updateSelectAllCheckbox() {
+            const checkbox = document.getElementById('selectAllCheckbox');
+            if (!checkbox) return;
+
+            const startIndex = (currentPage - 1) * membersPerPage;
+            const endIndex = startIndex + membersPerPage;
+            const paginated = filteredMembers.slice(startIndex, endIndex);
+            
+            const allSelected = paginated.length > 0 && paginated.every(m => selectedMembers.includes(m.id));
+            checkbox.checked = allSelected;
+        }
+
+        async function deleteSelectedMembers() {
+            if (selectedMembers.length === 0) {
+                showToast('Aucun membre sélectionné', 'info');
+                return;
+            }
+
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedMembers.length} membre(s)?`)) return;
+
+            try {
+                for (const memberId of selectedMembers) {
+                    await fetch(`${API_BASE}/membres/${memberId}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
+                }
+
+                showSuccessAnimation();
+                showToast(`${selectedMembers.length} membre(s) supprimé(s) avec succès!`, 'success');
+                selectedMembers = [];
+                await loadServices();
+            } catch (error) {
+                showToast('Erreur lors de la suppression', 'error');
+            }
         }
 
         function renderPagination() {
@@ -523,8 +769,6 @@
                             ${i}
                         </button>
                     `;
-                } else if (i === currentPage - 2 || i === currentPage + 2) {
-                    html += `<span style="padding: 0.5rem;">...</span>`;
                 }
             }
             
@@ -560,6 +804,7 @@
             });
             
             currentPage = 1;
+            selectedMembers = [];
             displayMembers();
         }
 
@@ -579,82 +824,10 @@
             if (maleEl) maleEl.textContent = males;
         }
 
-        function updateReportsStats() {
-            const total = allMembers.length;
-            const males = allMembers.filter(m => m.sexe === 'Homme').length;
-            const females = allMembers.filter(m => m.sexe === 'Femme').length;
-            
-            document.getElementById('reportTotalMembers').textContent = total;
-            document.getElementById('reportMalePercent').textContent = total > 0 ? Math.round((males / total) * 100) + '%' : '0%';
-            document.getElementById('reportFemalePercent').textContent = total > 0 ? Math.round((females / total) * 100) + '%' : '0%';
-            
-            // Calculate average age
-            if (total > 0) {
-                const avgAge = Math.round(allMembers.reduce((sum, m) => {
-                    const birthDate = new Date(m.date_naissance);
-                    const age = new Date().getFullYear() - birthDate.getFullYear();
-                    return sum + age;
-                }, 0) / total);
-                document.getElementById('reportAvgAge').textContent = avgAge + ' ans';
-            }
-
-            // Additional stats
-            const emailCount = allMembers.filter(m => m.email && m.email.trim()).length;
-            const phoneCount = allMembers.filter(m => m.telephone && m.telephone.trim()).length;
-            const completionRate = total > 0 ? Math.round(((emailCount + phoneCount) / (total * 2)) * 100) : 0;
-
-            document.getElementById('reportEmailCount').textContent = emailCount;
-            document.getElementById('reportPhoneCount').textContent = phoneCount;
-            document.getElementById('reportCompletionRate').textContent = completionRate + '%';
-
-            // Service stats
-            displayServiceStats();
-        }
-
-        function displayServiceStats() {
-            const container = document.getElementById('serviceStatsGrid');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            services.forEach(service => {
-                const serviceMembers = allMembers.filter(m => m.service_id === service.id);
-                const males = serviceMembers.filter(m => m.sexe === 'Homme').length;
-                const females = serviceMembers.filter(m => m.sexe === 'Femme').length;
-                
-                const card = document.createElement('div');
-                card.style.cssText = 'padding: 1.5rem; background: var(--white); border: 2px solid var(--light-gray); border-radius: 12px;';
-                
-                card.innerHTML = `
-                    <h4 style="font-weight: 700; margin-bottom: 1rem; color: var(--primary-red);">
-                        <i class="fas fa-cog"></i> ${service.nom}
-                    </h4>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span style="color: var(--gray);">Total:</span>
-                        <strong>${serviceMembers.length}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span style="color: var(--info);"><i class="fas fa-male"></i> Hommes:</span>
-                        <strong>${males}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #EC4899;"><i class="fas fa-female"></i> Femmes:</span>
-                        <strong>${females}</strong>
-                    </div>
-                `;
-                
-                container.appendChild(card);
-            });
-        }
-
-        // ========================================
-        // ADD MEMBER
-        // ========================================
         async function handleAddMember(e) {
             e.preventDefault();
             
             const btn = document.getElementById('addMemberBtn');
-            const originalHTML = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Ajout en cours...</span>';
             btn.disabled = true;
             
@@ -688,14 +861,11 @@
                 console.error('Erreur ajout:', error);
                 showToast('Erreur: ' + error.message, 'error');
             } finally {
-                btn.innerHTML = originalHTML;
+                btn.innerHTML = '<i class="fas fa-plus"></i> <span>Ajouter le Membre</span>';
                 btn.disabled = false;
             }
         }
 
-        // ========================================
-        // EDIT MEMBER
-        // ========================================
         async function editMember(id) {
             try {
                 const member = allMembers.find(m => m.id === id);
@@ -766,9 +936,6 @@
             }
         }
 
-        // ========================================
-        // DELETE MEMBER
-        // ========================================
         async function deleteMember(id) {
             if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
 
@@ -792,9 +959,6 @@
             }
         }
 
-        // ========================================
-        // UTILITY FUNCTIONS
-        // ========================================
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -845,9 +1009,6 @@
             }, 1000);
         }
 
-        // ========================================
-        // RESPONSIVE
-        // ========================================
         window.addEventListener('resize', function() {
             const mobileItems = document.querySelectorAll('.mobile-only');
             const sidebar = document.getElementById('sidebar');

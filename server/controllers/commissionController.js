@@ -1,6 +1,5 @@
-const db = require('../config/db');
+import db from '../config/db.js';
 
-// Commissions fixes prédéfinies
 const fixedCommissions = [
     { id: 1, nom: 'Evangélisation' },
     { id: 2, nom: 'Multimédia et Audiovisuel' },
@@ -12,18 +11,17 @@ const fixedCommissions = [
     { id: 8, nom: 'Liturgie MCM bénin service délégué' }
 ];
 
-const getPublicCommissions = (req, res) => {
+export const getPublicCommissions = (req, res) => {
     res.json(fixedCommissions);
 };
 
-const getCommissions = (req, res) => {
-    const query = 'SELECT * FROM commissions';
+export const getCommissions = (req, res) => {
+    const query = 'SELECT * FROM commissions ORDER BY nom';
     db.query(query, (err, results) => {
         if (err) {
+            console.error('Erreur getCommissions:', err);
             return res.status(500).json({ error: 'Erreur serveur' });
         }
-        res.json(results);
+        res.json(results.rows);
     });
 };
-
-module.exports = { getPublicCommissions, getCommissions };
