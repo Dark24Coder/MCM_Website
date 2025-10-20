@@ -14,6 +14,9 @@ import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 import nodemailer from 'nodemailer';
 
+// ✅ Maintenant db.js sera importé APRÈS dotenv
+import db from './server/config/db.js';
+
 // 🚀 IMPORTATION DE TOUTES LES ROUTES
 import authRoutes from './server/routes/authRoutes.js';
 import commissionRoutes from './server/routes/commissionRoutes.js';
@@ -40,50 +43,34 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 const templatesPath = path.join(__dirname, 'public', 'templates');
 
 // =============================
-// 🔗 Connexion PostgreSQL (Neon)
+// 🔗 Connexion PostgreSQL
 // =============================
 let pool;
 
 try {
-    // Priority 1: DATABASE_URL (Neon)
     if (process.env.DATABASE_URL) {
-        console.log("🌍 Mode PRODUCTION - Connexion Neon");
         pool = new Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false },
-            max: 20,
-            idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 2000,
+            ssl: { rejectUnauthorized: false }
         });
-    } 
-    // Priority 2: Variables d'environnement locales
-    else if (process.env.DB_HOST) {
-        console.log("💻 Mode DÉVELOPPEMENT - Connexion locale");
+    } else {
         pool = new Pool({
-            host: process.env.DB_HOST,
+            host: process.env.DB_HOST || '127.0.0.1',
             port: parseInt(process.env.DB_PORT || '5432', 10),
-            user: process.env.DB_USER,
+            user: process.env.DB_USER || 'postgres',
             password: String(process.env.DB_PASSWORD || '').trim(),
-            database: process.env.DB_NAME,
+            database: process.env.DB_NAME || 'mcm_db',
             ssl: false
         });
     }
-    else {
-        throw new Error("❌ Aucune configuration de base de données trouvée !");
-    }
 
-    // Test connexion
     const client = await pool.connect();
     console.log("✅ Connecté à PostgreSQL");
-    console.log(`📍 Base: ${process.env.DB_NAME || 'neondb'}`);
+    console.log(`📍 Base: ${process.env.DB_NAME}`);
     client.release();
 } catch (err) {
     console.error("❌ Erreur de connexion à PostgreSQL:", err.message);
-    process.exit(1);
 }
-
-// Export pool pour utiliser dans les routes
-export { pool };
 
 // =============================
 // 📧 Configuration Email
@@ -101,9 +88,6 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
 } else {
     console.log("📧 Email non configuré");
 }
-
-// Export transporter pour utiliser dans les routes
-export { transporter };
 
 // =============================
 // 🚀 ROUTES API - ENREGISTREMENT

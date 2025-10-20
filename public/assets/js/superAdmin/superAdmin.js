@@ -12,9 +12,9 @@ let filteredMembers = [];
 let currentPage = 1;
 const membersPerPage = 10;
 
-// Messages d'accueil aléatoires
+// Messages d'accueil alÃ©atoires
 const welcomeMessages = [
-  { title: "Bienvenue SuperAdmin ! 👑", subtitle: "Vous avez le contrôle total de la plateforme MCM" },
+  { title: "Bienvenue SuperAdmin ! 🕴️", subtitle: "Vous avez le contrôle total de la plateforme MCM" },
   { title: "Excellente journée à vous ! ⭐", subtitle: "Gérez l'ensemble de l'écosystème MCM avec efficacité" },
   { title: "Ravi de vous revoir ! 🚀", subtitle: "Pilotez votre organisation vers l'excellence" },
   { title: "Bonjour SuperAdmin ! 💎", subtitle: "Votre leadership fait toute la différence" },
@@ -170,7 +170,7 @@ async function handleUpdateProfile(e) {
       currentUser = { ...currentUser, ...profileData };
       window.localStorage.setItem('mcm_user', JSON.stringify(currentUser));
       updateUserDisplay();
-      showToast('Profil mis à jour localement', 'info');
+      showToast('Profil mis Ã  jour localement', 'info');
       closeUserProfileModal();
       return;
     }
@@ -180,11 +180,11 @@ async function handleUpdateProfile(e) {
       window.localStorage.setItem('mcm_user', JSON.stringify(currentUser));
       updateUserDisplay();
       showSuccessAnimation();
-      showToast('Profil mis à jour avec succès!', 'success');
+      showToast('Profil mis Ã  jour avec succÃ¨s!', 'success');
       closeUserProfileModal();
     }
   } catch (error) {
-    showToast('Erreur lors de la mise à jour du profil', 'error');
+    showToast('Erreur lors de la mise Ã  jour du profil', 'error');
   } finally {
     setButtonLoading(btn, false);
   }
@@ -201,10 +201,10 @@ function openUserProfile() {
 }
 
 async function logout() {
-  if (!confirm('Êtes-vous sûr de vouloir vous déconnecter?')) return;
+  if (!confirm('ÃŠtes-vous sÃ»r de vouloir vous dÃ©connecter?')) return;
   window.localStorage.removeItem('mcm_token');
   window.localStorage.removeItem('mcm_user');
-  showToast('Déconnexion réussie', 'info');
+  showToast('DÃ©connexion rÃ©ussie', 'info');
   setTimeout(() => { window.location.href = './login.html'; }, 1000);
 }
 
@@ -265,7 +265,7 @@ function setRandomWelcomeMessage() {
 }
 
 // ========================================
-// VÉRIFICATION DES ANNIVERSAIRES
+// VÃ‰RIFICATION DES ANNIVERSAIRES
 // ========================================
 async function checkBirthdays() {
   try {
@@ -290,17 +290,17 @@ async function checkBirthdays() {
     
     if (birthdayPeople.length > 0) {
       birthdayPeople.forEach(person => {
-        const msg = `🎉 C'est l'anniversaire de ${person.prenom} ${person.nom}! Il/Elle a ${person.age} ans!`;
+        const msg = `ðŸŽ‰ C'est l'anniversaire de ${person.prenom} ${person.nom}! Il/Elle a ${person.age} ans!`;
         showToast(msg, 'info');
       });
     }
   } catch (error) {
-    console.error('Erreur vérification anniversaires:', error);
+    console.error('Erreur vÃ©rification anniversaires:', error);
   }
 }
 
 // ========================================
-// CHARGEMENT DES DONNÉES
+// CHARGEMENT DES DONNÃ‰ES
 // ========================================
 async function loadDashboardData() {
   try {
@@ -345,7 +345,7 @@ function displayMembersList() {
   const container = document.getElementById('membersListContainer');
   
   if (filteredMembers.length === 0) {
-    container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Aucun membre trouvé</p>';
+    container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Aucun membre trouvÃ©</p>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
@@ -374,8 +374,8 @@ function displayMembersList() {
           <h4>${member.nom} ${member.prenom}</h4>
           <div class="member-details">
             <div class="member-detail"><i class="fas fa-envelope"></i><span>${member.email || 'Pas d\'email'}</span></div>
-            <div class="member-detail"><i class="fas fa-phone"></i><span>${member.telephone || 'Pas de téléphone'}</span></div>
-            <div class="member-detail"><i class="fas fa-venus-mars"></i><span>${member.sexe || 'Non spécifié'}</span></div>
+            <div class="member-detail"><i class="fas fa-phone"></i><span>${member.telephone || 'Pas de tÃ©lÃ©phone'}</span></div>
+            <div class="member-detail"><i class="fas fa-venus-mars"></i><span>${member.sexe || 'Non spÃ©cifiÃ©'}</span></div>
           </div>
         </div>
         <div class="member-actions">
@@ -446,11 +446,11 @@ function toggleMemberSelection(memberId) {
 
 async function deleteSelectedMembers() {
   if (selectedMembers.length === 0) {
-    showToast('Aucun membre sélectionné', 'info');
+    showToast('Aucun membre sÃ©lectionnÃ©', 'info');
     return;
   }
 
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedMembers.length} membre(s)?`)) return;
+  if (!confirm(`ÃŠtes-vous sÃ»r de vouloir supprimer ${selectedMembers.length} membre(s)?`)) return;
 
   try {
     for (const memberId of selectedMembers) {
@@ -461,7 +461,7 @@ async function deleteSelectedMembers() {
     }
 
     showSuccessAnimation();
-    showToast(`${selectedMembers.length} membre(s) supprimé(s) avec succès!`, 'success');
+    showToast(`${selectedMembers.length} membre(s) supprimÃ©(s) avec succÃ¨s!`, 'success');
     selectedMembers = [];
     await loadDashboardData();
     await loadAllMembersList();
@@ -481,7 +481,7 @@ async function loadServices() {
     servicesGrid.innerHTML = '';
     selects.forEach(id => {
       const selectEl = document.getElementById(id);
-      if (selectEl) selectEl.innerHTML = '<option value="">Sélectionner un service</option>';
+      if (selectEl) selectEl.innerHTML = '<option value="">SÃ©lectionner un service</option>';
     });
 
     services.forEach(service => {
@@ -490,7 +490,7 @@ async function loadServices() {
       card.onclick = () => showServiceMembers(service.id, service.nom);
       card.innerHTML = `
         <div class="custom-card-title">${service.nom}</div>
-        <div class="custom-card-subtitle">${service.commission_nom || 'Commission non définie'}</div>
+        <div class="custom-card-subtitle">${service.commission_nom || 'Commission non dÃ©finie'}</div>
         <div class="custom-card-footer">
           <i class="fas fa-users"></i>
           <span id="members-count-${service.id}">0</span> membres
@@ -538,7 +538,7 @@ async function loadCommissions() {
     commissionsGrid.innerHTML = '';
     commissionSelects.forEach(id => {
       const selectEl = document.getElementById(id);
-      if (selectEl) selectEl.innerHTML = '<option value="">Sélectionner une commission</option>';
+      if (selectEl) selectEl.innerHTML = '<option value="">SÃ©lectionner une commission</option>';
     });
 
     commissions.forEach(commission => {
@@ -547,7 +547,7 @@ async function loadCommissions() {
       card.onclick = () => showCommissionMembers(commission.id, commission.nom);
       card.innerHTML = `
         <div class="custom-card-title">${commission.nom}</div>
-        <div class="custom-card-footer"><i class="fas fa-sitemap"></i> Voir les détails</div>
+        <div class="custom-card-footer"><i class="fas fa-sitemap"></i> Voir les dÃ©tails</div>
       `;
       commissionsGrid.appendChild(card);
 
@@ -593,7 +593,7 @@ async function handleAddMember(e) {
 
     if (response.ok) {
       showSuccessAnimation();
-      showToast('Membre ajouté avec succès!', 'success');
+      showToast('Membre ajoutÃ© avec succÃ¨s!', 'success');
       document.getElementById('addMemberForm').reset();
       await loadDashboardData();
       await loadServiceMemberCount(memberData.service_id);
@@ -629,7 +629,7 @@ async function editMember(memberId) {
 
       document.getElementById('editMemberModal').classList.add('show');
     } else {
-      showToast('Erreur lors du chargement des données du membre', 'error');
+      showToast('Erreur lors du chargement des donnÃ©es du membre', 'error');
     }
   } catch (error) {
     showToast('Erreur de connexion', 'error');
@@ -659,7 +659,7 @@ async function handleEditMember(e) {
 
     if (response.ok) {
       showSuccessAnimation();
-      showToast('Membre modifié avec succès!', 'success');
+      showToast('Membre modifiÃ© avec succÃ¨s!', 'success');
       closeEditMemberModal();
       await loadDashboardData();
       if (currentSection === 'members') await loadAllMembersList();
@@ -673,7 +673,7 @@ async function handleEditMember(e) {
 }
 
 async function deleteMember(memberId) {
-  if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre?')) return;
+  if (!confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce membre?')) return;
 
   try {
     const response = await fetch(`${API_BASE}/membres/${memberId}`, {
@@ -683,7 +683,7 @@ async function deleteMember(memberId) {
 
     if (response.ok) {
       showSuccessAnimation();
-      showToast('Membre supprimé avec succès!', 'warning');
+      showToast('Membre supprimÃ© avec succÃ¨s!', 'warning');
       await loadDashboardData();
       if (currentSection === 'members') await loadAllMembersList();
     } else {
@@ -723,7 +723,7 @@ function handleCommissionChange() {
   const serviceSelect = document.getElementById('userService');
   
   if (!commissionId) {
-    serviceSelect.innerHTML = '<option value="">Sélectionner un service</option>';
+    serviceSelect.innerHTML = '<option value="">SÃ©lectionner un service</option>';
     return;
   }
 
@@ -731,7 +731,7 @@ function handleCommissionChange() {
     .then(res => res.json())
     .then(services => {
       const filtered = services.filter(s => s.commission_id === parseInt(commissionId));
-      serviceSelect.innerHTML = '<option value="">Sélectionner un service</option>';
+      serviceSelect.innerHTML = '<option value="">SÃ©lectionner un service</option>';
       filtered.forEach(service => {
         const option = document.createElement('option');
         option.value = service.id;
@@ -756,19 +756,19 @@ async function handleCreateUser(e) {
   const service_id = document.getElementById('userService').value?.trim();
 
   if (!email || !nom || !prenom || !mot_de_passe || !role) {
-    showToast('Tous les champs marqués * sont obligatoires', 'error');
+    showToast('Tous les champs marquÃ©s * sont obligatoires', 'error');
     setButtonLoading(btn, false);
     return;
   }
 
   if (role === 'adminCom' && !commission_id) {
-    showToast('Veuillez sélectionner une commission', 'error');
+    showToast('Veuillez sÃ©lectionner une commission', 'error');
     setButtonLoading(btn, false);
     return;
   }
 
   if (role === 'admin' && (!commission_id || !service_id)) {
-    showToast('Veuillez sélectionner une commission et un service', 'error');
+    showToast('Veuillez sÃ©lectionner une commission et un service', 'error');
     setButtonLoading(btn, false);
     return;
   }
@@ -789,7 +789,7 @@ async function handleCreateUser(e) {
 
     if (response.ok) {
       showSuccessAnimation();
-      showToast('Utilisateur créé avec succès!', 'success');
+      showToast('Utilisateur crÃ©Ã© avec succÃ¨s!', 'success');
       document.getElementById('manageUserForm').reset();
       handleRoleChange();
       await loadDashboardData();
@@ -798,7 +798,7 @@ async function handleCreateUser(e) {
       showToast('Erreur: ' + (error.error || 'Erreur inconnue'), 'error');
     }
   } catch (error) {
-    showToast('Erreur lors de la création de l\'utilisateur', 'error');
+    showToast('Erreur lors de la crÃ©ation de l\'utilisateur', 'error');
   } finally {
     setButtonLoading(btn, false);
   }
@@ -847,7 +847,7 @@ async function loadStatistics() {
     const services = await response.json();
     const selectEl = document.getElementById('statsServiceSelect');
     if (selectEl) {
-      selectEl.innerHTML = '<option value="">Sélectionner un service</option>';
+      selectEl.innerHTML = '<option value="">SÃ©lectionner un service</option>';
       services.forEach(service => {
         const option = document.createElement('option');
         option.value = service.id;
@@ -864,7 +864,7 @@ async function displayServiceStatistics() {
   const serviceId = document.getElementById('statsServiceSelect').value;
   
   if (!serviceId) {
-    showToast('Veuillez sélectionner un service', 'info');
+    showToast('Veuillez sÃ©lectionner un service', 'info');
     return;
   }
 
@@ -915,20 +915,20 @@ function displayStatsPage(members) {
       </div>
       <div class="stat-card">
         <div class="stat-header">
-          <div><div class="stat-number">${avgAge}</div><div class="stat-label">Âge Moyen</div></div>
+          <div><div class="stat-number">${avgAge}</div><div class="stat-label">Ã‚ge Moyen</div></div>
           <div class="stat-icon"><i class="fas fa-birthday-cake"></i></div>
         </div>
       </div>
     </div>
     <div class="section-card">
-      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--black);"><i class="fas fa-chart-pie" style="color: var(--primary-red);"></i> Détails</h3>
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--black);"><i class="fas fa-chart-pie" style="color: var(--primary-red);"></i> DÃ©tails</h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
         <div style="padding: 1.5rem; background: var(--off-white); border-radius: 12px; border-left: 4px solid var(--primary-red);">
           <strong style="color: var(--primary-red); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><i class="fas fa-envelope"></i> Emails</strong>
           <span style="font-size: 1.5rem; font-weight: 700;">${emailCount}/${total}</span>
         </div>
         <div style="padding: 1.5rem; background: var(--off-white); border-radius: 12px; border-left: 4px solid var(--info);">
-          <strong style="color: var(--info); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><i class="fas fa-phone"></i> Téléphones</strong>
+          <strong style="color: var(--info); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;"><i class="fas fa-phone"></i> TÃ©lÃ©phones</strong>
           <span style="font-size: 1.5rem; font-weight: 700;">${phoneCount}/${total}</span>
         </div>
         <div style="padding: 1.5rem; background: var(--off-white); border-radius: 12px; border-left: 4px solid var(--success);">
@@ -943,7 +943,7 @@ function displayStatsPage(members) {
         <table class="members-table">
           <thead>
             <tr>
-              <th>Nom & Prénom</th><th>Sexe</th><th>Email</th><th>Téléphone</th>
+              <th>Nom & PrÃ©nom</th><th>Sexe</th><th>Email</th><th>TÃ©lÃ©phone</th>
             </tr>
           </thead>
           <tbody>
@@ -985,8 +985,8 @@ async function showServiceMembers(serviceId, serviceName) {
             <h4>${member.nom} ${member.prenom}</h4>
             <div class="member-details">
               <div class="member-detail"><i class="fas fa-envelope"></i><span>${member.email || 'Pas d\'email'}</span></div>
-              <div class="member-detail"><i class="fas fa-phone"></i><span>${member.telephone || 'Pas de téléphone'}</span></div>
-              <div class="member-detail"><i class="fas fa-venus-mars"></i><span>${member.sexe || 'Non spécifié'}</span></div>
+              <div class="member-detail"><i class="fas fa-phone"></i><span>${member.telephone || 'Pas de tÃ©lÃ©phone'}</span></div>
+              <div class="member-detail"><i class="fas fa-venus-mars"></i><span>${member.sexe || 'Non spÃ©cifiÃ©'}</span></div>
             </div>
           </div>
           <div class="member-actions">
@@ -1038,7 +1038,7 @@ async function showCommissionMembers(commissionId, commissionName) {
                 <h4>${member.nom} ${member.prenom}</h4>
                 <div class="member-details">
                   <div class="member-detail"><i class="fas fa-envelope"></i><span>${member.email || 'Pas d\'email'}</span></div>
-                  <div class="member-detail"><i class="fas fa-phone"></i><span>${member.telephone || 'Pas de téléphone'}</span></div>
+                  <div class="member-detail"><i class="fas fa-phone"></i><span>${member.telephone || 'Pas de tÃ©lÃ©phone'}</span></div>
                 </div>
               </div>
             `;

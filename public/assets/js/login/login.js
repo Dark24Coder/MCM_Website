@@ -30,10 +30,10 @@ document.querySelectorAll('.password-toggle').forEach(btn => {
         const input = document.getElementById(target);
         if (input.type === 'password') {
             input.type = 'text';
-            btn.textContent = '🙈';
+            btn.textContent = 'ðŸ™ˆ';
         } else {
             input.type = 'password';
-            btn.textContent = '👁';
+            btn.textContent = 'ðŸ‘';
         }
     });
 });
@@ -117,17 +117,17 @@ document.getElementById('registerCommission').addEventListener('change', loadSer
 // Load commissions
 function loadCommissionsForRegistration() {
     const select = document.getElementById('registerCommission');
-    select.innerHTML = '<option value="">Sélectionnez une commission</option>';
+    select.innerHTML = '<option value="">SÃ©lectionnez une commission</option>';
 
     const fixedCommissions = [
-        { id: 1, nom: 'Evangélisation' },
-        { id: 2, nom: 'Multimédia et Audiovisuel' },
+        { id: 1, nom: 'EvangÃ©lisation' },
+        { id: 2, nom: 'MultimÃ©dia et Audiovisuel' },
         { id: 3, nom: 'Presse et Documentation' },
-        { id: 4, nom: 'Chœur' },
+        { id: 4, nom: 'ChÅ“ur' },
         { id: 5, nom: 'Accueil' },
-        { id: 6, nom: 'Comptabilité' },
+        { id: 6, nom: 'ComptabilitÃ©' },
         { id: 7, nom: 'Organisation et Logistique' },
-        { id: 8, nom: 'Liturgie MCM bénin service délégué' }
+        { id: 8, nom: 'Liturgie MCM bÃ©nin service dÃ©lÃ©guÃ©' }
     ];
 
     fixedCommissions.forEach(commission => {
@@ -144,7 +144,7 @@ function loadCommissionsForRegistration() {
 function loadServices() {
     const commissionId = parseInt(document.getElementById('registerCommission').value);
     const serviceSelect = document.getElementById('registerService');
-    serviceSelect.innerHTML = '<option value="">Sélectionnez un service</option>';
+    serviceSelect.innerHTML = '<option value="">SÃ©lectionnez un service</option>';
 
     if (!commissionId) return;
 
@@ -154,12 +154,12 @@ function loadServices() {
             { id: 2, nom: 'Social et humanitaire' }
         ],
         2: [
-            { id: 3, nom: 'Son et éclairage' },
-            { id: 4, nom: 'Vidéo et streaming' },
+            { id: 3, nom: 'Son et Ã©clairage' },
+            { id: 4, nom: 'VidÃ©o et streaming' },
             { id: 5, nom: 'Photographie' }
         ],
         3: [
-            { id: 6, nom: 'Rédaction' },
+            { id: 6, nom: 'RÃ©daction' },
             { id: 7, nom: 'Archives' },
             { id: 8, nom: 'Communication' }
         ],
@@ -170,22 +170,22 @@ function loadServices() {
         ],
         5: [
             { id: 12, nom: 'Protocole /Accueil' },
-            { id: 13, nom: 'Ordre et sécurité' },
+            { id: 13, nom: 'Ordre et sÃ©curitÃ©' },
             { id: 14, nom: 'Enregistrements' },
-            { id: 15, nom: 'Intégrations et sacrements' }
+            { id: 15, nom: 'IntÃ©grations et sacrements' }
         ],
         6: [
-            { id: 16, nom: 'Suivi budgétaire' },
+            { id: 16, nom: 'Suivi budgÃ©taire' },
             { id: 17, nom: 'Collecte et offrande' }
         ],
         7: [
-            { id: 18, nom: 'Installation et matériel' },
-            { id: 19, nom: 'Transport et mobilité' },
+            { id: 18, nom: 'Installation et matÃ©riel' },
+            { id: 19, nom: 'Transport et mobilitÃ©' },
             { id: 20, nom: 'Approvisionnement' },
-            { id: 21, nom: 'Préparation des événements' }
+            { id: 21, nom: 'PrÃ©paration des Ã©vÃ©nements' }
         ],
         8: [
-            { id: 22, nom: 'Cérémonies' },
+            { id: 22, nom: 'CÃ©rÃ©monies' },
             { id: 23, nom: 'Protocole' },
             { id: 24, nom: 'Sacristie' }
         ]
@@ -251,7 +251,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
                 localStorage.removeItem('rememberedPassword');
             }
 
-            showSuccess('Connexion réussie ! Redirection...');
+            showSuccess('Connexion rÃ©ussie ! Redirection...');
 
             setTimeout(() => {
                 const role = data.user?.role;
@@ -310,7 +310,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     }
 
     if (mot_de_passe.length < 8) {
-        showError('Le mot de passe doit contenir au moins 8 caractères');
+        showError('Le mot de passe doit contenir au moins 8 caractÃ¨res');
         return;
     }
 
@@ -320,12 +320,12 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     }
 
     if (role === 'adminCom' && !commission_id) {
-        showError('Veuillez sélectionner une commission');
+        showError('Veuillez sÃ©lectionner une commission');
         return;
     }
 
     if (role === 'admin' && (!commission_id || !service_id)) {
-        showError('Veuillez sélectionner une commission et un service');
+        showError('Veuillez sÃ©lectionner une commission et un service');
         return;
     }
 
@@ -350,7 +350,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         const data = await response.json();
 
         if (response.ok && (data.success || data.message)) {
-            showSuccess('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+            showSuccess('Compte crÃ©Ã© avec succÃ¨s ! Vous pouvez maintenant vous connecter.');
             document.getElementById('registerForm').reset();
             document.getElementById('commissionGroup').style.display = 'none';
             document.getElementById('serviceGroup').style.display = 'none';
@@ -360,7 +360,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
                 document.getElementById('loginEmail').value = email;
             }, 1500);
         } else {
-            showError(data.error || data.message || 'Erreur lors de la création du compte');
+            showError(data.error || data.message || 'Erreur lors de la crÃ©ation du compte');
         }
     } catch (err) {
         console.error('Erreur inscription:', err);
@@ -390,10 +390,10 @@ function checkUrlParams() {
     const message = urlParams.get('message');
     
     if (message === 'password_reset_success') {
-        showSuccess('Votre mot de passe a été réinitialisé avec succès ! Vous pouvez maintenant vous connecter.');
+        showSuccess('Votre mot de passe a Ã©tÃ© rÃ©initialisÃ© avec succÃ¨s ! Vous pouvez maintenant vous connecter.');
         window.history.replaceState({}, document.title, window.location.pathname);
     } else if (message === 'password_changed_success') {
-        showSuccess('Votre mot de passe a été changé avec succès ! Vous pouvez maintenant vous connecter.');
+        showSuccess('Votre mot de passe a Ã©tÃ© changÃ© avec succÃ¨s ! Vous pouvez maintenant vous connecter.');
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 

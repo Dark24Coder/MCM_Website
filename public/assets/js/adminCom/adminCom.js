@@ -1,4 +1,3 @@
-
         const API_BASE = '/api';
         let currentUser = null;
         let authToken = window.localStorage.getItem('mcm_token');
@@ -225,7 +224,7 @@
                     window.localStorage.setItem('mcm_user', JSON.stringify(currentUser));
                     
                     showSuccessAnimation();
-                    showToast('Profil mis à jour localement', 'info');
+                    showToast('Profil mis Ã  jour localement', 'info');
                     await loadUserProfile();
                     closeProfileModal();
                     return;
@@ -238,7 +237,7 @@
                     window.localStorage.setItem('mcm_user', JSON.stringify(currentUser));
                     
                     showSuccessAnimation();
-                    showToast('Profil mis à jour avec succès!', 'success');
+                    showToast('Profil mis Ã  jour avec succÃ¨s!', 'success');
                     await loadUserProfile();
                     closeProfileModal();
                 } else {
@@ -253,7 +252,7 @@
         async function loadServices() {
             try {
                 if (!currentUser || !currentUser.commission_id) {
-                    showToast('Erreur: Commission ID non trouvée', 'error');
+                    showToast('Erreur: Commission ID non trouvÃ©e', 'error');
                     return;
                 }
 
@@ -296,7 +295,7 @@
                 container.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--gray);">
                         <i class="fas fa-cogs" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
-                        <p>Aucun service trouvé dans votre commission.</p>
+                        <p>Aucun service trouvÃ© dans votre commission.</p>
                     </div>
                 `;
                 return;
@@ -373,7 +372,7 @@
             const serviceId = document.getElementById('statsServiceSelect').value;
             
             if (!serviceId) {
-                showToast('Veuillez sélectionner un service', 'info');
+                showToast('Veuillez sÃ©lectionner un service', 'info');
                 return;
             }
 
@@ -417,8 +416,8 @@
 
             let html = `
                 <div class="stats-header">
-                    <h2>📊 ${serviceName}</h2>
-                    <p style="color: var(--gray);">Statistiques détaillées du service</p>
+                    <h2>ðŸ“Š ${serviceName}</h2>
+                    <p style="color: var(--gray);">Statistiques dÃ©taillÃ©es du service</p>
                 </div>
 
                 <div class="stats-cards-grid">
@@ -431,13 +430,13 @@
                     <div class="stats-card-large" style="background: linear-gradient(135deg, #3B82F6, #1D4ED8);">
                         <div class="stats-card-content">
                             <div class="stats-big-number">${avgAge}</div>
-                            <div class="stats-big-label">Âge moyen</div>
+                            <div class="stats-big-label">Ã‚ge moyen</div>
                         </div>
                     </div>
                     <div class="stats-card-large" style="background: linear-gradient(135deg, #16A34A, #15803D);">
                         <div class="stats-card-content">
                             <div class="stats-big-number">${completionRate}%</div>
-                            <div class="stats-big-label">Taux de complétion</div>
+                            <div class="stats-big-label">Taux de complÃ©tion</div>
                         </div>
                     </div>
                 </div>
@@ -463,7 +462,7 @@
                     </div>
                     <div class="stats-info-card" style="border-left-color: var(--info);">
                         <div class="stats-info-title" style="color: var(--info);">
-                            <i class="fas fa-envelope"></i> Emails renseignés
+                            <i class="fas fa-envelope"></i> Emails renseignÃ©s
                         </div>
                         <div class="stats-info-value">${emailCount}</div>
                         <div style="color: var(--gray); font-size: 0.875rem; margin-top: 0.5rem;">
@@ -472,7 +471,7 @@
                     </div>
                     <div class="stats-info-card" style="border-left-color: var(--warning);">
                         <div class="stats-info-title" style="color: var(--warning);">
-                            <i class="fas fa-phone"></i> Téléphones renseignés
+                            <i class="fas fa-phone"></i> TÃ©lÃ©phones renseignÃ©s
                         </div>
                         <div class="stats-info-value">${phoneCount}</div>
                         <div style="color: var(--gray); font-size: 0.875rem; margin-top: 0.5rem;">
@@ -492,10 +491,10 @@
                         <table class="members-table">
                             <thead>
                                 <tr>
-                                    <th>Nom & Prénom</th>
+                                    <th>Nom & PrÃ©nom</th>
                                     <th>Sexe</th>
                                     <th>Email</th>
-                                    <th>Téléphone</th>
+                                    <th>TÃ©lÃ©phone</th>
                                     <th>Date de Naissance</th>
                                 </tr>
                             </thead>
@@ -582,7 +581,7 @@
                 container.innerHTML = `
                     <p style="text-align: center; color: var(--gray); padding: 3rem;">
                         <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; display: block;"></i>
-                        Aucun membre trouvé.
+                        Aucun membre trouvÃ©.
                     </p>
                 `;
                 document.getElementById('pagination').innerHTML = '';
@@ -595,7 +594,7 @@
                 bulkContainer.innerHTML = `
                     <div class="bulk-actions">
                         <span class="bulk-actions-text">
-                            <i class="fas fa-check-circle"></i> ${selectedMembers.length} membre(s) sélectionné(s)
+                            <i class="fas fa-check-circle"></i> ${selectedMembers.length} membre(s) sÃ©lectionnÃ©(s)
                         </span>
                         <button type="button" class="btn-primary btn-danger" style="width: 200px;" onclick="deleteSelectedMembers()">
                             <i class="fas fa-trash"></i> Supprimer
@@ -639,7 +638,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td>${member.service_nom || 'Non défini'}</td>
+                        <td>${member.service_nom || 'Non dÃ©fini'}</td>
                         <td>
                             <span class="member-badge ${member.sexe.toLowerCase()}">
                                 <i class="fas fa-${member.sexe === 'Homme' ? 'male' : 'female'}"></i>
@@ -649,7 +648,7 @@
                         <td>
                             <div style="font-size: 0.875rem; color: var(--gray);">
                                 <i class="fas fa-phone" style="color: var(--primary-red);"></i>
-                                ${member.telephone || 'Non renseigné'}
+                                ${member.telephone || 'Non renseignÃ©'}
                             </div>
                         </td>
                         <td>
@@ -723,11 +722,11 @@
 
         async function deleteSelectedMembers() {
             if (selectedMembers.length === 0) {
-                showToast('Aucun membre sélectionné', 'info');
+                showToast('Aucun membre sÃ©lectionnÃ©', 'info');
                 return;
             }
 
-            if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedMembers.length} membre(s)?`)) return;
+            if (!confirm(`ÃŠtes-vous sÃ»r de vouloir supprimer ${selectedMembers.length} membre(s)?`)) return;
 
             try {
                 for (const memberId of selectedMembers) {
@@ -738,7 +737,7 @@
                 }
 
                 showSuccessAnimation();
-                showToast(`${selectedMembers.length} membre(s) supprimé(s) avec succès!`, 'success');
+                showToast(`${selectedMembers.length} membre(s) supprimÃ©(s) avec succÃ¨s!`, 'success');
                 selectedMembers = [];
                 await loadServices();
             } catch (error) {
@@ -851,7 +850,7 @@
                 if (response.ok) {
                     document.getElementById('addMemberForm').reset();
                     showSuccessAnimation();
-                    showToast('Membre ajouté avec succès!', 'success');
+                    showToast('Membre ajoutÃ© avec succÃ¨s!', 'success');
                     await loadServices();
                 } else {
                     const result = await response.json();
@@ -871,7 +870,7 @@
                 const member = allMembers.find(m => m.id === id);
                 
                 if (!member) {
-                    showToast('Membre non trouvé', 'error');
+                    showToast('Membre non trouvÃ©', 'error');
                     return;
                 }
                 
@@ -923,7 +922,7 @@
 
                 if (response.ok) {
                     showSuccessAnimation();
-                    showToast('Membre modifié avec succès!', 'success');
+                    showToast('Membre modifiÃ© avec succÃ¨s!', 'success');
                     closeEditMemberModal();
                     await loadServices();
                 } else {
@@ -937,7 +936,7 @@
         }
 
         async function deleteMember(id) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
+            if (!confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce membre ?')) return;
 
             try {
                 const response = await fetch(`${API_BASE}/membres/${id}`, {
@@ -947,7 +946,7 @@
 
                 if (response.ok) {
                     showSuccessAnimation();
-                    showToast('Membre supprimé avec succès!', 'warning');
+                    showToast('Membre supprimÃ© avec succÃ¨s!', 'warning');
                     await loadServices();
                 } else {
                     const result = await response.json();
@@ -999,11 +998,11 @@
         }
 
         function logout() {
-            if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
+            if (!confirm('ÃŠtes-vous sÃ»r de vouloir vous dÃ©connecter ?')) return;
             
             window.localStorage.removeItem('mcm_token');
             window.localStorage.removeItem('mcm_user');
-            showToast('Déconnexion réussie', 'info');
+            showToast('DÃ©connexion rÃ©ussie', 'info');
             setTimeout(() => {
                 window.location.href = './login.html';
             }, 1000);

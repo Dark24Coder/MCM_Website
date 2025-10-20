@@ -1,4 +1,3 @@
-
         const API_BASE = '/api';
         let currentUser = null;
         let authToken = localStorage.getItem('mcm_token');
@@ -28,6 +27,7 @@
                 title: "Que cette journée soit productive ! 🚀",
                 subtitle: "Ensemble, construisons une communauté forte"
             }
+
         ];
 
         // Initialize
@@ -144,14 +144,14 @@
                 console.error('Erreur chargement membres:', error);
                 showToast('Erreur lors du chargement des membres', 'error');
                 
-                // Mode démo si API échoue
+                // Mode dÃ©mo si API Ã©choue
                 allMembers = getDemoMembers();
                 updateStatistics();
                 displayMembers();
             }
         }
 
-        // Données de démonstration
+        // DonnÃ©es de dÃ©monstration
         function getDemoMembers() {
             return [
                 {
@@ -230,7 +230,7 @@
                 container.innerHTML = `
                     <p style="text-align: center; color: var(--gray); padding: 3rem;">
                         <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; display: block;"></i>
-                        Aucun membre trouvé dans votre service.
+                        Aucun membre trouvÃ© dans votre service.
                     </p>
                 `;
                 return;
@@ -244,7 +244,7 @@
                 <table class="members-table">
                     <thead>
                         <tr>
-                            <th>Nom & Prénom</th>
+                            <th>Nom & PrÃ©nom</th>
                             <th>Sexe</th>
                             <th>Date de Naissance</th>
                             <th>Contact</th>
@@ -271,11 +271,11 @@
                             <div style="font-size: 0.875rem;">
                                 <div style="margin-bottom: 0.25rem;">
                                     <i class="fas fa-envelope" style="color: var(--primary-red); width: 16px;"></i>
-                                    ${member.email || 'Non renseigné'}
+                                    ${member.email || 'Non renseignÃ©'}
                                 </div>
                                 <div>
                                     <i class="fas fa-phone" style="color: var(--primary-red); width: 16px;"></i>
-                                    ${member.telephone || 'Non renseigné'}
+                                    ${member.telephone || 'Non renseignÃ©'}
                                 </div>
                             </div>
                         </td>
@@ -354,7 +354,7 @@
             submitBtn.disabled = true;
             
             if (!currentUser || !currentUser.service_id) {
-                showToast('Erreur: Données utilisateur manquantes', 'error');
+                showToast('Erreur: DonnÃ©es utilisateur manquantes', 'error');
                 submitBtn.innerHTML = originalHTML;
                 submitBtn.disabled = false;
                 return;
@@ -382,7 +382,7 @@
 
                 if (response.ok) {
                     document.getElementById('addMemberForm').reset();
-                    showSuccessAnimation('Membre ajouté avec succès !');
+                    showSuccessAnimation('Membre ajoutÃ© avec succÃ¨s !');
                     await loadMembers();
                 } else {
                     const result = await response.json();
@@ -445,7 +445,7 @@
                 });
 
                 if (response.ok) {
-                    showSuccessAnimation('Membre modifié avec succès !');
+                    showSuccessAnimation('Membre modifiÃ© avec succÃ¨s !');
                     closeEditMemberModal();
                     await loadMembers();
                 } else {
@@ -459,7 +459,7 @@
         }
 
         async function deleteMember(id) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
+            if (!confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce membre ?')) return;
 
             try {
                 const response = await fetch(`${API_BASE}/membres/${id}`, {
@@ -513,7 +513,7 @@
                     currentUser.email = profileData.email;
                     localStorage.setItem('mcm_user', JSON.stringify(currentUser));
                     
-                    showSuccessAnimation('Profil modifié avec succès !');
+                    showSuccessAnimation('Profil modifiÃ© avec succÃ¨s !');
                     loadUserProfile();
                     closeProfileModal();
                 } else {
@@ -641,11 +641,11 @@
         }
 
         function logout() {
-            if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
+            if (!confirm('ÃŠtes-vous sÃ»r de vouloir vous dÃ©connecter ?')) return;
             
             localStorage.removeItem('mcm_token');
             localStorage.removeItem('mcm_user');
-            showToast('Déconnexion réussie', 'info');
+            showToast('DÃ©connexion rÃ©ussie', 'info');
             setTimeout(() => {
                 window.location.href = './login.html';
             }, 1000);
