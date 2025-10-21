@@ -14,19 +14,19 @@ let currentSlide = 0;
 
 const carouselData = [
     {
-        icon: 'ðŸ”',
-        title: 'RÃ©cupÃ©ration sÃ©curisÃ©e',
-        description: 'Votre sÃ©curitÃ© est notre prioritÃ©. Suivez les Ã©tapes pour rÃ©cupÃ©rer l\'accÃ¨s Ã  votre compte en toute sÃ©curitÃ©.'
+        icon: '🔐',
+        title: 'Récupération sécurisée',
+        description: 'Votre sécurité est notre priorité. Suivez les étapes pour récupérer l\'accès à votre compte en toute sécurité.'
     },
     {
-        icon: 'ðŸ›¡ï¸',
-        title: 'Protection de vos donnÃ©es',
-        description: 'Nous utilisons des mÃ©thodes de vÃ©rification sÃ©curisÃ©es pour protÃ©ger votre compte et vos informations personnelles.'
+        icon: '🛡️',
+        title: 'Protection de vos données',
+        description: 'Nous utilisons des méthodes de vérification sécurisées pour protéger votre compte et vos informations personnelles.'
     },
     {
-        icon: 'âœ¨',
-        title: 'AccÃ¨s rapide et simple',
-        description: 'Un processus de rÃ©cupÃ©ration simple et rapide pour vous permettre de retrouver l\'accÃ¨s Ã  votre espace MCM.'
+        icon: '✨',
+        title: 'Accès rapide et simple',
+        description: 'Un processus de récupération simple et rapide pour vous permettre de retrouver l\'accès à votre espace MCM.'
     }
 ];
 
@@ -117,12 +117,12 @@ currentMethod = method;
     
     if (method === 'email') {
         phoneGroup.style.display = 'none';
-        sentIcon.textContent = 'ðŸ“§';
-        sentMessage.textContent = 'Un mot de passe temporaire a Ã©tÃ© envoyÃ© Ã  votre adresse email.';
+        sentIcon.textContent = '📧';
+        sentMessage.textContent = 'Un mot de passe temporaire a été envoyé à votre adresse email.';
     } else {
         phoneGroup.style.display = 'block';
-        sentIcon.textContent = 'ðŸ“±';
-        sentMessage.textContent = 'Un mot de passe temporaire a Ã©tÃ© envoyÃ© par SMS Ã  votre tÃ©lÃ©phone.';
+        sentIcon.textContent = '📱';
+        sentMessage.textContent = 'Un mot de passe temporaire a été envoyé par SMS à votre téléphone.';
     }
 }
 
@@ -146,7 +146,7 @@ async function sendTemporaryPassword() {
     if (currentMethod === 'sms') {
         const phone = document.getElementById('recoveryPhone').value.trim();
         if (!phone) {
-            showError('Veuillez saisir votre numÃ©ro de tÃ©lÃ©phone');
+            showError('Veuillez saisir votre numéro de téléphone');
             return;
         }
         target = phone;
@@ -176,13 +176,13 @@ async function sendTemporaryPassword() {
                     }
                     
                     goToStep(2);
-                    showSuccess(data.message || 'Mot de passe temporaire envoyÃ© avec succÃ¨s !');
+                    showSuccess(data.message || 'Mot de passe temporaire envoyé avec succès !');
                     startResendTimer();
                 } else {
                     showError(data.error || 'Erreur lors de l\'envoi du mot de passe temporaire');
                 }
             } catch (err) {
-                showError('Erreur de connexion au serveur. Veuillez rÃ©essayer.');
+                showError('Erreur de connexion au serveur. Veuillez réessayer.');
                 console.error('Erreur:', err);
             } finally {
                 showLoading(false);
@@ -211,12 +211,12 @@ async function sendTemporaryPassword() {
             }
 
             if (newPassword.length < 8) {
-                showError('Le nouveau mot de passe doit contenir au moins 8 caractÃ¨res');
+                showError('Le nouveau mot de passe doit contenir au moins 8 caractères');
                 return;
             }
 
             if (tempPassword === newPassword) {
-                showError('Le nouveau mot de passe doit Ãªtre diffÃ©rent du mot de passe temporaire');
+                showError('Le nouveau mot de passe doit être différent du mot de passe temporaire');
                 return;
             }
 
@@ -236,7 +236,7 @@ async function sendTemporaryPassword() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('Mot de passe changÃ© avec succÃ¨s ! Redirection vers la connexion...');
+                    showSuccess('Mot de passe changé avec succès ! Redirection vers la connexion...');
                     
                     setTimeout(() => {
                         window.location.href = 'login.html?message=password_changed_success';
@@ -245,7 +245,7 @@ async function sendTemporaryPassword() {
                     showError(data.error || 'Erreur lors du changement de mot de passe');
                 }
             } catch (err) {
-                showError('Erreur de connexion au serveur. Veuillez rÃ©essayer.');
+                showError('Erreur de connexion au serveur. Veuillez réessayer.');
                 console.error('Erreur:', err);
             } finally {
                 showLoading(false);
@@ -270,7 +270,7 @@ async function sendTemporaryPassword() {
             let feedback = [];
 
             if (password.length >= 8) score++;
-            else feedback.push('8 caractÃ¨res minimum');
+            else feedback.push('8 caractères minimum');
 
             if (/[a-z]/.test(password)) score++;
             else feedback.push('1 minuscule');
@@ -279,13 +279,13 @@ async function sendTemporaryPassword() {
             else feedback.push('1 majuscule');
 
             if (/[0-9]/.test(password) && /[^a-zA-Z0-9]/.test(password)) score++;
-            else feedback.push('1 chiffre et 1 caractÃ¨re spÃ©cial');
+            else feedback.push('1 chiffre et 1 caractère spécial');
 
             bars.forEach(bar => bar.classList.remove('filled', 'medium', 'weak'));
 
             if (score === 4) {
                 bars.forEach(bar => bar.classList.add('filled'));
-                strengthText.textContent = 'Mot de passe trÃ¨s fort !';
+                strengthText.textContent = 'Mot de passe très fort !';
                 strengthText.style.color = '#16A34A';
             } else if (score === 3) {
                 bars.forEach((bar, index) => {
@@ -333,10 +333,10 @@ async function sendTemporaryPassword() {
 
             if (field.type === 'password') {
                 field.type = 'text';
-                button.textContent = 'ðŸ™ˆ';
+                button.textContent = '🙈';
             } else {
                 field.type = 'password';
-                button.textContent = 'ðŸ‘';
+                button.textContent = '👁️';
             }
         }
 
