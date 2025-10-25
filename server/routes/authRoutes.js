@@ -7,8 +7,7 @@ import {
     changeTemporaryPassword,
     sendValidationCode,
     validateCode,
-    resendValidationCode,
-    testEmail
+    resendValidationCode
 } from '../controllers/authController.js';
 
 const router = express.Router();
@@ -275,12 +274,6 @@ router.post('/resend-validation-code',
     recoveryLimiter,
     logAuthAttempt('CODE_RESEND'),
     resendValidationCode
-);
-
-// Route de test d'envoi d'email
-router.post('/test-email', 
-    logAuthAttempt('TEST_EMAIL'),
-    testEmail
 );
 
 /**

@@ -1,57 +1,8 @@
 import db from '../config/db.js';
 
-const servicesByCommission = {
-    1: [
-        { id: 1, nom: 'Prédication', commission_id: 1 },
-        { id: 2, nom: 'Formation biblique', commission_id: 1 },
-        { id: 3, nom: 'Missions', commission_id: 1 }
-    ],
-    2: [
-        { id: 4, nom: 'Son et éclairage', commission_id: 2 },
-        { id: 5, nom: 'Vidéo et streaming', commission_id: 2 },
-        { id: 6, nom: 'Photographie', commission_id: 2 }
-    ],
-    3: [
-        { id: 7, nom: 'Rédaction', commission_id: 3 },
-        { id: 8, nom: 'Archives', commission_id: 3 },
-        { id: 9, nom: 'Communication', commission_id: 3 }
-    ],
-    4: [
-        { id: 10, nom: 'Chant principal', commission_id: 4 },
-        { id: 11, nom: 'Instruments', commission_id: 4 },
-        { id: 12, nom: 'Direction musicale', commission_id: 4 }
-    ],
-    5: [
-        { id: 13, nom: 'Réception', commission_id: 5 },
-        { id: 14, nom: 'Orientation', commission_id: 5 },
-        { id: 15, nom: 'Information', commission_id: 5 }
-    ],
-    6: [
-        { id: 16, nom: 'Trésorerie', commission_id: 6 },
-        { id: 17, nom: 'Budget', commission_id: 6 },
-        { id: 18, nom: 'Contrôle', commission_id: 6 }
-    ],
-    7: [
-        { id: 19, nom: 'Événements', commission_id: 7 },
-        { id: 20, nom: 'Matériel', commission_id: 7 },
-        { id: 21, nom: 'Transport', commission_id: 7 }
-    ],
-    8: [
-        { id: 22, nom: 'Cérémonies', commission_id: 8 },
-        { id: 23, nom: 'Protocole', commission_id: 8 },
-        { id: 24, nom: 'Sacristie', commission_id: 8 }
-    ]
-};
-
-export const getPublicServicesByCommission = (req, res) => {
-    const { commissionId } = req.params;
-    const commissionIdInt = parseInt(commissionId);
-    const services = servicesByCommission[commissionIdInt] || [];
-    res.json(services);
-};
-
+// 🔍 Récupérer tous les services
 export const getServices = (req, res) => {
-    const query = 'SELECT * FROM services ORDER BY nom';
+    const query = 'SELECT * FROM services ORDER BY commission_id, nom';
     db.query(query, (err, results) => {
         if (err) {
             console.error('Erreur getServices:', err);
@@ -61,6 +12,7 @@ export const getServices = (req, res) => {
     });
 };
 
+// 🔍 Récupérer les services d'une commission spécifique
 export const getServicesByCommission = (req, res) => {
     const { commissionId } = req.params;
     const query = 'SELECT * FROM services WHERE commission_id = $1 ORDER BY nom';
@@ -69,31 +21,196 @@ export const getServicesByCommission = (req, res) => {
             console.error('Erreur getServicesByCommission:', err);
             return res.status(500).json({ error: 'Erreur serveur' });
         }
+        // Retourne un tableau vide si aucun service (commissions RAS)
         res.json(results.rows);
     });
 };
 
+// ➕ Créer un nouveau service
 export const createService = (req, res) => {
-    const { nom, commission_id } = req.body;
+    const { nom, commission_id, description } = req.body;
 
     if (!nom || !commission_id) {
         return res.status(400).json({ error: 'Nom et commission_id requis' });
     }
 
+    // Vérification du rôle de l'utilisateur
     if (req.user.role === 'adminCom' && req.user.commission_id !== parseInt(commission_id)) {
         return res.status(403).json({ error: 'Vous ne pouvez créer des services que dans votre commission' });
     }
 
-    const query = 'INSERT INTO services (nom, commission_id, created_at) VALUES ($1, $2, NOW()) RETURNING id';
-    db.query(query, [nom, commission_id], (err, result) => {
+    // Vérifier que la commission existe
+    const checkCommissionQuery = 'SELECT id FROM commissions WHERE id = $1';
+    db.query(checkCommissionQuery, [commission_id], (err, commissionResult) => {
         if (err) {
-            console.error('Erreur createService:', err);
-            return res.status(500).json({ error: 'Erreur lors de la création du service' });
+            console.error('Erreur vérification commission:', err);
+            return res.status(500).json({ error: 'Erreur serveur' });
         }
-        res.status(201).json({ 
-            message: 'Service créé avec succès', 
-            id: result.rows[0].id,
-            service: { id: result.rows[0].id, nom, commission_id }
+
+        if (commissionResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Commission introuvable' });
+        }
+
+        // Vérifier si le service existe déjà dans cette commission
+        const checkServiceQuery = 'SELECT id FROM services WHERE nom = $1 AND commission_id = $2';
+        db.query(checkServiceQuery, [nom, commission_id], (err, serviceResult) => {
+            if (err) {
+                console.error('Erreur vérification service:', err);
+                return res.status(500).json({ error: 'Erreur serveur' });
+            }
+
+            if (serviceResult.rows.length > 0) {
+                return res.status(409).json({ error: 'Un service avec ce nom existe déjà dans cette commission' });
+            }
+
+            // Créer le service
+            const insertQuery = 'INSERT INTO services (nom, commission_id, description, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *';
+            db.query(insertQuery, [nom, commission_id, description || null], (err, result) => {
+                if (err) {
+                    console.error('Erreur createService:', err);
+                    return res.status(500).json({ error: 'Erreur lors de la création du service' });
+                }
+                res.status(201).json({ 
+                    message: 'Service créé avec succès', 
+                    service: result.rows[0]
+                });
+            });
         });
+    });
+};
+
+// ✏️ Mettre à jour un service
+export const updateService = (req, res) => {
+    const { id } = req.params;
+    const { nom, description } = req.body;
+
+    if (!nom) {
+        return res.status(400).json({ error: 'Le nom du service est requis' });
+    }
+
+    // Vérifier que le service existe
+    const checkQuery = 'SELECT * FROM services WHERE id = $1';
+    db.query(checkQuery, [id], (err, result) => {
+        if (err) {
+            console.error('Erreur vérification service:', err);
+            return res.status(500).json({ error: 'Erreur serveur' });
+        }
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Service introuvable' });
+        }
+
+        const service = result.rows[0];
+
+        // Vérification des permissions
+        if (req.user.role === 'adminCom' && req.user.commission_id !== service.commission_id) {
+            return res.status(403).json({ error: 'Vous ne pouvez modifier que les services de votre commission' });
+        }
+
+        if (req.user.role === 'admin' && req.user.service_id !== parseInt(id)) {
+            return res.status(403).json({ error: 'Vous ne pouvez modifier que votre propre service' });
+        }
+
+        // Mettre à jour le service
+        const updateQuery = 'UPDATE services SET nom = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *';
+        db.query(updateQuery, [nom, description || service.description, id], (err, result) => {
+            if (err) {
+                console.error('Erreur updateService:', err);
+                return res.status(500).json({ error: 'Erreur lors de la mise à jour du service' });
+            }
+            res.json({ 
+                message: 'Service mis à jour avec succès', 
+                service: result.rows[0]
+            });
+        });
+    });
+};
+
+// 🗑️ Supprimer un service
+export const deleteService = (req, res) => {
+    const { id } = req.params;
+
+    // Vérifier que le service existe
+    const checkQuery = 'SELECT * FROM services WHERE id = $1';
+    db.query(checkQuery, [id], (err, result) => {
+        if (err) {
+            console.error('Erreur vérification service:', err);
+            return res.status(500).json({ error: 'Erreur serveur' });
+        }
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Service introuvable' });
+        }
+
+        const service = result.rows[0];
+
+        // Vérification des permissions (seuls superadmin et adminCom peuvent supprimer)
+        if (req.user.role === 'adminCom' && req.user.commission_id !== service.commission_id) {
+            return res.status(403).json({ error: 'Vous ne pouvez supprimer que les services de votre commission' });
+        }
+
+        if (req.user.role === 'admin') {
+            return res.status(403).json({ error: 'Seuls les SuperAdmin et AdminCom peuvent supprimer des services' });
+        }
+
+        // Vérifier s'il y a des membres dans ce service
+        const checkMembersQuery = 'SELECT COUNT(*) as count FROM membres WHERE service_id = $1';
+        db.query(checkMembersQuery, [id], (err, membersResult) => {
+            if (err) {
+                console.error('Erreur vérification membres:', err);
+                return res.status(500).json({ error: 'Erreur serveur' });
+            }
+
+            const membersCount = parseInt(membersResult.rows[0].count);
+            if (membersCount > 0) {
+                return res.status(409).json({ 
+                    error: `Impossible de supprimer ce service car il contient ${membersCount} membre(s). Veuillez d'abord réaffecter ou supprimer les membres.` 
+                });
+            }
+
+            // Supprimer le service
+            const deleteQuery = 'DELETE FROM services WHERE id = $1';
+            db.query(deleteQuery, [id], (err) => {
+                if (err) {
+                    console.error('Erreur deleteService:', err);
+                    return res.status(500).json({ error: 'Erreur lors de la suppression du service' });
+                }
+                res.json({ message: 'Service supprimé avec succès' });
+            });
+        });
+    });
+};
+
+// 📊 Obtenir les statistiques d'un service
+export const getServiceStats = (req, res) => {
+    const { id } = req.params;
+
+    const query = `
+        SELECT 
+            s.id,
+            s.nom,
+            s.commission_id,
+            c.nom as commission_nom,
+            COUNT(m.id) as total_membres,
+            COUNT(CASE WHEN m.sexe = 'Homme' THEN 1 END) as hommes,
+            COUNT(CASE WHEN m.sexe = 'Femme' THEN 1 END) as femmes
+        FROM services s
+        LEFT JOIN commissions c ON s.commission_id = c.id
+        LEFT JOIN membres m ON s.id = m.service_id
+        WHERE s.id = $1
+        GROUP BY s.id, s.nom, s.commission_id, c.nom
+    `;
+
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            console.error('Erreur getServiceStats:', err);
+            return res.status(500).json({ error: 'Erreur serveur' });
+        }
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Service introuvable' });
+        }
+
+        res.json(result.rows[0]);
     });
 };

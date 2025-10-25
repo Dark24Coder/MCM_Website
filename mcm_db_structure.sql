@@ -88,16 +88,21 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
 CREATE TRIGGER update_membres_updated_at BEFORE UPDATE ON membres
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- ✅ Insertion des commissions
+-- ✅ SUPPRESSION DES DONNÉES EXISTANTES (pour réinitialisation)
+TRUNCATE TABLE membres CASCADE;
+TRUNCATE TABLE services CASCADE;
+TRUNCATE TABLE commissions CASCADE;
+
+-- ✅ Insertion des commissions (CONFORME AU DOCUMENT)
 INSERT INTO commissions (id, nom, description) VALUES
 (1, 'Évangélisation', 'Commission chargée de l''évangélisation'),
-(2, 'Multimédia et audiovisuel', 'Commission en charge de la technique audio et visuelle'),
-(3, 'Presse et documentation', 'Commission de communication et d''archives'),
+(2, 'Multimédia et audiovisuel', 'Commission en charge de la technique audio et visuelle - RAS'),
+(3, 'Presse et documentation', 'Commission de communication et d''archives - RAS'),
 (4, 'Chœur', 'Commission musicale et louange'),
 (5, 'Accueil', 'Commission d''accueil et d''hospitalité'),
 (6, 'Comptabilité', 'Commission financière et budgétaire'),
 (7, 'Organisation et logistique', 'Commission organisationnelle'),
-(8, 'Liturgie MCM bénin service délégué', 'Commission liturgique')
+(8, 'Liturgie MCM bénin service délégué', 'Commission liturgique - RAS')
 ON CONFLICT (id) DO UPDATE SET 
     nom = EXCLUDED.nom, 
     description = EXCLUDED.description;
@@ -105,32 +110,39 @@ ON CONFLICT (id) DO UPDATE SET
 -- Réinitialiser la séquence des commissions
 SELECT setval('commissions_id_seq', (SELECT MAX(id) FROM commissions));
 
--- ✅ Insertion des services
+-- ✅ Insertion des services (CONFORME AU DOCUMENT - UNIQUEMENT LES SERVICES EXISTANTS)
 INSERT INTO services (nom, commission_id) VALUES
--- Évangélisation
+-- Commission 1: Évangélisation
 ('Intercession', 1),
 ('Social et humanitaire', 1),
 
--- Chœur
+-- Commission 2: Multimédia et audiovisuel - RAS (aucun service)
+
+-- Commission 3: Presse et documentation - RAS (aucun service)
+
+-- Commission 4: Chœur
 ('Louange et adoration', 4),
 ('Logistique musicale', 4),
 ('Liturgie', 4),
 
--- Accueil
+-- Commission 5: Accueil
 ('Protocole /Accueil', 5),
 ('Ordre et sécurité', 5),
 ('Enregistrements', 5),
 ('Intégrations et sacrements', 5),
 
--- Comptabilité
+-- Commission 6: Comptabilité
 ('Suivi budgétaire', 6),
 ('Collecte et offrande', 6),
 
--- Organisation et logistique
+-- Commission 7: Organisation et logistique
 ('Installation et matériel', 7),
 ('Transport et mobilité', 7),
 ('Approvisionnement', 7),
 ('Préparation des événements', 7)
+
+-- Commission 8: Liturgie MCM bénin service délégué - RAS (aucun service)
+
 ON CONFLICT DO NOTHING;
 
 -- 👑 Insertion d'un superadmin par défaut
@@ -152,3 +164,7 @@ SELECT
     (SELECT COUNT(*) FROM users WHERE role = 'admin') as total_admins,
     (SELECT COUNT(*) FROM users WHERE role = 'adminCom') as total_adminCom,
     (SELECT COUNT(*) FROM users WHERE is_active = true) as users_actifs;
+
+-- 📝 Commentaires pour clarification
+COMMENT ON TABLE commissions IS 'Table des commissions MCM - 3 commissions sans services (RAS): Multimédia et audiovisuel, Presse et documentation, Liturgie MCM bénin service délégué';
+COMMENT ON TABLE services IS 'Table des services - Seuls les services existants selon le document support sont créés. Les commissions RAS peuvent recevoir de nouveaux services via l''interface.';

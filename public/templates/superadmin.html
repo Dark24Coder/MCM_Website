@@ -343,6 +343,42 @@
                 </div>
             </div>
         </div>
+
+        <!-- Commission Details Section (PAGE COMPLÈTE) -->
+        <div id="commissionDetailsSection" class="content-section">
+            <div class="page-header">
+                <button onclick="backToCommissions()" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Retour aux Commissions</span>
+                </button>
+                <h1 class="page-title" id="commissionDetailsTitle">Détails de la Commission</h1>
+                <p class="page-subtitle">Tous les membres par service</p>
+            </div>
+
+            <div class="section-card">
+                <div id="commissionDetailsContainer">
+                    <!-- Commission details dynamically loaded -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Administrators Section (PAGE COMPLÈTE) -->
+        <div id="administratorsSection" class="content-section">
+            <div class="page-header">
+                <h1 class="page-title">Gestion des Administrateurs</h1>
+                <p class="page-subtitle">Tous les administrateurs et superadmins de la plateforme</p>
+            </div>
+
+            <div class="section-card">
+                <div style="margin-bottom: 1.5rem;">
+                    <input type="text" id="adminSearch" class="form-control" placeholder="🔍 Rechercher un administrateur..." style="max-width: 400px;">
+                </div>
+                <div id="administratorsListContainer">
+                    <p style="text-align: center; color: var(--gray); padding: 2rem;">Chargement des administrateurs...</p>
+                </div>
+                <div id="adminPagination" style="text-align: center; margin-top: 2rem;"></div>
+            </div>
+        </div>
     </main>
 
     <!-- Modales -->
@@ -361,22 +397,7 @@
         </div>
     </div>
 
-    <!-- Commission Members Modal -->
-    <div class="modal" id="commissionModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="commissionModalTitle">Membres de la Commission</h2>
-                <button class="close-btn" onclick="closeCommissionModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="member-list" id="commissionModalBody"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Member Modal -->
+    <!-- Edit Member Modal - MODIFIÉ -->
     <div class="modal" id="editMemberModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -386,7 +407,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="editMemberForm">
+                <form id="editMemberForm" onsubmit="handleEditMember(event); return false;">
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Service</label>
@@ -432,20 +453,7 @@
         </div>
     </div>
 
-    <!-- Administrators Modal -->
-    <div class="modal" id="administratorsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Liste des Administrateurs</h2>
-                <button class="close-btn" onclick="closeAdministratorsModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="member-list" id="administratorsBody"></div>
-            </div>
-        </div>
-    </div>
+    <!-- MODAL EDIT ADMIN SUPPRIMÉE - Les admins ne peuvent plus être modifiés, seulement supprimés -->
 
     <!-- User Profile Modal -->
     <div class="modal" id="userProfileModal">

@@ -1,6 +1,5 @@
 import express from 'express';
 import { 
-    getPublicServicesByCommission, 
     getServices, 
     getServicesByCommission, 
     createService 
@@ -9,7 +8,6 @@ import { authenticateToken, checkRole } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-router.get('/public/:commissionId', getPublicServicesByCommission);
 router.get('/', authenticateToken, getServices);
 router.get('/commission/:commissionId', authenticateToken, getServicesByCommission);
 router.post('/', authenticateToken, checkRole(['superadmin', 'adminCom']), createService);
