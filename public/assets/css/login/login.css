@@ -158,21 +158,43 @@ body {
     border-left-color: #3B82F6;
 }
 
-/* Loading Spinner */
+/* ========================================
+    🔄 LOADING SPINNER - OVERLAY COMPLET
+   ======================================== */
 .loading {
     display: none;
-    text-align: center;
-    padding: 2rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.loading.show {
+    display: flex;
 }
 
 .spinner {
-    border: 3px solid var(--light-gray);
-    border-top: 3px solid var(--primary-red);
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top: 4px solid var(--dark-red);
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.loading p {
+    color: var(--white);
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-align: center;
 }
 
 @keyframes spin {
@@ -220,7 +242,7 @@ body {
     font-size: 0.875rem;
 }
 
-.form-control, .form-select {
+.form-control {
     width: 100%;
     padding: 0.875rem 1rem;
     border: 2px solid var(--light-gray);
@@ -233,7 +255,7 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus {
     outline: none;
     border-color: var(--primary-red);
     box-shadow: 0 0 0 4px rgba(230, 0, 18, 0.1);
@@ -244,9 +266,152 @@ body {
     font-weight: 400;
 }
 
-.form-control.error, .form-select.error {
+.form-control.error {
     border-color: var(--primary-red);
     background: #FEF2F2;
+}
+
+/* ========================================
+    🎨 SELECT PERSONNALISÉ
+   ======================================== */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select {
+    width: 100%;
+    padding: 0.875rem 3rem 0.875rem 1rem;
+    border: 2px solid var(--light-gray);
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    transition: var(--transition);
+    background: var(--white);
+    color: var(--black);
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.custom-select:hover {
+    border-color: var(--primary-red);
+}
+
+.custom-select.active {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 4px rgba(230, 0, 18, 0.1);
+}
+
+.custom-select.error {
+    border-color: var(--primary-red);
+    background: #FEF2F2;
+}
+
+.custom-select-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.custom-select-text.placeholder {
+    color: var(--gray);
+    font-weight: 400;
+}
+
+.custom-select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    transition: transform 0.3s ease;
+    color: var(--gray);
+    font-size: 0.75rem;
+}
+
+.custom-select.active .custom-select-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.custom-select-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border: 2px solid var(--light-gray);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.custom-select-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-select-option {
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9375rem;
+    color: var(--black);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.custom-select-option:hover {
+    background: rgba(230, 0, 18, 0.05);
+    color: var(--primary-red);
+}
+
+.custom-select-option.selected {
+    background: rgba(230, 0, 18, 0.1);
+    color: var(--primary-red);
+    font-weight: 600;
+}
+
+.custom-select-option.selected::before {
+    content: '✓';
+    font-weight: bold;
+    margin-left: auto;
+}
+
+.custom-select-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-select-dropdown::-webkit-scrollbar-track {
+    background: var(--off-white);
+    border-radius: 0 12px 12px 0;
+}
+
+.custom-select-dropdown::-webkit-scrollbar-thumb {
+    background: var(--light-gray);
+    border-radius: 10px;
+}
+
+.custom-select-dropdown::-webkit-scrollbar-thumb:hover {
+    background: var(--gray);
+}
+
+/* Masquer le select natif */
+.form-select {
+    display: none;
 }
 
 /* Password Group */
@@ -379,6 +544,42 @@ body {
     background: rgba(230, 0, 18, 0.1);
 }
 
+/* ========================================
+   ⚠️ MESSAGE PAS DE SERVICES DISPONIBLES
+   ======================================== */
+.no-services-message {
+    background: #FEF2F2;
+    border: 2px solid var(--primary-red);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    display: none;
+    align-items: center;
+    gap: 1rem;
+}
+
+.no-services-message.show {
+    display: flex;
+}
+
+.no-services-message .icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.no-services-message .content h4 {
+    color: var(--primary-red);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.no-services-message .content p {
+    color: #991B1B;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
 /* Right Side - Video Background */
 .auth-video-side {
     background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
@@ -401,19 +602,6 @@ body {
     object-fit: cover;
     filter: brightness(0.7);
 }
-
-/* .video-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, 
-        rgba(230, 0, 18, 0.6) 0%, 
-        rgba(184, 0, 14, 0.7) 50%,
-        rgba(0, 0, 0, 0.4) 100%);
-    z-index: 2;
-} */
 
 .video-content {
     position: relative;

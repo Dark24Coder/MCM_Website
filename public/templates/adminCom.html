@@ -205,8 +205,9 @@
             <p style="color: var(--gray); margin-bottom: 2rem;">Liste complète des membres de votre commission</p>
             <div class="section-card">
                 <div id="bulkActionsContainer"></div>
-                <div style="margin-bottom: 1.5rem;">
-                    <input type="text" id="searchMembers" class="form-control" placeholder="🔍 Rechercher un membre..." onkeyup="filterMembers()" style="max-width: 400px;">
+                <div class="search-wrapper">
+                    <input type="text" id="searchMembers" class="search-input" placeholder="Rechercher un membre..." onkeyup="filterMembers()">
+                    <i class="fas fa-search search-icon"></i>
                 </div>
                 <div id="membersTableContainer">
                     <p style="text-align: center; color: var(--gray); padding: 2rem;">Chargement des membres...</p>
@@ -223,9 +224,18 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Service *</label>
-                            <select class="form-select" id="serviceSelect" required>
-                                <option value="">Choisir un service</option>
-                            </select>
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select" data-select="serviceSelect">
+                                    <span class="selected-text">Choisir un service</span>
+                                </div>
+                                <i class="fas fa-chevron-down custom-select-icon"></i>
+                                <div class="custom-select-dropdown" id="serviceSelectDropdown">
+                                    <div class="custom-select-option" data-value="">
+                                        <i class="fas fa-check"></i>
+                                        <span>Choisir un service</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Nom *</label>
@@ -237,11 +247,26 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Sexe *</label>
-                            <select class="form-select" id="memberSexe" required>
-                                <option value="">Sélectionner le sexe</option>
-                                <option value="Homme">Homme</option>
-                                <option value="Femme">Femme</option>
-                            </select>
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select" data-select="memberSexe">
+                                    <span class="selected-text">Sélectionner le sexe</span>
+                                </div>
+                                <i class="fas fa-chevron-down custom-select-icon"></i>
+                                <div class="custom-select-dropdown">
+                                    <div class="custom-select-option" data-value="">
+                                        <i class="fas fa-check"></i>
+                                        <span>Sélectionner le sexe</span>
+                                    </div>
+                                    <div class="custom-select-option" data-value="Homme">
+                                        <i class="fas fa-check"></i>
+                                        <span>Homme</span>
+                                    </div>
+                                    <div class="custom-select-option" data-value="Femme">
+                                        <i class="fas fa-check"></i>
+                                        <span>Femme</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Date de Naissance *</label>
@@ -272,9 +297,18 @@
                 <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: flex-end;">
                     <div style="flex: 1; min-width: 250px;">
                         <label class="form-label">Sélectionner un service</label>
-                        <select class="form-select" id="statsServiceSelect" required>
-                            <option value="">Choisir un service</option>
-                        </select>
+                        <div class="custom-select-wrapper">
+                            <div class="custom-select" data-select="statsServiceSelect">
+                                <span class="selected-text">Choisir un service</span>
+                            </div>
+                            <i class="fas fa-chevron-down custom-select-icon"></i>
+                            <div class="custom-select-dropdown" id="statsServiceSelectDropdown">
+                                <div class="custom-select-option" data-value="">
+                                    <i class="fas fa-check"></i>
+                                    <span>Choisir un service</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <button type="button" class="btn-primary" onclick="displayServiceStatistics()" style="min-width: 200px; margin-bottom: 0;">
                         <i class="fas fa-search"></i>
@@ -348,9 +382,18 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Service</label>
-                            <select class="form-select" id="editMemberService" required>
-                                <option value="">Choisir un service</option>
-                            </select>
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select" data-select="editMemberService">
+                                    <span class="selected-text">Choisir un service</span>
+                                </div>
+                                <i class="fas fa-chevron-down custom-select-icon"></i>
+                                <div class="custom-select-dropdown" id="editMemberServiceDropdown">
+                                    <div class="custom-select-option" data-value="">
+                                        <i class="fas fa-check"></i>
+                                        <span>Choisir un service</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Nom</label>
@@ -362,10 +405,22 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Sexe</label>
-                            <select class="form-select" id="editMemberSexe" required>
-                                <option value="Homme">Homme</option>
-                                <option value="Femme">Femme</option>
-                            </select>
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select" data-select="editMemberSexe">
+                                    <span class="selected-text">Sélectionner</span>
+                                </div>
+                                <i class="fas fa-chevron-down custom-select-icon"></i>
+                                <div class="custom-select-dropdown">
+                                    <div class="custom-select-option" data-value="Homme">
+                                        <i class="fas fa-check"></i>
+                                        <span>Homme</span>
+                                    </div>
+                                    <div class="custom-select-option" data-value="Femme">
+                                        <i class="fas fa-check"></i>
+                                        <span>Femme</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Date de Naissance</label>
@@ -396,6 +451,42 @@
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Modal de confirmation de déconnexion -->
+    <div class="modal" id="logoutModal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-red), var(--dark-red)); color: white; border: none;">
+                <h3 class="modal-title" style="color: white;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Confirmation de déconnexion
+                </h3>
+                <button class="close-btn" onclick="closeLogoutModal()" style="background: rgba(255, 255, 255, 0.2); color: white;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2.5rem 2rem;">
+                <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; background: rgba(230, 0, 18, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-sign-out-alt" style="font-size: 2.5rem; color: var(--primary-red);"></i>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--black); margin-bottom: 0.75rem;">
+                    Voulez-vous vraiment vous déconnecter ?
+                </h3>
+                <p style="color: var(--gray); font-size: 1rem; margin-bottom: 2rem;">
+                    Vous serez redirigé vers la page de connexion.
+                </p>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn-primary" onclick="closeLogoutModal()" style="flex: 1; background: var(--gray);">
+                        <i class="fas fa-times"></i>
+                        <span>Annuler</span>
+                    </button>
+                    <button type="button" class="btn-primary" onclick="confirmLogout()" style="flex: 1;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Se déconnecter</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
     <script src="../assets/js/adminCom/adminCom.js"></script>

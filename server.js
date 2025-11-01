@@ -14,7 +14,6 @@ import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 import nodemailer from 'nodemailer';
 
-// ✅ Maintenant db.js sera importé APRÈS dotenv
 import db from './server/config/db.js';
 
 // 🚀 IMPORTATION DE TOUTES LES ROUTES
@@ -23,6 +22,9 @@ import commissionRoutes from './server/routes/commissionRoutes.js';
 import serviceRoutes from './server/routes/serviceRoutes.js';
 import membreRoutes from './server/routes/membreRoutes.js';
 import userRoutes from './server/routes/userRoutes.js';
+import { appMiddleware } from './server/middlewares/appMiddleware.js'; //Pour faire des contrôles sur n'importe qu'elle requête envoyé
+import { checkForgotPasswordToken, updatePassword } from './server/controllers/authController.js'
+
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -33,6 +35,7 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(appMiddleware);
 app.use(express.urlencoded({ extended: true }));
 
 // Fichiers statiques (CSS, JS, images, etc.)
@@ -125,6 +128,9 @@ app.get('/login', (req, res) => {
 app.get('/password-recovery', (req, res) => {
     res.sendFile(path.join(templatesPath, 'password-recovery.html'));
 });
+
+app.get('/newPassword/:token', checkForgotPasswordToken);
+app.post('/newPassword/:token/complete', updatePassword);
 
 // Routes des dashboards
 app.get('/superadmin', (req, res) => {

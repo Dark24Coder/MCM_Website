@@ -28,6 +28,7 @@
                 <span class="user-name" id="userName">Admin</span>
                 <i class="fas fa-chevron-down" style="color: var(--gray); font-size: 0.75rem;"></i>
             </div>
+            <!-- Bouton déconnexion caché en responsive -->
             <button class="logout-btn" onclick="app.logout()">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Déconnexion</span>
@@ -67,6 +68,7 @@
                     <span>Mon Profil</span>
                 </div>
             </li>
+            <!-- Bouton déconnexion visible uniquement en mobile -->
             <li class="sidebar-item mobile-only">
                 <div class="sidebar-link" onclick="app.logout()">
                     <i class="fas fa-sign-out-alt"></i>
@@ -174,7 +176,7 @@
             <div class="section-card">
                 <div id="bulkActionsDiv"></div>
                 <div class="search-bar">
-                    <input type="text" class="form-control" id="searchInput" placeholder="🔍 Rechercher..." onkeyup="app.filterMembers()">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un membre..." onkeyup="app.filterMembers()">
                 </div>
                 <div id="membersDiv"></div>
                 <div class="pagination" id="paginationDiv"></div>

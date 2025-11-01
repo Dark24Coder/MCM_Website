@@ -1,11 +1,11 @@
 // ========================================
 // CONFIGURATION & VARIABLES GLOBALES
 // ========================================
+
 const API_BASE = '/api';
 let token = null;
 let currentUser = null;
 let currentEditingMember = null;
-let currentEditingAdmin = null;
 let currentSection = 'dashboard';
 let selectedMembers = [];
 let selectedAdmins = [];
@@ -17,33 +17,176 @@ let currentPage = 1;
 let currentAdminPage = 1;
 const membersPerPage = 10;
 const adminsPerPage = 10;
+let customSelects = [];
+let recentActivities = [];
 
-// Mapping des commissions et services (CONFORME AU DOCUMENT)
-const COMMISSIONS_SERVICES = {
-  'Évangélisation': ['Intercession', 'Social et humanitaire'],
-  'Multimédia et audiovisuel': [],
-  'Presse et documentation': [],
-  'Chœur': ['Louange et adoration', 'Logistique musicale', 'Liturgie'],
-  'Accueil': ['Protocole /Accueil', 'Ordre et sécurité', 'Enregistrements', 'Intégrations et sacrements'],
-  'Comptabilité': ['Suivi budgétaire', 'Collecte et offrande'],
-  'Organisation et logistique': ['Installation et matériel', 'Transport et mobilité', 'Approvisionnement', 'Préparation des événements'],
-  'Liturgie MCM bénin service délégué': []
-};
-
-// Mapping service -> commission pour affichage
+// Mapping des services uniques (pas de doublons)
+let uniqueServicesMap = new Map();
 let serviceToCommissionMap = {};
 
-// Messages d'accueil aléatoires
+// Messages d'accueil
 const welcomeMessages = [
-  { title: "Bienvenue SuperAdmin ! 🕴️", subtitle: "Vous avez le contrôle total de la plateforme MCM" },
-  { title: "Excellente journée à vous ! ⭐", subtitle: "Gérez l'ensemble de l'écosystème MCM avec efficacité" },
-  { title: "Ravi de vous revoir ! 🚀", subtitle: "Pilotez votre organisation vers l'excellence" },
-  { title: "Bonjour SuperAdmin ! 💎", subtitle: "Votre leadership fait toute la différence" }
+  
+    { title: "Bienvenue SuperAdmin ! 🕴️", subtitle: "Vous avez le contrôle total de la plateforme MCM" },
+    { title: "Excellente journée à vous ! ⭐", subtitle: "Gérez l'ensemble de l'écosystème MCM avec efficacité" },
+    { title: "Ravi de vous revoir ! 🚀", subtitle: "Pilotez votre organisation vers l'excellence" },
+    { title: "Bonjour SuperAdmin ! 💎", subtitle: "Votre leadership fait toute la différence" },
+    { title: "Toujours au sommet ! 🏆", subtitle: "Votre vision guide le succès de MCM" },
+    { title: "Gestion exemplaire ! 💼", subtitle: "Vos décisions façonnent l’avenir de la plateforme" },
+    { title: "Bienvenue à bord ! ⚙️", subtitle: "Votre tableau de bord est prêt à l’action" },
+    { title: "Bon retour, stratège ! 🎯", subtitle: "Chaque clic rapproche MCM de la perfection" },
+    { title: "SuperAdmin connecté ! 🔑", subtitle: "Toutes les fonctionnalités sont à votre disposition" },
+    { title: "De retour aux commandes ! 🧭", subtitle: "La plateforme MCM vous attendait" },
+    { title: "Une journée productive commence ! ☀️", subtitle: "SuperAdmin, faites briller vos équipes" },
+    { title: "Visionnaire à l’œuvre ! 👁️", subtitle: "MCM avance sous votre supervision éclairée" },
+    { title: "Bonjour, chef d’orchestre ! 🎼", subtitle: "Coordonnez MCM avec harmonie et maîtrise" },
+    { title: "Bienvenue dans votre espace de contrôle ! 🧠", subtitle: "Analysez, décidez et optimisez" },
+    { title: "Confiance et maîtrise ! 💪", subtitle: "Vous dirigez la plateforme avec assurance" },
+    { title: "Leadership inspirant ! 🌟", subtitle: "Votre expertise propulse MCM vers l’avenir" },
+    { title: "Objectif réussite ! 🎯", subtitle: "Chaque action compte pour un MCM plus fort" },
+    { title: "Le pouvoir entre vos mains ! 🖥️", subtitle: "Administrez MCM avec précision et vision" },
+    { title: "Efficacité maximale ! ⚡", subtitle: "Vos outils sont prêts pour une nouvelle journée" },
+    { title: "Bienvenue dans le centre de commande ! 🛰️", subtitle: "SuperAdmin, à vous de jouer" }
+
 ];
 
 // ========================================
-// UTILITAIRES
+// 🎨 CLASSE SELECT PERSONNALISÉ
 // ========================================
+
+class CustomSelect {
+    constructor(selectElement) {
+        this.selectElement = selectElement;
+        this.options = Array.from(selectElement.options);
+        this.selectedIndex = selectElement.selectedIndex;
+        this.createCustomSelect();
+        this.addEventListeners();
+    }
+
+    createCustomSelect() {
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'custom-select-wrapper';
+        
+        this.button = document.createElement('div');
+        this.button.className = 'custom-select';
+        this.button.innerHTML = `
+            <span class="custom-select-text ${this.options[0]?.value === '' ? 'placeholder' : ''}">${this.options[0]?.text || 'Sélectionner...'}</span>
+            <span class="custom-select-arrow">▼</span>
+        `;
+        
+        this.dropdown = document.createElement('div');
+        this.dropdown.className = 'custom-select-dropdown';
+        
+        this.selectElement.parentNode.insertBefore(this.wrapper, this.selectElement.nextSibling);
+        this.wrapper.appendChild(this.button);
+        this.wrapper.appendChild(this.dropdown);
+        
+        this.updateOptions();
+    }
+
+    updateOptions() {
+        this.dropdown.innerHTML = '';
+        this.options = Array.from(this.selectElement.options);
+        
+        this.options.forEach((option, index) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'custom-select-option';
+            optionDiv.textContent = option.text;
+            optionDiv.dataset.value = option.value;
+            optionDiv.dataset.index = index;
+            
+            if (index === this.selectedIndex) {
+                optionDiv.classList.add('selected');
+            }
+            
+            optionDiv.addEventListener('click', () => this.selectOption(index));
+            this.dropdown.appendChild(optionDiv);
+        });
+    }
+
+    selectOption(index) {
+        this.selectedIndex = index;
+        this.selectElement.selectedIndex = index;
+        
+        const selectedOption = this.options[index];
+        const textSpan = this.button.querySelector('.custom-select-text');
+        
+        if (selectedOption.value === '') {
+            textSpan.textContent = selectedOption.text;
+            textSpan.classList.add('placeholder');
+        } else {
+            textSpan.textContent = selectedOption.text;
+            textSpan.classList.remove('placeholder');
+        }
+        
+        this.dropdown.querySelectorAll('.custom-select-option').forEach((opt, i) => {
+            opt.classList.toggle('selected', i === index);
+        });
+        
+        this.close();
+        
+        const event = new Event('change', { bubbles: true });
+        this.selectElement.dispatchEvent(event);
+    }
+
+    toggle() {
+        if (this.dropdown.classList.contains('show')) {
+            this.close();
+        } else {
+            this.open();
+        }
+    }
+
+    open() {
+        document.querySelectorAll('.custom-select.active').forEach(select => {
+            if (select !== this.button) {
+                select.classList.remove('active');
+                select.nextElementSibling.classList.remove('show');
+            }
+        });
+        
+        this.button.classList.add('active');
+        this.dropdown.classList.add('show');
+    }
+
+    close() {
+        this.button.classList.remove('active');
+        this.dropdown.classList.remove('show');
+    }
+
+    addEventListeners() {
+        this.button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggle();
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (this.wrapper && !this.wrapper.contains(e.target)) {
+                this.close();
+            }
+        });
+    }
+
+    refresh() {
+        this.updateOptions();
+        
+        const selectedOption = this.options[this.selectElement.selectedIndex];
+        const textSpan = this.button.querySelector('.custom-select-text');
+        
+        if (selectedOption && selectedOption.value !== '') {
+            textSpan.textContent = selectedOption.text;
+            textSpan.classList.remove('placeholder');
+        } else {
+            textSpan.textContent = selectedOption?.text || 'Sélectionner...';
+            textSpan.classList.add('placeholder');
+        }
+    }
+}
+
+// ========================================
+// FONCTIONS UTILITAIRES
+// ========================================
+
 const getAuthHeaders = () => ({
   'Authorization': `Bearer ${token}`,
   'Content-Type': 'application/json'
@@ -58,20 +201,30 @@ function showToast(message, type = 'success') {
     <div class="toast-icon"><i class="fas ${icons[type]}"></i></div>
     <div class="toast-message">${message}</div>
   `;
-  document.getElementById('toastContainer').appendChild(toast);
-  setTimeout(() => { toast.style.animation = 'slideOutRight 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 4000);
+  
+  const container = document.getElementById('toastContainer');
+  if (container) {
+    container.appendChild(toast);
+    setTimeout(() => { 
+      toast.style.animation = 'slideOutRight 0.3s ease'; 
+      setTimeout(() => toast.remove(), 300); 
+    }, 4000);
+  }
 }
 
 function showSuccessAnimation() {
   const overlay = document.getElementById('successOverlay');
-  overlay.classList.add('show');
-  if (typeof confetti !== 'undefined') {
-    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  if (overlay) {
+    overlay.classList.add('show');
+    if (typeof confetti !== 'undefined') {
+      confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+    }
+    setTimeout(() => overlay.classList.remove('show'), 1500);
   }
-  setTimeout(() => overlay.classList.remove('show'), 1500);
 }
 
 function setButtonLoading(button, isLoading) {
+  if (!button) return;
   if (isLoading) {
     button.disabled = true;
     const icon = button.querySelector('i');
@@ -93,40 +246,133 @@ function getRoleDisplayName(role) {
 }
 
 function getCommissionForService(serviceName) {
-  if (serviceToCommissionMap[serviceName]) {
-    return serviceToCommissionMap[serviceName];
+  return serviceToCommissionMap[serviceName] || 'Aucune commission';
+}
+
+function addActivity(text, icon = 'fa-info-circle') {
+  const activity = {
+    text,
+    icon,
+    time: new Date().toLocaleString('fr-FR', { 
+      day: '2-digit', 
+      month: 'short', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    })
+  };
+  
+  recentActivities.unshift(activity);
+  if (recentActivities.length > 5) recentActivities.pop();
+  
+  updateActivitiesDisplay();
+}
+
+function updateActivitiesDisplay() {
+  const container = document.getElementById('recentActivities');
+  if (!container) return;
+  
+  if (recentActivities.length === 0) {
+    container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Aucune activité récente</p>';
+    return;
   }
   
-  for (const [commission, services] of Object.entries(COMMISSIONS_SERVICES)) {
-    if (services.includes(serviceName)) {
-      return commission;
-    }
-  }
-  return 'Aucune commission';
+  container.innerHTML = recentActivities.map(activity => `
+    <div class="activity-item">
+      <div class="activity-icon">
+        <i class="fas ${activity.icon}"></i>
+      </div>
+      <div class="activity-content">
+        <div class="activity-text">${activity.text}</div>
+        <div class="activity-time">${activity.time}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
 // ========================================
-// INITIALISATION
+// ⚠️ MODAL DE CONFIRMATION
 // ========================================
+
+function showConfirmModal(type, title, message, onConfirm) {
+  const modal = document.createElement('div');
+  modal.className = 'modal show';
+  modal.innerHTML = `
+    <div class="modal-content confirm-modal-content">
+      <div class="confirm-modal-body">
+        <div class="confirm-modal-icon ${type}">
+          ${type === 'warning' ? '⚠️' : type === 'danger' ? '🗑️' : 'ℹ️'}
+        </div>
+        <h3>${title}</h3>
+        <p>${message}</p>
+        <div class="confirm-modal-buttons">
+          <button class="btn-confirm ${type === 'danger' ? 'danger' : ''}" id="confirmBtn">
+            <i class="fas fa-check"></i> Confirmer
+          </button>
+          <button class="btn-cancel" id="cancelBtn">
+            <i class="fas fa-times"></i> Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.querySelector('#confirmBtn').onclick = () => {
+    modal.remove();
+    if (onConfirm) onConfirm();
+  };
+
+  modal.querySelector('#cancelBtn').onclick = () => {
+    modal.remove();
+  };
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+}
+
+// ========================================
+// INITIALISATION DE L'APPLICATION
+// ========================================
+
 document.addEventListener('DOMContentLoaded', async () => {
   token = window.localStorage.getItem('mcm_token');
-  if (!token) { window.location.href = './login.html'; return; }
+  if (!token) { 
+    window.location.href = './login.html'; 
+    return; 
+  }
   await initializeApp();
 });
 
 async function initializeApp() {
   try {
     await loadCurrentUser();
-    await loadDashboardData();
     await loadServices();
     await loadCommissions();
+    await loadDashboardData();
     await checkBirthdays();
     initializeEventListeners();
+    initializeCustomSelects();
     setRandomWelcomeMessage();
+    updateActivitiesDisplay();
   } catch (error) {
     console.error('Erreur initialisation:', error);
     showToast('Erreur lors de l\'initialisation', 'error');
   }
+}
+
+function initializeCustomSelects() {
+  customSelects.forEach(cs => {
+    if (cs.wrapper && cs.wrapper.parentNode) {
+      cs.wrapper.remove();
+    }
+  });
+  customSelects = [];
+  
+  document.querySelectorAll('.form-select').forEach(select => {
+    const customSelect = new CustomSelect(select);
+    customSelects.push(customSelect);
+  });
 }
 
 function initializeEventListeners() {
@@ -148,47 +394,60 @@ function initializeEventListeners() {
   const userProfileForm = document.getElementById('userProfileForm');
   if (userProfileForm) userProfileForm.addEventListener('submit', handleUpdateProfile);
 
-  // Fermer les modales en cliquant dans le vide
   window.addEventListener('click', (e) => { 
     if (e.target.classList.contains('modal')) {
       e.target.classList.remove('show');
-      // Réinitialiser les variables d'édition
-      if (e.target.id === 'editMemberModal') currentEditingMember = null;
-      if (e.target.id === 'editAdminModal') currentEditingAdmin = null;
     }
   });
   
   document.addEventListener('click', (e) => {
     const sidebar = document.getElementById('sidebar');
     const hamburger = document.getElementById('hamburger');
-    if (window.innerWidth <= 1024 && sidebar && hamburger && !sidebar.contains(e.target) && !hamburger.contains(e.target) && sidebar.classList.contains('open')) {
+    if (window.innerWidth <= 1024 && sidebar && hamburger && 
+        !sidebar.contains(e.target) && !hamburger.contains(e.target) && 
+        sidebar.classList.contains('open')) {
       toggleSidebar();
+    }
+  });
+  
+  window.addEventListener('resize', function() {
+    const sidebar = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburger');
+    if (window.innerWidth > 1024) {
+      if (sidebar) sidebar.classList.remove('open');
+      if (hamburger) hamburger.classList.remove('active');
     }
   });
 }
 
 // ========================================
-// GESTION UTILISATEUR
+// GESTION DE L'UTILISATEUR COURANT
 // ========================================
+
 async function loadCurrentUser() {
   try {
-    const response = await fetch(`${API_BASE}/auth/profile`, { headers: getAuthHeaders() });
-    
-    if (response.ok) {
-      currentUser = await response.json();
-      window.localStorage.setItem('mcm_user', JSON.stringify(currentUser));
-    } else if (response.status === 404 || response.status === 401) {
-      const userDataString = window.localStorage.getItem('mcm_user');
-      currentUser = userDataString && userDataString !== 'null' ? JSON.parse(userDataString) : { nom: 'Admin', prenom: 'Principal', email: 'admin@mcm.com', role: 'superadmin' };
+    const userDataString = window.localStorage.getItem('mcm_user');
+    if (userDataString && userDataString !== 'null') {
+      currentUser = JSON.parse(userDataString);
     } else {
-      throw new Error('Erreur de chargement du profil');
+      currentUser = { 
+        nom: 'Admin', 
+        prenom: 'Principal', 
+        email: 'admin@mcm.com', 
+        role: 'superadmin' 
+      };
+      window.localStorage.setItem('mcm_user', JSON.stringify(currentUser));
     }
     
     updateUserDisplay();
   } catch (error) {
     console.error('Erreur chargement utilisateur:', error);
-    const userDataString = window.localStorage.getItem('mcm_user');
-    currentUser = userDataString && userDataString !== 'null' ? JSON.parse(userDataString) : { nom: 'Admin', prenom: 'Principal', email: 'admin@mcm.com', role: 'superadmin' };
+    currentUser = { 
+      nom: 'Admin', 
+      prenom: 'Principal', 
+      email: 'admin@mcm.com', 
+      role: 'superadmin' 
+    };
     updateUserDisplay();
   }
 }
@@ -231,19 +490,10 @@ async function handleUpdateProfile(e) {
     if (password) delete currentUser.mot_de_passe;
     window.localStorage.setItem('mcm_user', JSON.stringify(currentUser));
     
-    try {
-      await fetch(`${API_BASE}/auth/profile`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(profileData)
-      });
-    } catch (apiError) {
-      console.log('API non disponible, utilisation du localStorage');
-    }
-    
     updateUserDisplay();
     showSuccessAnimation();
     showToast('Profil mis à jour avec succès!', 'success');
+    addActivity('Profil mis à jour', 'fa-user-cog');
     closeUserProfileModal();
   } catch (error) {
     showToast('Erreur lors de la mise à jour du profil', 'error');
@@ -258,12 +508,22 @@ function openUserProfile() {
     document.getElementById('profilePrenom').value = currentUser.prenom || '';
     document.getElementById('profileEmail').value = currentUser.email || '';
     document.getElementById('profilePassword').value = '';
-    document.getElementById('userProfileModal').classList.add('show');
+    
+    const modal = document.getElementById('userProfileModal');
+    if (modal) modal.classList.add('show');
   }
 }
 
+function confirmLogout() {
+  showConfirmModal(
+    'warning',
+    'Déconnexion',
+    'Êtes-vous sûr de vouloir vous déconnecter ?',
+    () => logout()
+  );
+}
+
 async function logout() {
-  if (!confirm('Êtes-vous sûr de vouloir vous déconnecter?')) return;
   window.localStorage.removeItem('mcm_token');
   window.localStorage.removeItem('mcm_user');
   showToast('Déconnexion réussie', 'info');
@@ -271,8 +531,9 @@ async function logout() {
 }
 
 // ========================================
-// GESTION DES SECTIONS
+// GESTION DE LA NAVIGATION ET DES SECTIONS
 // ========================================
+
 function showSection(sectionName) {
   document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
   document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
@@ -296,7 +557,9 @@ function showSection(sectionName) {
     sectionElement.classList.add('active');
     currentSection = sectionName;
     
-    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    if (event && event.currentTarget && event.currentTarget.classList) {
+      event.currentTarget.classList.add('active');
+    }
     
     if (sectionName === 'members') loadAllMembersList();
     if (sectionName === 'administrators') loadAdministrators();
@@ -316,10 +579,6 @@ function toggleSidebar() {
   if (sidebar && hamburger) {
     sidebar.classList.toggle('open');
     hamburger.classList.toggle('active');
-    const mobileLogout = document.querySelector('.mobile-only');
-    if (mobileLogout && window.innerWidth <= 1024) {
-      mobileLogout.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
-    }
   }
 }
 
@@ -336,6 +595,7 @@ function setRandomWelcomeMessage() {
 // ========================================
 // VÉRIFICATION DES ANNIVERSAIRES
 // ========================================
+
 async function checkBirthdays() {
   try {
     const today = new Date();
@@ -346,18 +606,41 @@ async function checkBirthdays() {
     members.forEach(member => {
       if (member.date_naissance) {
         const birthDate = new Date(member.date_naissance);
-        if (birthDate.getMonth() + 1 === today.getMonth() + 1 && birthDate.getDate() === today.getDate()) {
+        if (birthDate.getMonth() === today.getMonth() && birthDate.getDate() === today.getDate()) {
           const age = today.getFullYear() - birthDate.getFullYear();
-          birthdayPeople.push({ ...member, type: 'membre', age });
+          birthdayPeople.push({ ...member, age });
         }
       }
     });
     
     if (birthdayPeople.length > 0) {
-      birthdayPeople.forEach(person => {
-        const msg = `🎉 C'est l'anniversaire de ${person.prenom} ${person.nom}! Il/Elle a ${person.age} ans!`;
-        showToast(msg, 'info');
-      });
+      const birthdaysCard = document.getElementById('birthdaysCard');
+      const birthdaysContainer = document.getElementById('todayBirthdays');
+      
+      if (birthdaysCard && birthdaysContainer) {
+        birthdaysCard.style.display = 'block';
+        birthdaysContainer.innerHTML = birthdayPeople.map(person => `
+          <div class="birthday-item">
+            <div class="birthday-icon">🎉</div>
+            <div class="birthday-content">
+              <h4>${person.prenom} ${person.nom}</h4>
+              <div class="birthday-age">${person.age} ans aujourd'hui !</div>
+            </div>
+          </div>
+        `).join('');
+        
+        const names = birthdayPeople.map(p => `${p.prenom} ${p.nom}`).join(', ');
+        showToast(`🎂 ${birthdayPeople.length} anniversaire(s) aujourd'hui : ${names}`, 'info');
+        
+        if (typeof confetti !== 'undefined') {
+          setTimeout(() => {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          }, 500);
+        }
+      }
+    } else {
+      const birthdaysCard = document.getElementById('birthdaysCard');
+      if (birthdaysCard) birthdaysCard.style.display = 'none';
     }
   } catch (error) {
     console.error('Erreur vérification anniversaires:', error);
@@ -365,8 +648,9 @@ async function checkBirthdays() {
 }
 
 // ========================================
-// CHARGEMENT DES DONNÉES
+// CHARGEMENT DES DONNÉES PRINCIPALES
 // ========================================
+
 async function loadDashboardData() {
   try {
     const [membersRes, usersRes, servicesRes] = await Promise.all([
@@ -379,19 +663,214 @@ async function loadDashboardData() {
     const users = await usersRes.json();
     const services = await servicesRes.json();
 
+    const uniqueServices = new Set(services.map(s => s.nom));
+
     document.getElementById('totalMembers').textContent = members.length;
     document.getElementById('totalAdmins').textContent = users.filter(u => u.role === 'admin' || u.role === 'adminCom').length;
     document.getElementById('totalSuperadmins').textContent = users.filter(u => u.role === 'superadmin').length;
-    document.getElementById('totalServices').textContent = services.length;
+    document.getElementById('totalServices').textContent = uniqueServices.size;
   } catch (error) {
     console.error('Erreur chargement stats:', error);
   }
 }
 
+async function loadServices() {
+  try {
+    const [servicesRes, commissionsRes] = await Promise.all([
+      fetch(`${API_BASE}/services`, { headers: getAuthHeaders() }),
+      fetch(`${API_BASE}/commissions`, { headers: getAuthHeaders() })
+    ]);
+    
+    const services = await servicesRes.json();
+    const commissions = await commissionsRes.json();
+    
+    uniqueServicesMap.clear();
+    serviceToCommissionMap = {};
+    
+    services.forEach(service => {
+      if (!uniqueServicesMap.has(service.nom)) {
+        uniqueServicesMap.set(service.nom, service);
+      }
+      const commission = commissions.find(c => c.id === service.commission_id);
+      if (commission) {
+        serviceToCommissionMap[service.nom] = commission.nom;
+      }
+    });
+
+    const servicesGrid = document.getElementById('servicesGrid');
+    const selects = ['memberService', 'userService', 'editMemberService', 'statsServiceSelect'];
+    
+    if (servicesGrid) servicesGrid.innerHTML = '';
+    
+    selects.forEach(id => {
+      const selectEl = document.getElementById(id);
+      if (selectEl) selectEl.innerHTML = '<option value="">Sélectionner un service</option>';
+    });
+
+    uniqueServicesMap.forEach((service, serviceName) => {
+      const commissionName = serviceToCommissionMap[service.nom] || 'Aucune commission';
+      
+      if (servicesGrid) {
+        const card = document.createElement('div');
+        card.className = 'custom-card';
+        card.onclick = () => showServiceMembers(service.id, service.nom);
+        card.innerHTML = `
+          <div class="custom-card-title">${service.nom}</div>
+          <div class="custom-card-subtitle">${commissionName}</div>
+          <div class="custom-card-footer">
+            <i class="fas fa-users"></i>
+            <span id="members-count-${service.id}">0</span> membres
+          </div>
+        `;
+        servicesGrid.appendChild(card);
+      }
+
+      selects.forEach(id => {
+        const selectEl = document.getElementById(id);
+        if (selectEl) {
+          const existingOption = Array.from(selectEl.options).find(opt => opt.value == service.id);
+          if (!existingOption) {
+            const option = document.createElement('option');
+            option.value = service.id;
+            option.textContent = `${service.nom} (${commissionName})`;
+            selectEl.appendChild(option);
+          }
+        }
+      });
+
+      loadServiceMemberCount(service.id);
+    });
+    
+    setTimeout(() => {
+      customSelects.forEach(cs => cs.refresh());
+    }, 100);
+  } catch (error) {
+    console.error('Erreur chargement services:', error);
+    showToast('Erreur lors du chargement des services', 'error');
+  }
+}
+
+async function loadServiceMemberCount(serviceId) {
+  try {
+    const response = await fetch(`${API_BASE}/membres/service/${serviceId}`, { headers: getAuthHeaders() });
+    const members = await response.json();
+    const countEl = document.getElementById(`members-count-${serviceId}`);
+    if (countEl) countEl.textContent = members.length;
+  } catch (error) {
+    console.error(`Erreur comptage membres service ${serviceId}:`, error);
+  }
+}
+
+async function loadCommissions() {
+  try {
+    const response = await fetch(`${API_BASE}/commissions`, { headers: getAuthHeaders() });
+    const commissions = await response.json();
+
+    const commissionsGrid = document.getElementById('commissionsGrid');
+    const commissionSelects = ['userCommission'];
+    
+    if (commissionsGrid) commissionsGrid.innerHTML = '';
+    
+    commissionSelects.forEach(id => {
+      const selectEl = document.getElementById(id);
+      if (selectEl) selectEl.innerHTML = '<option value="">Sélectionner une commission</option>';
+    });
+
+    commissions.forEach(commission => {
+      if (commissionsGrid) {
+        const card = document.createElement('div');
+        card.className = 'custom-card';
+        card.onclick = () => showCommissionDetails(commission.id, commission.nom);
+        card.innerHTML = `
+          <div class="custom-card-title">${commission.nom}</div>
+          <div class="custom-card-footer"><i class="fas fa-sitemap"></i> Voir les détails</div>
+        `;
+        commissionsGrid.appendChild(card);
+      }
+
+      commissionSelects.forEach(id => {
+        const selectEl = document.getElementById(id);
+        if (selectEl) {
+          const option = document.createElement('option');
+          option.value = commission.id;
+          option.textContent = commission.nom;
+          selectEl.appendChild(option);
+        }
+      });
+    });
+    
+    setTimeout(() => {
+      customSelects.forEach(cs => cs.refresh());
+    }, 100);
+  } catch (error) {
+    console.error('Erreur chargement commissions:', error);
+  }
+}
+
+// ========================================
+// GESTION DES MEMBRES
+// ========================================
+
+async function handleAddMember(e) {
+  e.preventDefault();
+  
+  showConfirmModal(
+    'warning',
+    'Ajouter ce membre',
+    'Voulez-vous vraiment ajouter ce membre ?',
+    async () => {
+      const btn = document.getElementById('addMemberBtn');
+      setButtonLoading(btn, true);
+
+      const memberData = {
+        service_id: parseInt(document.getElementById('memberService').value),
+        nom: document.getElementById('memberNom').value,
+        prenom: document.getElementById('memberPrenom').value,
+        sexe: document.getElementById('memberSexe').value,
+        date_naissance: document.getElementById('memberDateNaissance').value,
+        email: document.getElementById('memberEmail').value,
+        telephone: document.getElementById('memberTelephone').value
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/membres`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(memberData)
+        });
+
+        if (response.ok) {
+          showSuccessAnimation();
+          showToast('Membre ajouté avec succès!', 'success');
+          addActivity(`Membre ajouté : ${memberData.prenom} ${memberData.nom}`, 'fa-user-plus');
+          document.getElementById('addMemberForm').reset();
+          
+          await Promise.all([
+            loadDashboardData(),
+            loadServices(),
+            loadAllMembersList()
+          ]);
+          
+          setTimeout(() => {
+            customSelects.forEach(cs => cs.refresh());
+          }, 100);
+        } else {
+          const error = await response.json();
+          showToast('Erreur: ' + error.error, 'error');
+        }
+      } catch (error) {
+        showToast('Erreur lors de l\'ajout du membre', 'error');
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+  );
+}
+
 async function loadAllMembersList() {
   try {
     const container = document.getElementById('membersListContainer');
-    container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Chargement...</p>';
+    if (container) container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Chargement...</p>';
 
     const response = await fetch(`${API_BASE}/membres`, { headers: getAuthHeaders() });
 
@@ -410,10 +889,12 @@ async function loadAllMembersList() {
 
 function displayMembersList() {
   const container = document.getElementById('membersListContainer');
+  if (!container) return;
   
   if (filteredMembers.length === 0) {
     container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Aucun membre trouvé</p>';
-    document.getElementById('pagination').innerHTML = '';
+    const paginationDiv = document.getElementById('pagination');
+    if (paginationDiv) paginationDiv.innerHTML = '';
     return;
   }
 
@@ -432,7 +913,7 @@ function displayMembersList() {
         <span style="color: var(--primary-red); font-weight: 600;">
           <i class="fas fa-check-circle"></i> ${selectedMembers.length} sélectionné(s)
         </span>
-        <button onclick="deleteSelectedMembers()" class="btn-primary" style="background: var(--error); width: auto; padding: 0.75rem 1.5rem;">
+        <button onclick="confirmDeleteSelectedMembers()" class="btn-primary" style="background: var(--error); width: auto; padding: 0.75rem 1.5rem;">
           <i class="fas fa-trash"></i> Supprimer
         </button>
       ` : ''}
@@ -455,7 +936,7 @@ function displayMembersList() {
         </div>
         <div class="member-actions">
           <button class="action-btn edit" onclick="editMember(${member.id})" title="Modifier"><i class="fas fa-edit"></i></button>
-          <button class="action-btn delete" onclick="deleteMember(${member.id})" title="Supprimer"><i class="fas fa-trash"></i></button>
+          <button class="action-btn delete" onclick="confirmDeleteMember(${member.id})" title="Supprimer"><i class="fas fa-trash"></i></button>
         </div>
       </div>
     `;
@@ -483,8 +964,32 @@ function toggleSelectAllMembers() {
   displayMembersList();
 }
 
+function toggleMemberSelection(memberId) {
+  const index = selectedMembers.indexOf(memberId);
+  if (index > -1) {
+    selectedMembers.splice(index, 1);
+  } else {
+    selectedMembers.push(memberId);
+  }
+  displayMembersList();
+}
+
+function searchMembers() {
+  const searchTerm = document.getElementById('memberSearch').value.toLowerCase();
+  filteredMembers = allMembers.filter(member => {
+    const fullName = `${member.nom} ${member.prenom}`.toLowerCase();
+    const email = (member.email || '').toLowerCase();
+    return fullName.includes(searchTerm) || email.includes(searchTerm);
+  });
+  currentPage = 1;
+  selectedMembers = [];
+  displayMembersList();
+}
+
 function renderPagination() {
   const container = document.getElementById('pagination');
+  if (!container) return;
+  
   const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
   
   if (totalPages <= 1) {
@@ -512,36 +1017,62 @@ function changePage(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function searchMembers() {
-  const searchTerm = document.getElementById('memberSearch').value.toLowerCase();
-  filteredMembers = allMembers.filter(member => {
-    const fullName = `${member.nom} ${member.prenom}`.toLowerCase();
-    const email = (member.email || '').toLowerCase();
-    return fullName.includes(searchTerm) || email.includes(searchTerm);
-  });
-  currentPage = 1;
-  selectedMembers = [];
-  displayMembersList();
+function confirmDeleteMember(memberId) {
+  const member = allMembers.find(m => m.id === memberId);
+  if (!member) return;
+  
+  showConfirmModal(
+    'danger',
+    'Supprimer ce membre',
+    `Êtes-vous sûr de vouloir supprimer <strong>${member.prenom} ${member.nom}</strong> ? Cette action est irréversible.`,
+    () => deleteMember(memberId)
+  );
 }
 
-function toggleMemberSelection(memberId) {
-  const index = selectedMembers.indexOf(memberId);
-  if (index > -1) {
-    selectedMembers.splice(index, 1);
-  } else {
-    selectedMembers.push(memberId);
+async function deleteMember(memberId) {
+  try {
+    const response = await fetch(`${API_BASE}/membres/${memberId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+
+    if (response.ok) {
+      showSuccessAnimation();
+      showToast('Membre supprimé avec succès!', 'warning');
+      const member = allMembers.find(m => m.id === memberId);
+      if (member) {
+        addActivity(`Membre supprimé : ${member.prenom} ${member.nom}`, 'fa-user-minus');
+      }
+      
+      await Promise.all([
+        loadDashboardData(),
+        loadServices(),
+        loadAllMembersList()
+      ]);
+    } else {
+      const error = await response.json();
+      showToast('Erreur: ' + error.error, 'error');
+    }
+  } catch (error) {
+    showToast('Erreur lors de la suppression du membre', 'error');
   }
-  displayMembersList();
 }
 
-async function deleteSelectedMembers() {
+function confirmDeleteSelectedMembers() {
   if (selectedMembers.length === 0) {
     showToast('Aucun membre sélectionné', 'info');
     return;
   }
 
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedMembers.length} membre(s)?`)) return;
+  showConfirmModal(
+    'danger',
+    'Supprimer les membres sélectionnés',
+    `Êtes-vous sûr de vouloir supprimer <strong>${selectedMembers.length} membre(s)</strong> ? Cette action est irréversible.`,
+    () => deleteSelectedMembers()
+  );
+}
 
+async function deleteSelectedMembers() {
   try {
     for (const memberId of selectedMembers) {
       await fetch(`${API_BASE}/membres/${memberId}`, {
@@ -552,178 +1083,22 @@ async function deleteSelectedMembers() {
 
     showSuccessAnimation();
     showToast(`${selectedMembers.length} membre(s) supprimé(s) avec succès!`, 'success');
+    addActivity(`${selectedMembers.length} membres supprimés`, 'fa-users-slash');
     selectedMembers = [];
-    await loadDashboardData();
-    await loadAllMembersList();
+    
+    await Promise.all([
+      loadDashboardData(),
+      loadServices(),
+      loadAllMembersList()
+    ]);
   } catch (error) {
     showToast('Erreur lors de la suppression', 'error');
   }
 }
 
-async function loadServices() {
-  try {
-    const [servicesRes, commissionsRes] = await Promise.all([
-      fetch(`${API_BASE}/services`, { headers: getAuthHeaders() }),
-      fetch(`${API_BASE}/commissions`, { headers: getAuthHeaders() })
-    ]);
-    
-    const services = await servicesRes.json();
-    const commissions = await commissionsRes.json();
-    
-    serviceToCommissionMap = {};
-    
-    // Créer un Map pour éviter les doublons par nom de service
-    const uniqueServices = new Map();
-    services.forEach(service => {
-      if (!uniqueServices.has(service.nom)) {
-        uniqueServices.set(service.nom, service);
-      }
-      const commission = commissions.find(c => c.id === service.commission_id);
-      if (commission) {
-        serviceToCommissionMap[service.nom] = commission.nom;
-      }
-    });
-
-    const servicesGrid = document.getElementById('servicesGrid');
-    const selects = ['memberService', 'userService', 'editMemberService', 'statsServiceSelect'];
-    
-    servicesGrid.innerHTML = '';
-    selects.forEach(id => {
-      const selectEl = document.getElementById(id);
-      if (selectEl) selectEl.innerHTML = '<option value="">Sélectionner un service</option>';
-    });
-
-    // Utiliser les services uniques
-    uniqueServices.forEach((service, serviceName) => {
-      const commissionName = serviceToCommissionMap[service.nom] || 'Aucune commission';
-      
-      const card = document.createElement('div');
-      card.className = 'custom-card';
-      card.onclick = () => showServiceMembers(service.id, service.nom);
-      card.innerHTML = `
-        <div class="custom-card-title">${service.nom}</div>
-        <div class="custom-card-subtitle">${commissionName}</div>
-        <div class="custom-card-footer">
-          <i class="fas fa-users"></i>
-          <span id="members-count-${service.id}">0</span> membres
-        </div>
-      `;
-      servicesGrid.appendChild(card);
-
-      // Ajouter aux selects sans doublons
-      selects.forEach(id => {
-        const selectEl = document.getElementById(id);
-        if (selectEl) {
-          // Vérifier si l'option existe déjà
-          const existingOption = Array.from(selectEl.options).find(opt => opt.value == service.id);
-          if (!existingOption) {
-            const option = document.createElement('option');
-            option.value = service.id;
-            option.textContent = `${service.nom} (${commissionName})`;
-            selectEl.appendChild(option);
-          }
-        }
-      });
-
-      loadServiceMemberCount(service.id);
-    });
-  } catch (error) {
-    console.error('Erreur chargement services:', error);
-    showToast('Erreur lors du chargement des services', 'error');
-  }
-}
-
-async function loadServiceMemberCount(serviceId) {
-  try {
-    const response = await fetch(`${API_BASE}/membres/service/${serviceId}`, { headers: getAuthHeaders() });
-    const members = await response.json();
-    const countEl = document.getElementById(`members-count-${serviceId}`);
-    if (countEl) countEl.textContent = members.length;
-  } catch (error) {
-    console.error(`Erreur comptage membres service ${serviceId}:`, error);
-  }
-}
-
-async function loadCommissions() {
-  try {
-    const response = await fetch(`${API_BASE}/commissions`, { headers: getAuthHeaders() });
-    const commissions = await response.json();
-
-    const commissionsGrid = document.getElementById('commissionsGrid');
-    const commissionSelects = ['userCommission'];
-    
-    commissionsGrid.innerHTML = '';
-    commissionSelects.forEach(id => {
-      const selectEl = document.getElementById(id);
-      if (selectEl) selectEl.innerHTML = '<option value="">Sélectionner une commission</option>';
-    });
-
-    commissions.forEach(commission => {
-      const card = document.createElement('div');
-      card.className = 'custom-card';
-      card.onclick = () => showCommissionDetails(commission.id, commission.nom);
-      card.innerHTML = `
-        <div class="custom-card-title">${commission.nom}</div>
-        <div class="custom-card-footer"><i class="fas fa-sitemap"></i> Voir les détails</div>
-      `;
-      commissionsGrid.appendChild(card);
-
-      commissionSelects.forEach(id => {
-        const selectEl = document.getElementById(id);
-        if (selectEl) {
-          const option = document.createElement('option');
-          option.value = commission.id;
-          option.textContent = commission.nom;
-          selectEl.appendChild(option);
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Erreur chargement commissions:', error);
-  }
-}
-
 // ========================================
-// GESTION DES MEMBRES
+// ÉDITION DE MEMBRE
 // ========================================
-async function handleAddMember(e) {
-  e.preventDefault();
-  const btn = document.getElementById('addMemberBtn');
-  setButtonLoading(btn, true);
-
-  const memberData = {
-    service_id: parseInt(document.getElementById('memberService').value),
-    nom: document.getElementById('memberNom').value,
-    prenom: document.getElementById('memberPrenom').value,
-    sexe: document.getElementById('memberSexe').value,
-    date_naissance: document.getElementById('memberDateNaissance').value,
-    email: document.getElementById('memberEmail').value,
-    telephone: document.getElementById('memberTelephone').value
-  };
-
-  try {
-    const response = await fetch(`${API_BASE}/membres`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(memberData)
-    });
-
-    if (response.ok) {
-      showSuccessAnimation();
-      showToast('Membre ajouté avec succès!', 'success');
-      document.getElementById('addMemberForm').reset();
-      await loadDashboardData();
-      await loadServices();
-    } else {
-      const error = await response.json();
-      showToast('Erreur: ' + error.error, 'error');
-    }
-  } catch (error) {
-    showToast('Erreur lors de l\'ajout du membre', 'error');
-  } finally {
-    setButtonLoading(btn, false);
-  }
-}
 
 async function editMember(memberId) {
   try {
@@ -737,7 +1112,13 @@ async function editMember(memberId) {
       currentEditingMember = memberId;
       populateEditMemberForm(member);
     }
-    document.getElementById('editMemberModal').classList.add('show');
+    
+    const modal = document.getElementById('editMemberModal');
+    if (modal) modal.classList.add('show');
+    
+    setTimeout(() => {
+      customSelects.forEach(cs => cs.refresh());
+    }, 100);
   } catch (error) {
     showToast('Erreur lors du chargement des données', 'error');
   }
@@ -777,10 +1158,14 @@ async function handleEditMember(e) {
     if (response.ok) {
       showSuccessAnimation();
       showToast('Membre modifié avec succès!', 'success');
+      addActivity(`Membre modifié : ${memberData.prenom} ${memberData.nom}`, 'fa-user-edit');
       closeEditMemberModal();
-      await loadDashboardData();
-      if (currentSection === 'members') await loadAllMembersList();
-      await loadServices();
+      
+      await Promise.all([
+        loadDashboardData(),
+        loadServices(),
+        loadAllMembersList()
+      ]);
     } else {
       const error = await response.json();
       showToast('Erreur: ' + error.error, 'error');
@@ -790,51 +1175,32 @@ async function handleEditMember(e) {
   }
 }
 
-async function deleteMember(memberId) {
-  if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre?')) return;
-
-  try {
-    const response = await fetch(`${API_BASE}/membres/${memberId}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
-    });
-
-    if (response.ok) {
-      showSuccessAnimation();
-      showToast('Membre supprimé avec succès!', 'warning');
-      await loadDashboardData();
-      if (currentSection === 'members') await loadAllMembersList();
-      await loadServices();
-    } else {
-      const error = await response.json();
-      showToast('Erreur: ' + error.error, 'error');
-    }
-  } catch (error) {
-    showToast('Erreur lors de la suppression du membre', 'error');
-  }
-}
-
 // ========================================
 // GESTION DES ADMINISTRATEURS
 // ========================================
+
 function handleRoleChange() {
   const role = document.getElementById('userRole').value;
   const commissionGroup = document.getElementById('commissionGroup');
   const serviceGroup = document.getElementById('serviceGroup');
 
   if (role === 'adminCom') {
-    commissionGroup.style.display = 'block';
-    serviceGroup.style.display = 'none';
+    if (commissionGroup) commissionGroup.style.display = 'block';
+    if (serviceGroup) serviceGroup.style.display = 'none';
     document.getElementById('userService').value = '';
   } else if (role === 'admin') {
-    commissionGroup.style.display = 'block';
-    serviceGroup.style.display = 'block';
+    if (commissionGroup) commissionGroup.style.display = 'block';
+    if (serviceGroup) serviceGroup.style.display = 'block';
   } else {
-    commissionGroup.style.display = 'none';
-    serviceGroup.style.display = 'none';
+    if (commissionGroup) commissionGroup.style.display = 'none';
+    if (serviceGroup) serviceGroup.style.display = 'none';
     document.getElementById('userCommission').value = '';
     document.getElementById('userService').value = '';
   }
+  
+  setTimeout(() => {
+    customSelects.forEach(cs => cs.refresh());
+  }, 100);
 }
 
 async function handleCommissionChange() {
@@ -843,6 +1209,9 @@ async function handleCommissionChange() {
   
   if (!commissionId) {
     serviceSelect.innerHTML = '<option value="">Sélectionner un service</option>';
+    setTimeout(() => {
+      customSelects.forEach(cs => cs.refresh());
+    }, 100);
     return;
   }
 
@@ -850,7 +1219,6 @@ async function handleCommissionChange() {
     const response = await fetch(`${API_BASE}/services`, { headers: getAuthHeaders() });
     const services = await response.json();
     
-    // Éliminer les doublons par nom de service
     const uniqueServices = new Map();
     services.filter(s => s.commission_id === parseInt(commissionId)).forEach(service => {
       if (!uniqueServices.has(service.nom)) {
@@ -865,6 +1233,10 @@ async function handleCommissionChange() {
       option.textContent = service.nom;
       serviceSelect.appendChild(option);
     });
+    
+    setTimeout(() => {
+      customSelects.forEach(cs => cs.refresh());
+    }, 100);
   } catch (error) {
     console.error('Erreur filtre services:', error);
   }
@@ -878,6 +1250,7 @@ async function handleCreateUser(e) {
   const email = document.getElementById('userEmail').value?.trim();
   const nom = document.getElementById('userNom').value?.trim();
   const prenom = document.getElementById('userPrenom').value?.trim();
+  const telephone = document.getElementById('userTelephone')?.value?.trim() || null;
   const mot_de_passe = document.getElementById('userPassword').value?.trim();
   const role = document.getElementById('userRole').value?.trim();
   const commission_id = document.getElementById('userCommission').value?.trim();
@@ -902,6 +1275,7 @@ async function handleCreateUser(e) {
   }
 
   const userData = { email, nom, prenom, mot_de_passe, role };
+  if (telephone) userData.telephone = telephone;
   if (commission_id) userData.commission_id = parseInt(commission_id);
   if (service_id) userData.service_id = parseInt(service_id);
 
@@ -915,9 +1289,18 @@ async function handleCreateUser(e) {
     if (response.ok) {
       showSuccessAnimation();
       showToast('Utilisateur créé avec succès!', 'success');
+      addActivity(`Admin créé : ${prenom} ${nom} (${getRoleDisplayName(role)})`, 'fa-user-shield');
       document.getElementById('manageUserForm').reset();
       handleRoleChange();
-      await loadDashboardData();
+      
+      await Promise.all([
+        loadDashboardData(),
+        loadAdministrators()
+      ]);
+      
+      setTimeout(() => {
+        customSelects.forEach(cs => cs.refresh());
+      }, 100);
     } else {
       const error = await response.json();
       showToast('Erreur: ' + (error.error || 'Erreur inconnue'), 'error');
@@ -932,7 +1315,7 @@ async function handleCreateUser(e) {
 async function loadAdministrators() {
   try {
     const container = document.getElementById('administratorsListContainer');
-    container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Chargement...</p>';
+    if (container) container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Chargement...</p>';
 
     const response = await fetch(`${API_BASE}/users`, { headers: getAuthHeaders() });
     const users = await response.json();
@@ -948,20 +1331,20 @@ async function loadAdministrators() {
 
 function displayAdministratorsList() {
   const container = document.getElementById('administratorsListContainer');
+  if (!container) return;
   
   if (filteredAdmins.length === 0) {
     container.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Aucun administrateur trouvé</p>';
-    document.getElementById('adminPagination').innerHTML = '';
+    const adminPaginationDiv = document.getElementById('adminPagination');
+    if (adminPaginationDiv) adminPaginationDiv.innerHTML = '';
     return;
   }
 
   const startIndex = (currentAdminPage - 1) * adminsPerPage;
   const endIndex = startIndex + adminsPerPage;
   const paginated = filteredAdmins.slice(startIndex, endIndex);
-  const allSelected = filteredAdmins.every(a => {
-    const isCurrentUserAdmin = currentUser && a.email === currentUser.email;
-    return isCurrentUserAdmin || selectedAdmins.includes(a.id);
-  });
+  const selectableAdmins = filteredAdmins.filter(a => !currentUser || a.email !== currentUser.email);
+  const allSelected = selectableAdmins.every(a => selectedAdmins.includes(a.id));
 
   let html = `
     <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
@@ -973,7 +1356,7 @@ function displayAdministratorsList() {
         <span style="color: var(--primary-red); font-weight: 600;">
           <i class="fas fa-check-circle"></i> ${selectedAdmins.length} sélectionné(s)
         </span>
-        <button onclick="deleteSelectedAdmins()" class="btn-primary" style="background: var(--error); width: auto; padding: 0.75rem 1.5rem;">
+        <button onclick="confirmDeleteSelectedAdmins()" class="btn-primary" style="background: var(--error); width: auto; padding: 0.75rem 1.5rem;">
           <i class="fas fa-trash"></i> Supprimer
         </button>
       ` : ''}
@@ -1001,7 +1384,7 @@ function displayAdministratorsList() {
         </div>
         ${!isCurrentUser ? `
           <div class="member-actions">
-            <button class="action-btn delete" onclick="deleteAdmin(${admin.id})" title="Supprimer"><i class="fas fa-trash"></i></button>
+            <button class="action-btn delete" onclick="confirmDeleteAdmin(${admin.id})" title="Supprimer"><i class="fas fa-trash"></i></button>
           </div>
         ` : ''}
       </div>
@@ -1032,8 +1415,33 @@ function toggleSelectAllAdmins() {
   displayAdministratorsList();
 }
 
+function toggleAdminSelection(adminId) {
+  const index = selectedAdmins.indexOf(adminId);
+  if (index > -1) {
+    selectedAdmins.splice(index, 1);
+  } else {
+    selectedAdmins.push(adminId);
+  }
+  displayAdministratorsList();
+}
+
+function searchAdmins() {
+  const searchTerm = document.getElementById('adminSearch').value.toLowerCase();
+  filteredAdmins = allAdmins.filter(admin => {
+    const fullName = `${admin.nom} ${admin.prenom}`.toLowerCase();
+    const email = (admin.email || '').toLowerCase();
+    const role = getRoleDisplayName(admin.role).toLowerCase();
+    return fullName.includes(searchTerm) || email.includes(searchTerm) || role.includes(searchTerm);
+  });
+  currentAdminPage = 1;
+  selectedAdmins = [];
+  displayAdministratorsList();
+}
+
 function renderAdminPagination() {
   const container = document.getElementById('adminPagination');
+  if (!container) return;
+  
   const totalPages = Math.ceil(filteredAdmins.length / adminsPerPage);
   
   if (totalPages <= 1) {
@@ -1061,30 +1469,7 @@ function changeAdminPage(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function searchAdmins() {
-  const searchTerm = document.getElementById('adminSearch').value.toLowerCase();
-  filteredAdmins = allAdmins.filter(admin => {
-    const fullName = `${admin.nom} ${admin.prenom}`.toLowerCase();
-    const email = (admin.email || '').toLowerCase();
-    const role = getRoleDisplayName(admin.role).toLowerCase();
-    return fullName.includes(searchTerm) || email.includes(searchTerm) || role.includes(searchTerm);
-  });
-  currentAdminPage = 1;
-  selectedAdmins = [];
-  displayAdministratorsList();
-}
-
-function toggleAdminSelection(adminId) {
-  const index = selectedAdmins.indexOf(adminId);
-  if (index > -1) {
-    selectedAdmins.splice(index, 1);
-  } else {
-    selectedAdmins.push(adminId);
-  }
-  displayAdministratorsList();
-}
-
-async function deleteAdmin(adminId) {
+function confirmDeleteAdmin(adminId) {
   const admin = allAdmins.find(a => a.id === adminId);
   if (!admin) return;
 
@@ -1093,8 +1478,15 @@ async function deleteAdmin(adminId) {
     return;
   }
 
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer ${admin.prenom} ${admin.nom}?`)) return;
+  showConfirmModal(
+    'danger',
+    'Supprimer cet administrateur',
+    `Êtes-vous sûr de vouloir supprimer <strong>${admin.prenom} ${admin.nom}</strong> (${getRoleDisplayName(admin.role)}) ? Cette action est irréversible.`,
+    () => deleteAdmin(adminId)
+  );
+}
 
+async function deleteAdmin(adminId) {
   try {
     const response = await fetch(`${API_BASE}/users/${adminId}`, {
       method: 'DELETE',
@@ -1104,8 +1496,15 @@ async function deleteAdmin(adminId) {
     if (response.ok) {
       showSuccessAnimation();
       showToast('Administrateur supprimé avec succès!', 'warning');
-      await loadDashboardData();
-      await loadAdministrators();
+      const admin = allAdmins.find(a => a.id === adminId);
+      if (admin) {
+        addActivity(`Admin supprimé : ${admin.prenom} ${admin.nom}`, 'fa-user-times');
+      }
+      
+      await Promise.all([
+        loadDashboardData(),
+        loadAdministrators()
+      ]);
     } else {
       const error = await response.json();
       showToast('Erreur: ' + (error.error || 'Erreur de suppression'), 'error');
@@ -1115,7 +1514,7 @@ async function deleteAdmin(adminId) {
   }
 }
 
-async function deleteSelectedAdmins() {
+function confirmDeleteSelectedAdmins() {
   if (selectedAdmins.length === 0) {
     showToast('Aucun administrateur sélectionné', 'info');
     return;
@@ -1127,8 +1526,15 @@ async function deleteSelectedAdmins() {
     return;
   }
 
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedAdmins.length} administrateur(s)?`)) return;
+  showConfirmModal(
+    'danger',
+    'Supprimer les administrateurs sélectionnés',
+    `Êtes-vous sûr de vouloir supprimer <strong>${selectedAdmins.length} administrateur(s)</strong> ? Cette action est irréversible.`,
+    () => deleteSelectedAdmins()
+  );
+}
 
+async function deleteSelectedAdmins() {
   try {
     for (const adminId of selectedAdmins) {
       await fetch(`${API_BASE}/users/${adminId}`, {
@@ -1139,9 +1545,13 @@ async function deleteSelectedAdmins() {
 
     showSuccessAnimation();
     showToast(`${selectedAdmins.length} administrateur(s) supprimé(s) avec succès!`, 'success');
+    addActivity(`${selectedAdmins.length} admins supprimés`, 'fa-users-slash');
     selectedAdmins = [];
-    await loadDashboardData();
-    await loadAdministrators();
+    
+    await Promise.all([
+      loadDashboardData(),
+      loadAdministrators()
+    ]);
   } catch (error) {
     showToast('Erreur lors de la suppression', 'error');
   }
@@ -1150,6 +1560,7 @@ async function deleteSelectedAdmins() {
 // ========================================
 // GESTION DES SERVICES ET COMMISSIONS
 // ========================================
+
 async function createService(commissionId, commissionName) {
   const serviceName = prompt(`Créer un nouveau service pour la commission "${commissionName}":\n\nNom du service:`);
   
@@ -1171,8 +1582,14 @@ async function createService(commissionId, commissionName) {
     if (response.ok) {
       showSuccessAnimation();
       showToast('Service créé avec succès!', 'success');
-      await loadServices();
-      await loadCommissions();
+      addActivity(`Service créé : ${serviceName}`, 'fa-cogs');
+      
+      await Promise.all([
+        loadServices(),
+        loadCommissions(),
+        loadDashboardData()
+      ]);
+      
       await showCommissionDetails(commissionId, commissionName);
     } else {
       const error = await response.json();
@@ -1183,9 +1600,34 @@ async function createService(commissionId, commissionName) {
   }
 }
 
-async function deleteService(serviceId, serviceName) {
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer le service "${serviceName}"?`)) return;
+function confirmDeleteService(serviceId, serviceName) {
+  showConfirmModal(
+    'danger',
+    'Supprimer ce service',
+    `Êtes-vous sûr de vouloir supprimer le service "<strong>${serviceName}</strong>" ?<br><br><strong style="color: var(--error);">⚠️ ATTENTION :</strong> Tous les membres de ce service seront également supprimés. Cette action est irréversible.`,
+    async () => {
+      try {
+        const membersRes = await fetch(`${API_BASE}/membres/service/${serviceId}`, { headers: getAuthHeaders() });
+        const members = await membersRes.json();
+        
+        if (members.length > 0) {
+          showConfirmModal(
+            'danger',
+            'Confirmation finale',
+            `Ce service contient <strong>${members.length} membre(s)</strong> qui seront TOUS supprimés.<br><br>Voulez-vous vraiment continuer ?`,
+            () => deleteService(serviceId, serviceName)
+          );
+        } else {
+          deleteService(serviceId, serviceName);
+        }
+      } catch (error) {
+        deleteService(serviceId, serviceName);
+      }
+    }
+  );
+}
 
+async function deleteService(serviceId, serviceName) {
   try {
     const response = await fetch(`${API_BASE}/services/${serviceId}`, {
       method: 'DELETE',
@@ -1195,12 +1637,16 @@ async function deleteService(serviceId, serviceName) {
     if (response.ok) {
       showSuccessAnimation();
       showToast('Service supprimé avec succès!', 'warning');
-      await loadServices();
-      await loadCommissions();
-      await loadDashboardData();
+      addActivity(`Service supprimé : ${serviceName}`, 'fa-minus-circle');
+      
+      await Promise.all([
+        loadServices(),
+        loadCommissions(),
+        loadDashboardData()
+      ]);
     } else {
       const error = await response.json();
-      showToast('Erreur: ' + error.error, 'error');
+      showToast('Erreur: ' + (error.error || 'Impossible de supprimer ce service'), 'error');
     }
   } catch (error) {
     showToast('Erreur lors de la suppression du service', 'error');
@@ -1210,32 +1656,11 @@ async function deleteService(serviceId, serviceName) {
 // ========================================
 // STATISTIQUES
 // ========================================
+
 async function loadStatistics() {
-  try {
-    const response = await fetch(`${API_BASE}/services`, { headers: getAuthHeaders() });
-    const services = await response.json();
-    
-    // Éliminer les doublons
-    const uniqueServices = new Map();
-    services.forEach(service => {
-      if (!uniqueServices.has(service.nom)) {
-        uniqueServices.set(service.nom, service);
-      }
-    });
-    
-    const selectEl = document.getElementById('statsServiceSelect');
-    if (selectEl) {
-      selectEl.innerHTML = '<option value="">Sélectionner un service</option>';
-      uniqueServices.forEach((service) => {
-        const option = document.createElement('option');
-        option.value = service.id;
-        option.textContent = service.nom;
-        selectEl.appendChild(option);
-      });
-    }
-  } catch (error) {
-    console.error('Erreur chargement stats:', error);
-  }
+  setTimeout(() => {
+    customSelects.forEach(cs => cs.refresh());
+  }, 100);
 }
 
 async function displayServiceStatistics() {
@@ -1259,6 +1684,8 @@ async function displayServiceStatistics() {
 
 function displayStatsPage(members) {
   const container = document.getElementById('statsContainer');
+  if (!container) return;
+  
   const total = members.length;
   const males = members.filter(m => m.sexe === 'Homme').length;
   const females = members.filter(m => m.sexe === 'Femme').length;
@@ -1341,112 +1768,103 @@ function displayStatsPage(members) {
 }
 
 // ========================================
-// MODALES ET DÉTAILS
+// GESTION DES COMMISSIONS DÉTAILLÉES
 // ========================================
+
+async function showCommissionDetails(commissionId, commissionName) {
+  try {
+    const [servicesRes, membersRes] = await Promise.all([
+      fetch(`${API_BASE}/services`, { headers: getAuthHeaders() }),
+      fetch(`${API_BASE}/membres`, { headers: getAuthHeaders() })
+    ]);
+    
+    const services = await servicesRes.json();
+    const allMembers = await membersRes.json();
+    
+    const commissionServices = services.filter(s => s.commission_id === commissionId);
+    
+    const container = document.getElementById('commissionDetailsContent');
+    if (container) {
+      container.innerHTML = `
+        <div style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--black); margin-bottom: 0.5rem;">
+            <i class="fas fa-sitemap" style="color: var(--primary-red);"></i> ${commissionName}
+          </h2>
+          <p style="color: var(--gray);">Gestion des services de cette commission</p>
+        </div>
+        
+        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap;">
+          <button onclick="createService(${commissionId}, '${commissionName}')" class="btn-primary" style="width: auto; padding: 0.75rem 1.5rem;">
+            <i class="fas fa-plus"></i> Nouveau Service
+          </button>
+          <span style="color: var(--gray); font-size: 0.875rem;">
+            <i class="fas fa-info-circle"></i> ${commissionServices.length} service(s) dans cette commission
+          </span>
+        </div>
+        
+        <div class="services-grid">
+          ${commissionServices.length > 0 ? commissionServices.map(service => {
+            const serviceMembers = allMembers.filter(m => m.service_id === service.id);
+            return `
+              <div class="service-card">
+                <div class="service-header">
+                  <div class="service-icon">${service.nom.charAt(0).toUpperCase()}</div>
+                  <div>
+                    <div class="service-title">${service.nom}</div>
+                    <div class="service-count">
+                      <i class="fas fa-users"></i> ${serviceMembers.length} membre(s)
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                  <button onclick="showServiceMembers(${service.id}, '${service.nom}')" class="action-btn" style="flex: 1; background: var(--info);">
+                    <i class="fas fa-eye"></i> Voir
+                  </button>
+                  <button onclick="confirmDeleteService(${service.id}, '${service.nom}')" class="action-btn" style="background: var(--error);">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('') : `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--gray);">
+              <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+              <p>Aucun service dans cette commission</p>
+              <button onclick="createService(${commissionId}, '${commissionName}')" class="btn-primary" style="width: auto; margin-top: 1rem;">
+                <i class="fas fa-plus"></i> Créer le premier service
+              </button>
+            </div>
+          `}
+        </div>
+      `;
+    }
+    
+    showSection('commissionDetails');
+  } catch (error) {
+    console.error('Erreur chargement détails commission:', error);
+    showToast('Erreur lors du chargement des détails', 'error');
+  }
+}
+
 async function showServiceMembers(serviceId, serviceName) {
   try {
     const response = await fetch(`${API_BASE}/membres/service/${serviceId}`, { headers: getAuthHeaders() });
     const members = await response.json();
-
-    document.getElementById('modalTitle').textContent = `Membres du Service: ${serviceName}`;
-    const modalBody = document.getElementById('modalBody');
-    modalBody.innerHTML = '';
-
-    if (members.length === 0) {
-      modalBody.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 2rem;">Aucun membre</p>';
-    } else {
-      members.forEach(member => {
-        const memberDiv = document.createElement('div');
-        memberDiv.className = 'member-item';
-        memberDiv.innerHTML = `
-          <div class="member-info">
-            <h4>${member.nom} ${member.prenom}</h4>
-            <div class="member-details">
-              <div class="member-detail"><i class="fas fa-envelope"></i><span>${member.email || 'Pas d\'email'}</span></div>
-              <div class="member-detail"><i class="fas fa-phone"></i><span>${member.telephone || 'Pas de téléphone'}</span></div>
-              <div class="member-detail"><i class="fas fa-venus-mars"></i><span>${member.sexe || 'Non spécifié'}</span></div>
-            </div>
-          </div>
-          <div class="member-actions">
-            <button class="action-btn edit" onclick="editMember(${member.id})" title="Modifier"><i class="fas fa-edit"></i></button>
-            <button class="action-btn delete" onclick="deleteMember(${member.id})" title="Supprimer"><i class="fas fa-trash"></i></button>
-          </div>
-        `;
-        modalBody.appendChild(memberDiv);
-      });
-    }
-
-    document.getElementById('serviceModal').classList.add('show');
-  } catch (error) {
-    showToast('Erreur lors du chargement des membres', 'error');
-  }
-}
-
-async function showCommissionDetails(commissionId, commissionName) {
-  try {
-    const servicesRes = await fetch(`${API_BASE}/services`, { headers: getAuthHeaders() });
-    const allServices = await servicesRes.json();
-    const commissionServices = allServices.filter(s => s.commission_id === commissionId);
-
-    window.currentCommissionId = commissionId;
-    window.currentCommissionName = commissionName;
-    window.currentCommissionServices = commissionServices;
-
-    document.getElementById('commissionDetailsTitle').textContent = commissionName;
-    const container = document.getElementById('commissionDetailsContainer');
-    container.innerHTML = '';
-
-    // Bouton pour créer un nouveau service
-    const createServiceBtn = document.createElement('div');
-    createServiceBtn.style.cssText = 'margin-bottom: 2rem;';
-    createServiceBtn.innerHTML = `
-      <button class="btn-primary" style="width: auto; padding: 0.75rem 1.5rem;" onclick="createService(${commissionId}, '${commissionName}')">
-        <i class="fas fa-plus"></i>
-        <span>Créer un nouveau service</span>
-      </button>
-    `;
-    container.appendChild(createServiceBtn);
-
-    if (commissionServices.length === 0) {
-      const noServices = document.createElement('div');
-      noServices.style.cssText = 'text-align: center; padding: 3rem; background: var(--off-white); border-radius: 12px; border: 2px dashed var(--light-gray);';
-      noServices.innerHTML = `
-        <i class="fas fa-inbox" style="font-size: 3rem; color: var(--gray); opacity: 0.5; margin-bottom: 1rem;"></i>
-        <p style="color: var(--gray); font-size: 1.125rem; font-weight: 600;">Cette commission n'a pas encore de services</p>
-        <p style="color: var(--gray); margin-top: 0.5rem;">Cliquez sur le bouton ci-dessus pour créer le premier service</p>
-      `;
-      container.appendChild(noServices);
-    } else {
-      for (const service of commissionServices) {
-        const serviceHeader = document.createElement('div');
-        serviceHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 1rem; padding: 0.75rem 1rem; background: rgba(230, 0, 18, 0.1); border-radius: 12px;';
-        serviceHeader.innerHTML = `
-          <h3 style="color: var(--primary-red); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fas fa-cog"></i> Service: ${service.nom}
-          </h3>
-          <button class="action-btn delete" onclick="deleteService(${service.id}, '${service.nom}')" title="Supprimer le service" style="width: 40px; height: 40px;">
-            <i class="fas fa-trash"></i>
-          </button>
-        `;
-        container.appendChild(serviceHeader);
-
-        try {
-          const membersRes = await fetch(`${API_BASE}/membres/service/${service.id}`, { headers: getAuthHeaders() });
-          const members = await membersRes.json();
-
-          if (members.length === 0) {
-            const noMembers = document.createElement('p');
-            noMembers.style.cssText = 'text-align: center; color: var(--gray); padding: 1rem; font-style: italic;';
-            noMembers.textContent = 'Aucun membre dans ce service';
-            container.appendChild(noMembers);
-          } else {
-            const memberList = document.createElement('div');
-            memberList.className = 'member-list';
-            
-            members.forEach(member => {
-              const memberDiv = document.createElement('div');
-              memberDiv.className = 'member-item';
-              memberDiv.innerHTML = `
+    
+    const container = document.getElementById('serviceMembersContent');
+    if (container) {
+      container.innerHTML = `
+        <div style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--black); margin-bottom: 0.5rem;">
+            <i class="fas fa-users" style="color: var(--primary-red);"></i> ${serviceName}
+          </h2>
+          <p style="color: var(--gray);">${members.length} membre(s) dans ce service</p>
+        </div>
+        
+        ${members.length > 0 ? `
+          <div class="member-list">
+            ${members.map(member => `
+              <div class="member-item">
                 <div class="member-info">
                   <h4>${member.nom} ${member.prenom}</h4>
                   <div class="member-details">
@@ -1457,55 +1875,150 @@ async function showCommissionDetails(commissionId, commissionName) {
                 </div>
                 <div class="member-actions">
                   <button class="action-btn edit" onclick="editMember(${member.id})" title="Modifier"><i class="fas fa-edit"></i></button>
-                  <button class="action-btn delete" onclick="deleteMember(${member.id})" title="Supprimer"><i class="fas fa-trash"></i></button>
+                  <button class="action-btn delete" onclick="confirmDeleteMember(${member.id})" title="Supprimer"><i class="fas fa-trash"></i></button>
                 </div>
-              `;
-              memberList.appendChild(memberDiv);
-            });
-            container.appendChild(memberList);
-          }
-        } catch (error) {
-          console.error(`Erreur chargement membres service ${service.id}:`, error);
-        }
-      }
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div style="text-align: center; padding: 3rem; color: var(--gray);">
+            <i class="fas fa-users-slash" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>Aucun membre dans ce service</p>
+          </div>
+        `}
+      `;
     }
-
-    showSection('commissionDetails');
+    
+    const tempSection = document.getElementById('serviceMembersSection');
+    if (tempSection) {
+      tempSection.classList.add('active');
+      document.querySelectorAll('.content-section').forEach(section => {
+        if (section.id !== 'serviceMembersSection') section.classList.remove('active');
+      });
+    }
   } catch (error) {
-    showToast('Erreur lors du chargement de la commission', 'error');
+    console.error('Erreur chargement membres service:', error);
+    showToast('Erreur lors du chargement des membres', 'error');
   }
 }
 
-function backToCommissions() {
+// ========================================
+// GESTION DES MODALES
+// ========================================
+
+function closeEditMemberModal() {
+  const modal = document.getElementById('editMemberModal');
+  if (modal) modal.classList.remove('show');
+  currentEditingMember = null;
+}
+
+function closeUserProfileModal() {
+  const modal = document.getElementById('userProfileModal');
+  if (modal) modal.classList.remove('show');
+}
+
+function openAddMemberModal() {
+  const modal = document.getElementById('addMemberModal');
+  if (modal) modal.classList.add('show');
+  
+  setTimeout(() => {
+    customSelects.forEach(cs => cs.refresh());
+  }, 100);
+}
+
+function closeAddMemberModal() {
+  const modal = document.getElementById('addMemberModal');
+  if (modal) modal.classList.remove('show');
+}
+
+function openAddAdminModal() {
+  const modal = document.getElementById('addAdminModal');
+  if (modal) modal.classList.add('show');
+  
+  document.getElementById('manageUserForm').reset();
+  handleRoleChange();
+  
+  setTimeout(() => {
+    customSelects.forEach(cs => cs.refresh());
+  }, 100);
+}
+
+function closeAddAdminModal() {
+  const modal = document.getElementById('addAdminModal');
+  if (modal) modal.classList.remove('show');
+}
+
+// ========================================
+// FONCTIONS DE NAVIGATION SUPPLÉMENTAIRES
+// ========================================
+
+function goBackToCommissions() {
   showSection('commissions');
 }
 
-function closeModal() { 
-  document.getElementById('serviceModal').classList.remove('show'); 
-}
-
-function closeEditMemberModal() { 
-  document.getElementById('editMemberModal').classList.remove('show'); 
-  currentEditingMember = null; 
-}
-
-function closeEditAdminModal() { 
-  document.getElementById('editAdminModal').classList.remove('show'); 
-  currentEditingAdmin = null; 
-}
-
-function closeUserProfileModal() { 
-  document.getElementById('userProfileModal').classList.remove('show'); 
+function goBackToServices() {
+  showSection('services');
 }
 
 // ========================================
-// RESPONSIVE
+// FONCTIONS GLOBALES POUR L'UTILISATION HTML
 // ========================================
-window.addEventListener('resize', function() {
-  const sidebar = document.getElementById('sidebar');
-  const hamburger = document.getElementById('hamburger');
-  if (window.innerWidth > 1024) {
-    if (sidebar) sidebar.classList.remove('open');
-    if (hamburger) hamburger.classList.remove('active');
+
+window.showSection = showSection;
+window.toggleSidebar = toggleSidebar;
+window.openUserProfile = openUserProfile;
+window.confirmLogout = confirmLogout;
+window.openAddMemberModal = openAddMemberModal;
+window.closeAddMemberModal = closeAddMemberModal;
+window.openAddAdminModal = openAddAdminModal;
+window.closeAddAdminModal = closeAddAdminModal;
+window.closeUserProfileModal = closeUserProfileModal;
+window.closeEditMemberModal = closeEditMemberModal;
+window.handleRoleChange = handleRoleChange;
+window.handleCommissionChange = handleCommissionChange;
+window.displayServiceStatistics = displayServiceStatistics;
+window.editMember = editMember;
+window.confirmDeleteMember = confirmDeleteMember;
+window.toggleMemberSelection = toggleMemberSelection;
+window.toggleSelectAllMembers = toggleSelectAllMembers;
+window.confirmDeleteSelectedMembers = confirmDeleteSelectedMembers;
+window.changePage = changePage;
+window.searchMembers = searchMembers;
+window.toggleAdminSelection = toggleAdminSelection;
+window.toggleSelectAllAdmins = toggleSelectAllAdmins;
+window.confirmDeleteAdmin = confirmDeleteAdmin;
+window.confirmDeleteSelectedAdmins = confirmDeleteSelectedAdmins;
+window.changeAdminPage = changeAdminPage;
+window.searchAdmins = searchAdmins;
+window.createService = createService;
+window.confirmDeleteService = confirmDeleteService;
+window.showCommissionDetails = showCommissionDetails;
+window.showServiceMembers = showServiceMembers;
+window.goBackToCommissions = goBackToCommissions;
+window.goBackToServices = goBackToServices;
+
+// ========================================
+// INITIALISATION DES ÉVÉNEMENTS SUPPLÉMENTAIRES
+// ========================================
+
+document.addEventListener('DOMContentLoaded', function() {
+  const editMemberForm = document.getElementById('editMemberForm');
+  if (editMemberForm) {
+    editMemberForm.addEventListener('submit', handleEditMember);
   }
+  
+  document.querySelectorAll('.close-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const modal = this.closest('.modal');
+      if (modal) modal.classList.remove('show');
+    });
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal.show').forEach(modal => {
+        modal.classList.remove('show');
+      });
+    }
+  });
 });

@@ -7,7 +7,8 @@ import {
     changeTemporaryPassword,
     sendValidationCode,
     validateCode,
-    resendValidationCode
+    resendValidationCode,
+    forgetPasswordController
 } from '../controllers/authController.js';
 
 const router = express.Router();
@@ -344,5 +345,7 @@ router.use((err, req, res, next) => {
         message: process.env.NODE_ENV === 'development' ? err.message : 'Une erreur inattendue s\'est produite'
     });
 });
+
+router.post('/forgot/password', forgetPasswordController)
 
 export default router;

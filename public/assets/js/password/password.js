@@ -152,20 +152,20 @@ async function sendTemporaryPassword() {
         target = phone;
     }
 
-            showLoading(true);
+    showLoading(true);
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/send-temporary-password`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: currentMethod,
-                        target: target,
-                        email: email
-                    })
-                });
+    try {
+        const response = await fetch(`http://localhost:3000/api/auth/forgot/password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: currentMethod,
+                target: target,
+                email: email
+            })
+        });
 
-                const data = await response.json();
+        const data = await response.json();
 
                 if (response.ok) {
                     recoveryEmail = email;
@@ -187,7 +187,50 @@ async function sendTemporaryPassword() {
             } finally {
                 showLoading(false);
             }
+}
+
+async function submitNewPassword() {
+    const password = document.getElementById('password').value.trim();
+    const submitNewPassButton = document.getElementById('submitNewPassButton');
+    const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+    if (password != confirmPassword || password.length < 8 || confirmPassword.length < 8 ) {
+        showError('Mot de passe non conforme ou caractères inférieures à 8');
+    } else {
+        showLoading(true);
+        submitNewPassButton.disabled = true
+        try {
+            const baseURL = window.location.href
+            console.log(baseURL)
+            const response = await fetch(`${baseURL}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: password,
+                    confirmPassword: confirmPassword,
+                })
+            });
+
+            const data = await response.json();
+            console.log(data)
+
+            if (data.code == 'success') {
+                showSuccess(data.message || 'Mot de passe modifié avec succès !');
+                setTimeout(() => {
+                    window.open(`${window.location.origin}/login`, "_self");
+                }, 2000);
+            } else {
+                showError(data.error || 'Erreur lors de la modification du mot de passe');
+            }
+        } catch (err) {
+            console.error('Erreur:', err);
+            showError('Une erreur est survenue. Veuillez rééssayer dans quelques minutes !');
+        } finally {
+            showLoading(false);
+            submitNewPassButton.disabled = false
         }
+    }
+}
 
         // Go to Login
         function goToLogin() {

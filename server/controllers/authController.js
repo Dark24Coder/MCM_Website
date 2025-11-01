@@ -2,8 +2,16 @@ import db from '../config/db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { forgotPasswordEmailTemplate } from './../utils/emailTemplate.js'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mcm_secret_key_2024';
+
+
+import { fileURLToPath } from 'url';
+import path from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const templatesPath = path.join(__dirname);
 
 // Stockage temporaire pour codes de validation et mots de passe temporaires
 const validationCodes = new Map();
@@ -625,3 +633,111 @@ export const resendValidationCode = async (req, res) => {
         res.status(500).json({ error: 'Erreur serveur interne' });
     }
 };
+
+export const forgetPasswordController = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ code: "error", message: "Champs email manquant" });
+        }
+
+        db.query("SELECT * FROM users WHERE email=$1", [email], async (err, result) => {
+            if (err) {
+                return res.status(404).json({ message : "Utilisateur non trouvé"})
+            }
+
+            if (!result) {
+                return res.status(404).json({ message : "Utilisateur non trouvé"})
+            }
+            
+            console.log(result.rows[0].email)
+
+            const emailToken = jwt.sign(
+                { id: result.rows[0].id, email: result.rows[0].email },
+                process.env.EMAIL_SECRET || "emailsecretkey",
+                { expiresIn: "10m" }
+            );
+            const confirmUrl = `http://localhost:3000/newPassword/${emailToken}`; 
+            
+            await forgotPasswordEmailTemplate(
+                result.rows[0].email,
+                `${result.rows[0].prenom} ${result.rows[0].nom}`,
+                confirmUrl
+            );
+
+            return res.status(201).json({ code: "succes", message: "Email envoyé" });
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ code: "error", message: "Erreur serveur" });
+    }
+}
+
+export const checkForgotPasswordToken = async (req, res) => {
+    const { token } = req.params 
+    try {
+        const checkToken = jwt.verify(token, process.env.EMAIL_SECRET || "emailsecretkey")
+        res.status(404).sendFile(path.join(templatesPath, '../../public/templates/new-password.html'), err => {
+            if (err) {
+                console.error('Erreur lors de la lecture de 404.html:', err);
+                res.status(404).send('Page non trouvée');
+            }
+        });
+    } catch(err) {
+        console.log(err)
+        res.status(404).sendFile(path.join(templatesPath, '../../public/templates/404.html'), err => {
+            if (err) {
+                console.error('Erreur lors de la lecture de 404.html:', err);
+                res.status(404).send('Page non trouvée');
+            }
+        });
+    }  
+}
+
+export const updatePassword = async (req, res) => {
+    const { token } = req.params 
+    const { password } = req.body
+    try {
+        const checkToken = jwt.verify(token, process.env.EMAIL_SECRET || "emailsecretkey")
+
+        db.query("SELECT * FROM users WHERE email=$1", [checkToken.email], async (err, result) => {
+            if (err) {
+                return res.status(404).json({ message : "Utilisateur non trouvé"})
+            }
+
+            if (!result) {
+                return res.status(404).json({ message : "Utilisateur non trouvé"})
+            }
+            const saltRounds = 12;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            db.query("UPDATE users SET mot_de_passe=$1 WHERE email=$2", [hashedPassword, checkToken.email], async (err, result) => {
+                if (err) {
+                    console.log(err)
+                    return res.status(404).json({ message : "Utilisateur non trouvé"})
+                }
+
+                if (!result) {
+                    return res.status(404).json({ message : "Utilisateur non trouvé"})
+                }
+            
+                return res.status(201).json({ code: "success", message: "Mot de passe modifié avec succès" });
+            });
+        });
+
+        // res.status(404).sendFile(path.join(templatesPath, '../../public/templates/new-password.html'), err => {
+        //     if (err) {
+        //         console.error('Erreur lors de la lecture de 404.html:', err);
+        //         res.status(404).send('Page non trouvée');
+        //     }
+        // });
+    } catch(err) {
+        console.log(err)
+        res.status(404).sendFile(path.join(templatesPath, '../../public/templates/404.html'), err => {
+            if (err) {
+                console.error('Erreur lors de la lecture de 404.html:', err);
+                res.status(404).send('Page non trouvée');
+            }
+        });
+    }  
+}

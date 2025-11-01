@@ -28,14 +28,14 @@
             </div>
         </div>
         <div class="navbar-right">
-            <div class="user-menu" onclick="openUserProfile()">
+            <div class="user-menu desktop-only" onclick="openUserProfile()">
                 <div class="user-avatar">
                     <span id="userInitials">SA</span>
                 </div>
                 <span class="user-name" id="userName">Chargement...</span>
                 <i class="fas fa-chevron-down" style="color: var(--gray); font-size: 0.75rem;"></i>
             </div>
-            <button class="logout-btn" onclick="logout()">
+            <button class="logout-btn desktop-only" onclick="confirmLogout()">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Déconnexion</span>
             </button>
@@ -93,8 +93,14 @@
                     <span>Administrateurs</span>
                 </div>
             </li>
-            <li class="sidebar-item mobile-only" style="display: none;">
-                <div class="sidebar-link" onclick="logout()">
+            <li class="sidebar-item mobile-only">
+                <div class="sidebar-link" onclick="openUserProfile()">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Mon Profil</span>
+                </div>
+            </li>
+            <li class="sidebar-item mobile-only">
+                <div class="sidebar-link" onclick="confirmLogout()">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Déconnexion</span>
                 </div>
@@ -157,6 +163,26 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Activités récentes -->
+            <div class="section-card">
+                <h3 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    Activités Récentes
+                </h3>
+                <div id="recentActivities" class="activities-list">
+                    <p style="text-align: center; color: var(--gray); padding: 2rem;">Aucune activité récente</p>
+                </div>
+            </div>
+
+            <!-- Anniversaires du jour -->
+            <div class="section-card" id="birthdaysCard" style="display: none;">
+                <h3 class="section-title">
+                    <i class="fas fa-birthday-cake"></i>
+                    Anniversaires Aujourd'hui
+                </h3>
+                <div id="todayBirthdays" class="birthdays-list"></div>
+            </div>
         </div>
 
         <!-- Members Section -->
@@ -167,8 +193,8 @@
             </div>
 
             <div class="section-card">
-                <div style="margin-bottom: 1.5rem;">
-                    <input type="text" id="memberSearch" class="form-control" placeholder="🔍 Rechercher un membre..." style="max-width: 400px;">
+                <div class="search-bar">
+                    <input type="text" id="memberSearch" class="form-control" placeholder="Rechercher un membre..." style="max-width: 400px;">
                 </div>
                 <div id="membersListContainer">
                     <p style="text-align: center; color: var(--gray); padding: 2rem;">Chargement des membres...</p>
@@ -251,6 +277,10 @@
                         <div class="form-group">
                             <label class="form-label">Prénom *</label>
                             <input type="text" class="form-control" id="userPrenom" placeholder="John" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="userTelephone" placeholder="+229 XX XX XX XX">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Mot de passe *</label>
@@ -344,25 +374,39 @@
             </div>
         </div>
 
-        <!-- Commission Details Section (PAGE COMPLÈTE) -->
+        <!-- Commission Details Section -->
         <div id="commissionDetailsSection" class="content-section">
             <div class="page-header">
-                <button onclick="backToCommissions()" class="btn-back">
+                <button onclick="goBackToCommissions()" class="btn-back">
                     <i class="fas fa-arrow-left"></i>
                     <span>Retour aux Commissions</span>
                 </button>
-                <h1 class="page-title" id="commissionDetailsTitle">Détails de la Commission</h1>
-                <p class="page-subtitle">Tous les membres par service</p>
             </div>
 
             <div class="section-card">
-                <div id="commissionDetailsContainer">
+                <div id="commissionDetailsContent">
                     <!-- Commission details dynamically loaded -->
                 </div>
             </div>
         </div>
 
-        <!-- Administrators Section (PAGE COMPLÈTE) -->
+        <!-- Service Members Section -->
+        <div id="serviceMembersSection" class="content-section">
+            <div class="page-header">
+                <button onclick="goBackToServices()" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Retour aux Services</span>
+                </button>
+            </div>
+
+            <div class="section-card">
+                <div id="serviceMembersContent">
+                    <!-- Service members dynamically loaded -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Administrators Section -->
         <div id="administratorsSection" class="content-section">
             <div class="page-header">
                 <h1 class="page-title">Gestion des Administrateurs</h1>
@@ -370,8 +414,8 @@
             </div>
 
             <div class="section-card">
-                <div style="margin-bottom: 1.5rem;">
-                    <input type="text" id="adminSearch" class="form-control" placeholder="🔍 Rechercher un administrateur..." style="max-width: 400px;">
+                <div class="search-bar">
+                    <input type="text" id="adminSearch" class="form-control" placeholder="Rechercher un administrateur..." style="max-width: 400px;">
                 </div>
                 <div id="administratorsListContainer">
                     <p style="text-align: center; color: var(--gray); padding: 2rem;">Chargement des administrateurs...</p>
@@ -381,23 +425,7 @@
         </div>
     </main>
 
-    <!-- Modales -->
-    <!-- Service Members Modal -->
-    <div class="modal" id="serviceModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Membres du Service</h2>
-                <button class="close-btn" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="member-list" id="modalBody"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Member Modal - MODIFIÉ -->
+    <!-- Edit Member Modal -->
     <div class="modal" id="editMemberModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -452,8 +480,6 @@
             </div>
         </div>
     </div>
-
-    <!-- MODAL EDIT ADMIN SUPPRIMÉE - Les admins ne peuvent plus être modifiés, seulement supprimés -->
 
     <!-- User Profile Modal -->
     <div class="modal" id="userProfileModal">

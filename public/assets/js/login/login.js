@@ -2,13 +2,183 @@ const API_BASE_URL = 'http://localhost:3000/api';
 let commissions = [];
 let services = [];
 
-// Form toggle
+// ========================================
+// 🎨 SYSTÈME DE SELECT PERSONNALISÉ
+// ========================================
+class CustomSelect {
+    constructor(selectElement) {
+        this.selectElement = selectElement;
+        this.options = Array.from(selectElement.options);
+        this.selectedIndex = selectElement.selectedIndex;
+        
+        this.createCustomSelect();
+        this.addEventListeners();
+    }
+
+    createCustomSelect() {
+        // Créer le wrapper
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'custom-select-wrapper';
+        
+        // Créer le bouton principal
+        this.button = document.createElement('div');
+        this.button.className = 'custom-select';
+        this.button.innerHTML = `
+            <span class="custom-select-text placeholder">${this.options[0]?.text || 'Sélectionner...'}</span>
+            <span class="custom-select-arrow">▼</span>
+        `;
+        
+        // Créer le dropdown
+        this.dropdown = document.createElement('div');
+        this.dropdown.className = 'custom-select-dropdown';
+        
+        // Insérer le custom select après le select natif
+        this.selectElement.parentNode.insertBefore(this.wrapper, this.selectElement.nextSibling);
+        this.wrapper.appendChild(this.button);
+        this.wrapper.appendChild(this.dropdown);
+        
+        // Remplir les options
+        this.updateOptions();
+    }
+
+    updateOptions() {
+        this.dropdown.innerHTML = '';
+        this.options = Array.from(this.selectElement.options);
+        
+        this.options.forEach((option, index) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'custom-select-option';
+            optionDiv.textContent = option.text;
+            optionDiv.dataset.value = option.value;
+            optionDiv.dataset.index = index;
+            
+            if (index === this.selectedIndex) {
+                optionDiv.classList.add('selected');
+            }
+            
+            optionDiv.addEventListener('click', () => this.selectOption(index));
+            this.dropdown.appendChild(optionDiv);
+        });
+    }
+
+    selectOption(index) {
+        this.selectedIndex = index;
+        this.selectElement.selectedIndex = index;
+        
+        const selectedOption = this.options[index];
+        const textSpan = this.button.querySelector('.custom-select-text');
+        
+        if (selectedOption.value === '') {
+            textSpan.textContent = selectedOption.text;
+            textSpan.classList.add('placeholder');
+        } else {
+            textSpan.textContent = selectedOption.text;
+            textSpan.classList.remove('placeholder');
+        }
+        
+        // Mettre à jour les classes selected
+        this.dropdown.querySelectorAll('.custom-select-option').forEach((opt, i) => {
+            opt.classList.toggle('selected', i === index);
+        });
+        
+        this.close();
+        
+        // Déclencher l'événement change
+        const event = new Event('change', { bubbles: true });
+        this.selectElement.dispatchEvent(event);
+    }
+
+    toggle() {
+        if (this.dropdown.classList.contains('show')) {
+            this.close();
+        } else {
+            this.open();
+        }
+    }
+
+    open() {
+        // Fermer tous les autres selects
+        document.querySelectorAll('.custom-select.active').forEach(select => {
+            if (select !== this.button) {
+                select.classList.remove('active');
+                select.nextElementSibling.classList.remove('show');
+            }
+        });
+        
+        this.button.classList.add('active');
+        this.dropdown.classList.add('show');
+    }
+
+    close() {
+        this.button.classList.remove('active');
+        this.dropdown.classList.remove('show');
+    }
+
+    addEventListeners() {
+        this.button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggle();
+        });
+        
+        // Fermer au clic à l'extérieur
+        document.addEventListener('click', (e) => {
+            if (!this.wrapper.contains(e.target)) {
+                this.close();
+            }
+        });
+    }
+
+    refresh() {
+        this.updateOptions();
+        
+        // Mettre à jour le texte du bouton
+        const selectedOption = this.options[this.selectElement.selectedIndex];
+        const textSpan = this.button.querySelector('.custom-select-text');
+        
+        if (selectedOption && selectedOption.value !== '') {
+            textSpan.textContent = selectedOption.text;
+            textSpan.classList.remove('placeholder');
+        } else {
+            textSpan.textContent = selectedOption?.text || 'Sélectionner...';
+            textSpan.classList.add('placeholder');
+        }
+    }
+
+    destroy() {
+        this.wrapper.remove();
+    }
+}
+
+// Instances des custom selects
+let roleSelect, commissionSelect, serviceSelect;
+
+// Initialiser les custom selects
+function initializeCustomSelects() {
+    const roleNative = document.getElementById('registerRole');
+    const commissionNative = document.getElementById('registerCommission');
+    const serviceNative = document.getElementById('registerService');
+    
+    if (roleNative && !roleSelect) {
+        roleSelect = new CustomSelect(roleNative);
+    }
+    if (commissionNative && !commissionSelect) {
+        commissionSelect = new CustomSelect(commissionNative);
+    }
+    if (serviceNative && !serviceSelect) {
+        serviceSelect = new CustomSelect(serviceNative);
+    }
+}
+
+// ========================================
+// GESTION DES SECTIONS
+// ========================================
 document.getElementById('loginToggle').addEventListener('click', () => showSection('login'));
 document.getElementById('registerToggle').addEventListener('click', () => showSection('register'));
 
 function showSection(section) {
     clearMessages();
     hideForgotPasswordLink();
+    hideNoServicesMessage();
 
     document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
@@ -20,6 +190,11 @@ function showSection(section) {
         document.getElementById('registerToggle').classList.add('active');
         document.getElementById('registerForm').classList.add('active');
         loadCommissionsForRegistration();
+        
+        // Initialiser les custom selects après un petit délai
+        setTimeout(() => {
+            initializeCustomSelects();
+        }, 100);
     }
 }
 
@@ -38,7 +213,9 @@ document.querySelectorAll('.password-toggle').forEach(btn => {
     });
 });
 
-// Messages
+// ========================================
+// MESSAGES
+// ========================================
 function showError(message) {
     const errorDiv = document.getElementById('errorMessage');
     errorDiv.textContent = message;
@@ -73,15 +250,21 @@ function clearMessages() {
     });
 }
 
+// ========================================
+// 🔄 LOADING OVERLAY COMPLET
+// ========================================
 function showLoading(show) {
     const loadingDiv = document.getElementById('loadingSpinner');
     const buttons = document.querySelectorAll('.auth-btn');
+    
     if (show) {
-        loadingDiv.style.display = 'block';
+        loadingDiv.classList.add('show');
         buttons.forEach(btn => btn.disabled = true);
+        document.body.style.overflow = 'hidden';
     } else {
-        loadingDiv.style.display = 'none';
+        loadingDiv.classList.remove('show');
         buttons.forEach(btn => btn.disabled = false);
+        document.body.style.overflow = '';
     }
 }
 
@@ -94,10 +277,51 @@ function hideForgotPasswordLink() {
 }
 
 // ========================================
+// ⚠️ MESSAGE PAS DE SERVICES
+// ========================================
+function showNoServicesMessage() {
+    let messageDiv = document.getElementById('noServicesMessage');
+    
+    if (!messageDiv) {
+        messageDiv = document.createElement('div');
+        messageDiv.id = 'noServicesMessage';
+        messageDiv.className = 'no-services-message';
+        messageDiv.innerHTML = `
+            <div class="icon">⚠️</div>
+            <div class="content">
+                <h4>Aucun service disponible</h4>
+                <p>Cette commission n'a pas encore de services. La création de compte pour cette commission n'est pas possible actuellement. Veuillez contacter l'administrateur.</p>
+            </div>
+        `;
+        
+        const commissionGroup = document.getElementById('commissionGroup');
+        commissionGroup.parentNode.insertBefore(messageDiv, commissionGroup.nextSibling);
+    }
+    
+    messageDiv.classList.add('show');
+    
+    const submitBtn = document.querySelector('#registerForm .auth-btn');
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.5';
+    submitBtn.style.cursor = 'not-allowed';
+}
+
+function hideNoServicesMessage() {
+    const messageDiv = document.getElementById('noServicesMessage');
+    if (messageDiv) {
+        messageDiv.classList.remove('show');
+    }
+    
+    const submitBtn = document.querySelector('#registerForm .auth-btn');
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '';
+    submitBtn.style.cursor = '';
+}
+
+// ========================================
 // MODAL DE COMPTE SUPPRIMÉ
 // ========================================
 function showAccountDeletedModal(email) {
-    // Créer la modal si elle n'existe pas
     let modal = document.getElementById('accountDeletedModal');
     
     if (!modal) {
@@ -107,7 +331,7 @@ function showAccountDeletedModal(email) {
         modal.innerHTML = `
             <div class="error-modal-content">
                 <div class="error-modal-header">
-                    <i class="fas fa-exclamation-triangle"></i>
+                    <i class="fas fa-exclamation-triangle">⚠️</i>
                     <h2>Compte Supprimé ou Inexistant</h2>
                 </div>
                 <div class="error-modal-body">
@@ -122,7 +346,7 @@ function showAccountDeletedModal(email) {
                 </div>
                 <div class="error-modal-footer">
                     <button onclick="closeAccountDeletedModal()" class="btn-close-modal">
-                        <i class="fas fa-times"></i> Fermer
+                        ✖ Fermer
                     </button>
                 </div>
             </div>
@@ -130,10 +354,7 @@ function showAccountDeletedModal(email) {
         document.body.appendChild(modal);
     }
     
-    // Mettre à jour l'email
     document.getElementById('deletedAccountEmail').textContent = email;
-    
-    // Afficher la modal
     setTimeout(() => modal.classList.add('show'), 10);
 }
 
@@ -149,7 +370,6 @@ function closeAccountDeletedModal() {
     }
 }
 
-// Fermer la modal en cliquant en dehors
 document.addEventListener('click', function(e) {
     const modal = document.getElementById('accountDeletedModal');
     if (modal && e.target === modal) {
@@ -157,28 +377,43 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Role change handler
+// ========================================
+// GESTION DES RÔLES ET COMMISSIONS
+// ========================================
 document.getElementById('registerRole').addEventListener('change', function() {
     const role = this.value;
     const commissionGroup = document.getElementById('commissionGroup');
     const serviceGroup = document.getElementById('serviceGroup');
 
+    hideNoServicesMessage();
+
     if (role === 'adminCom') {
         commissionGroup.style.display = 'block';
         serviceGroup.style.display = 'none';
+        document.getElementById('registerCommission').value = '';
+        document.getElementById('registerService').innerHTML = '<option value="">Sélectionnez un service</option>';
+        
+        if (commissionSelect) commissionSelect.refresh();
+        if (serviceSelect) serviceSelect.refresh();
     } else if (role === 'admin') {
         commissionGroup.style.display = 'block';
         serviceGroup.style.display = 'block';
+        document.getElementById('registerCommission').value = '';
+        document.getElementById('registerService').innerHTML = '<option value="">Sélectionnez un service</option>';
+        
+        if (commissionSelect) commissionSelect.refresh();
+        if (serviceSelect) serviceSelect.refresh();
     } else {
         commissionGroup.style.display = 'none';
         serviceGroup.style.display = 'none';
     }
 });
 
-// Commission change
 document.getElementById('registerCommission').addEventListener('change', loadServices);
 
-// Load commissions
+// ========================================
+// CHARGEMENT DES DONNÉES
+// ========================================
 function loadCommissionsForRegistration() {
     const select = document.getElementById('registerCommission');
     select.innerHTML = '<option value="">Sélectionnez une commission</option>';
@@ -202,31 +437,33 @@ function loadCommissionsForRegistration() {
     });
 
     commissions = fixedCommissions;
+    
+    if (commissionSelect) {
+        commissionSelect.refresh();
+    }
 }
 
-// Load services
 function loadServices() {
     const commissionId = parseInt(document.getElementById('registerCommission').value);
     const serviceSelect = document.getElementById('registerService');
     serviceSelect.innerHTML = '<option value="">Sélectionnez un service</option>';
 
-    if (!commissionId) return;
+    hideNoServicesMessage();
+
+    if (!commissionId) {
+        if (window.serviceSelect) {
+            window.serviceSelect.refresh();
+        }
+        return;
+    }
 
     const servicesByCommission = {
         1: [
             { id: 1, nom: 'Intercession' },
             { id: 2, nom: 'Social et humanitaire' }
         ],
-        2: [
-            { id: 3, nom: 'Son et éclairage' },
-            { id: 4, nom: 'Vidéo et streaming' },
-            { id: 5, nom: 'Photographie' }
-        ],
-        3: [
-            { id: 6, nom: 'Rédaction' },
-            { id: 7, nom: 'Archives' },
-            { id: 8, nom: 'Communication' }
-        ],
+        2: [],
+        3: [],
         4: [
             { id: 9, nom: 'Louange et adoration' },
             { id: 10, nom: 'Logistique musicale' },
@@ -248,24 +485,33 @@ function loadServices() {
             { id: 20, nom: 'Approvisionnement' },
             { id: 21, nom: 'Préparation des événements' }
         ],
-        8: [
-            { id: 22, nom: 'Cérémonies' },
-            { id: 23, nom: 'Protocole' },
-            { id: 24, nom: 'Sacristie' }
-        ]
+        8: []
     };
 
     const servicesForCommission = servicesByCommission[commissionId] || [];
+    
+    if (servicesForCommission.length === 0) {
+        showNoServicesMessage();
+        if (window.serviceSelect) {
+            window.serviceSelect.refresh();
+        }
+        return;
+    }
+
     servicesForCommission.forEach(service => {
         const option = document.createElement('option');
         option.value = service.id;
         option.textContent = service.nom;
         serviceSelect.appendChild(option);
     });
+    
+    if (window.serviceSelect) {
+        window.serviceSelect.refresh();
+    }
 }
 
 // ========================================
-// HANDLE LOGIN - AVEC GESTION COMPTE SUPPRIMÉ
+// HANDLE LOGIN
 // ========================================
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -300,14 +546,12 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
         const data = await response.json();
 
-        // ✅ GESTION DU COMPTE SUPPRIMÉ (404)
         if (response.status === 404) {
             showLoading(false);
             showAccountDeletedModal(email);
             return;
         }
 
-        // ✅ GESTION MOT DE PASSE INCORRECT (401)
         if (response.status === 401) {
             showLoading(false);
             showError(data.error || 'Email ou mot de passe incorrect');
@@ -317,14 +561,12 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             return;
         }
 
-        // ✅ GESTION COMPTE INACTIF (403)
         if (response.status === 403) {
             showLoading(false);
             showError('Votre compte a été désactivé. Contactez l\'administrateur.');
             return;
         }
 
-        // ✅ CONNEXION RÉUSSIE
         if (response.ok && data.success) {
             if (data.token) {
                 localStorage.setItem('mcm_token', data.token);
@@ -361,7 +603,6 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
                 }
             }, 900);
         } else {
-            // Autres erreurs
             showError(data.error || data.message || 'Erreur de connexion');
         }
     } catch (err) {
@@ -372,10 +613,13 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     }
 });
 
-// Handle Register
+// ========================================
+// HANDLE REGISTER
+// ========================================
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     clearMessages();
+    hideNoServicesMessage();
 
     const nom = document.getElementById('registerNom').value.trim();
     const prenom = document.getElementById('registerPrenom').value.trim();
@@ -443,6 +687,10 @@ document.getElementById('registerForm').addEventListener('submit', async functio
             document.getElementById('registerForm').reset();
             document.getElementById('commissionGroup').style.display = 'none';
             document.getElementById('serviceGroup').style.display = 'none';
+            
+            if (roleSelect) roleSelect.refresh();
+            if (commissionSelect) commissionSelect.refresh();
+            if (serviceSelect) serviceSelect.refresh();
 
             setTimeout(() => {
                 showSection('login');
@@ -459,7 +707,9 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     }
 });
 
-// Load remembered credentials
+// ========================================
+// UTILITAIRES
+// ========================================
 function loadRememberedCredentials() {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     const rememberedPassword = localStorage.getItem('rememberedPassword');
@@ -473,7 +723,6 @@ function loadRememberedCredentials() {
     }
 }
 
-// Check URL params
 function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
     const message = urlParams.get('message');
@@ -490,18 +739,6 @@ function checkUrlParams() {
     if (section === 'register') showSection('register');
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    loadRememberedCredentials();
-    checkUrlParams();
-    
-    // Injecter les styles de la modal
-    injectModalStyles();
-});
-
-// ========================================
-// STYLES POUR LA MODAL DE COMPTE SUPPRIMÉ
-// ========================================
 function injectModalStyles() {
     if (document.getElementById('accountDeletedModalStyles')) return;
     
@@ -637,3 +874,17 @@ function injectModalStyles() {
     `;
     document.head.appendChild(styles);
 }
+
+// ========================================
+// INITIALISATION
+// ========================================
+document.addEventListener('DOMContentLoaded', () => {
+    loadRememberedCredentials();
+    checkUrlParams();
+    injectModalStyles();
+    
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm && registerForm.classList.contains('active')) {
+        initializeCustomSelects();
+    }
+});

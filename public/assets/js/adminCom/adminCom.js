@@ -8,13 +8,32 @@ let selectedMembers = [];
 let currentPage = 1;
 const membersPerPage = 10;
 
+// Custom Selects Storage
+const customSelects = {};
+
 const welcomeMessages = [
+    
     { title: "Bienvenue dans votre espace Commission ! 🎯", subtitle: "Pilotez vos services avec efficacité et vision stratégique" },
     { title: "Excellente journée à vous ! ⭐", subtitle: "Votre leadership fait la différence dans cette commission" },
     { title: "Ravi de vous revoir ! 👋", subtitle: "Continuez votre excellent travail de coordination" },
     { title: "Bonjour Admin de Commission ! 🚀", subtitle: "Ensemble, construisons une commission forte et unie" },
     { title: "Prêt à accomplir de grandes choses ! ✨", subtitle: "Votre commission compte sur votre dévouement" },
-    { title: "Une nouvelle journée pleine d'opportunités ! 🌟", subtitle: "Supervisez et développez votre commission avec passion" }
+    { title: "Une nouvelle journée pleine d'opportunités ! 🌟", subtitle: "Supervisez et développez votre commission avec passion" },
+    { title: "En avant vers le succès ! 💼", subtitle: "Vos actions contribuent à l’harmonie et la performance de votre commission" },
+    { title: "Heureux de vous retrouver ! 🌞", subtitle: "Faites briller votre commission par votre sens de l’organisation" },
+    { title: "Le succès commence ici ! 🏆", subtitle: "Dirigez votre commission avec engagement et clarté" },
+    { title: "Leadership affirmé ! 💪", subtitle: "Votre expertise renforce chaque membre de votre équipe" },
+    { title: "Bon retour parmi nous ! ⚙️", subtitle: "Prenez les bonnes décisions pour faire avancer vos projets" },
+    { title: "Cap sur la réussite ! 🧭", subtitle: "Votre commission avance grâce à votre vision" },
+    { title: "Toujours à la hauteur ! 💎", subtitle: "Votre rigueur et votre passion font la différence" },
+    { title: "Gestion efficace, commission dynamique ! 🔥", subtitle: "Continuez à inspirer vos collaborateurs" },
+    { title: "Bienvenue, coordinateur de talent ! 🎶", subtitle: "Votre leadership harmonise les efforts de tous" },
+    { title: "Une belle journée de collaboration ! 🤝", subtitle: "Travaillez main dans la main avec votre équipe" },
+    { title: "Bon début de session ! 🖥️", subtitle: "Vos outils de gestion sont prêts pour une nouvelle journée" },
+    { title: "L’excellence au quotidien ! 🧠", subtitle: "Votre engagement inspire et motive toute la commission" },
+    { title: "Ambition et vision ! 🚩", subtitle: "Faites progresser votre commission avec stratégie" },
+    { title: "Ensemble vers l’impact ! 🌍", subtitle: "Votre rôle est essentiel à la réussite collective" }
+
 ];
 
 const getAuthHeaders = () => ({
@@ -22,6 +41,9 @@ const getAuthHeaders = () => ({
     'Content-Type': 'application/json'
 });
 
+// ========================================
+// INITIALISATION
+// ========================================
 document.addEventListener('DOMContentLoaded', function() {
     if (!authToken || authToken === 'null' || authToken === 'undefined') {
         window.location.href = './login.html';
@@ -35,7 +57,12 @@ async function initializeApp() {
         await loadUserProfile();
         displayRandomWelcome();
         await loadServices();
+        await checkBirthdays();
         initializeEventListeners();
+        initializeCustomSelects();
+        
+        // Rafraîchir les services toutes les 30 secondes
+        setInterval(refreshServices, 30000);
     } catch (error) {
         console.error('Erreur initialisation:', error);
         showToast('Erreur lors de l\'initialisation', 'error');
@@ -48,6 +75,119 @@ function displayRandomWelcome() {
     document.getElementById('welcomeSubtext').textContent = randomMessage.subtitle;
 }
 
+// ========================================
+// CUSTOM SELECT INITIALIZATION
+// ========================================
+function initializeCustomSelects() {
+    document.querySelectorAll('.custom-select').forEach(select => {
+        const selectId = select.dataset.select;
+        customSelects[selectId] = '';
+
+        const dropdown = select.nextElementSibling.nextElementSibling;
+        if (!dropdown) return;
+        
+        const options = dropdown.querySelectorAll('.custom-select-option');
+
+        // Toggle dropdown
+        select.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.custom-select-dropdown').forEach(d => {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+            document.querySelectorAll('.custom-select').forEach(s => {
+                if (s !== select) s.classList.remove('active');
+            });
+
+            dropdown.classList.toggle('show');
+            select.classList.toggle('active');
+        });
+
+        // Select option
+        options.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const value = option.dataset.value;
+                const text = option.querySelector('span').textContent;
+
+                customSelects[selectId] = value;
+                select.querySelector('.selected-text').textContent = text;
+
+                // Update selected state
+                options.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+
+                dropdown.classList.remove('show');
+                select.classList.remove('active');
+            });
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select-dropdown').forEach(d => d.classList.remove('show'));
+        document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('active'));
+    });
+}
+
+function updateCustomSelectOptions(selectId, options) {
+    const select = document.querySelector(`[data-select="${selectId}"]`);
+    if (!select) return;
+
+    const dropdown = select.nextElementSibling.nextElementSibling;
+    if (!dropdown) return;
+
+    dropdown.innerHTML = '<div class="custom-select-option" data-value=""><i class="fas fa-check"></i><span>Choisir un service</span></div>';
+
+    options.forEach(option => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'custom-select-option';
+        optionDiv.dataset.value = option.value;
+        optionDiv.innerHTML = `<i class="fas fa-check"></i><span>${option.text}</span>`;
+        
+        optionDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            customSelects[selectId] = option.value;
+            select.querySelector('.selected-text').textContent = option.text;
+
+            dropdown.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('selected'));
+            optionDiv.classList.add('selected');
+
+            dropdown.classList.remove('show');
+            select.classList.remove('active');
+        });
+
+        dropdown.appendChild(optionDiv);
+    });
+}
+
+function getCustomSelectValue(selectId) {
+    return customSelects[selectId] || '';
+}
+
+function setCustomSelectValue(selectId, value, text) {
+    const select = document.querySelector(`[data-select="${selectId}"]`);
+    if (!select) return;
+
+    customSelects[selectId] = value;
+    select.querySelector('.selected-text').textContent = text;
+
+    const dropdown = select.nextElementSibling.nextElementSibling;
+    if (dropdown) {
+        dropdown.querySelectorAll('.custom-select-option').forEach(opt => {
+            if (opt.dataset.value == value) {
+                opt.classList.add('selected');
+            } else {
+                opt.classList.remove('selected');
+            }
+        });
+    }
+}
+
+// ========================================
+// EVENT LISTENERS
+// ========================================
 function initializeEventListeners() {
     const hamburger = document.getElementById('hamburger');
     if (hamburger) {
@@ -77,6 +217,9 @@ function initializeEventListeners() {
     });
 }
 
+// ========================================
+// NAVIGATION
+// ========================================
 function showSection(sectionName) {
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
@@ -136,6 +279,9 @@ function toggleSidebar() {
     }
 }
 
+// ========================================
+// USER PROFILE
+// ========================================
 async function loadUserProfile() {
     try {
         const userDataString = window.localStorage.getItem('mcm_user');
@@ -249,6 +395,49 @@ async function handleUpdateProfile(e) {
     }
 }
 
+// ========================================
+// BIRTHDAY CHECK SYSTEM
+// ========================================
+async function checkBirthdays() {
+    try {
+        const response = await fetch(`${API_BASE}/membres`, {
+            headers: getAuthHeaders()
+        });
+
+        if (!response.ok) return;
+
+        const allMembersData = await response.json();
+        const today = new Date();
+        const birthdayPeople = [];
+
+        allMembersData.forEach(member => {
+            if (member.date_naissance && member.email) {
+                const birthDate = new Date(member.date_naissance);
+                if (birthDate.getMonth() === today.getMonth() && 
+                    birthDate.getDate() === today.getDate()) {
+                    const age = today.getFullYear() - birthDate.getFullYear();
+                    birthdayPeople.push({ ...member, age });
+                }
+            }
+        });
+
+        if (birthdayPeople.length > 0) {
+            birthdayPeople.forEach(async person => {
+                showToast(
+                    `🎉 C'est l'anniversaire de ${person.prenom} ${person.nom}! Il/Elle a ${person.age} ans!`,
+                    'info'
+                );
+                await sendBirthdayEmail(person);
+            });
+        }
+    } catch (error) {
+        console.error('Erreur vérification anniversaires:', error);
+    }
+}
+
+// ========================================
+// SERVICES MANAGEMENT
+// ========================================
 async function loadServices() {
     try {
         if (!currentUser || !currentUser.commission_id) {
@@ -275,13 +464,36 @@ async function loadServices() {
         services = allServices.filter(s => s.commission_id === currentUser.commission_id);
         
         displayServices();
-        populateServiceSelect();
+        populateServiceSelects();
         await loadAllMembers();
         updateStats();
         
     } catch (error) {
         console.error('Erreur chargement services:', error);
         showToast('Erreur: ' + error.message, 'error');
+    }
+}
+
+async function refreshServices() {
+    try {
+        const response = await fetch(`${API_BASE}/services`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const allServices = await response.json();
+            const newServices = allServices.filter(s => s.commission_id === currentUser.commission_id);
+            
+            if (JSON.stringify(newServices) !== JSON.stringify(services)) {
+                services = newServices;
+                displayServices();
+                populateServiceSelects();
+                updateStats();
+                console.log('✅ Services synchronisés');
+            }
+        }
+    } catch (error) {
+        console.error('Erreur rafraîchissement services:', error);
     }
 }
 
@@ -346,30 +558,566 @@ async function loadServiceMemberCount(serviceId) {
     }
 }
 
-function populateServiceSelect() {
-    const selects = ['serviceSelect', 'editMemberService', 'statsServiceSelect'];
+function populateServiceSelects() {
+    const selectIds = ['serviceSelect', 'editMemberService', 'statsServiceSelect'];
     
-    selects.forEach(selectId => {
-        const select = document.getElementById(selectId);
-        if (!select) return;
+    selectIds.forEach(selectId => {
+        const options = services.map(service => ({
+            value: service.id,
+            text: service.nom
+        }));
         
-        select.innerHTML = '<option value="">Choisir un service</option>';
-        
-        services.forEach(service => {
-            const option = document.createElement('option');
-            option.value = service.id;
-            option.textContent = service.nom;
-            select.appendChild(option);
-        });
+        updateCustomSelectOptions(selectId, options);
     });
 }
 
 function loadStatsServiceSelect() {
-    populateServiceSelect();
+    populateServiceSelects();
 }
 
+// ========================================
+// MEMBERS MANAGEMENT
+// ========================================
+async function loadAllMembers() {
+    try {
+        allMembers = [];
+        
+        for (const service of services) {
+            try {
+                const response = await fetch(`${API_BASE}/membres/service/${service.id}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.ok) {
+                    const serviceMembers = await response.json();
+                    serviceMembers.forEach(member => {
+                        member.service_nom = service.nom;
+                        member.service_id = service.id;
+                    });
+                    allMembers = allMembers.concat(serviceMembers);
+                }
+            } catch (error) {
+                console.error(`Erreur membres service:`, error);
+            }
+        }
+
+        filteredMembers = [...allMembers];
+        selectedMembers = [];
+        displayMembers();
+        updateStats();
+        
+    } catch (error) {
+        console.error('Erreur chargement membres:', error);
+    }
+}
+
+function displayMembers() {
+    const container = document.getElementById('membersTableContainer');
+    if (!container) return;
+    
+    if (filteredMembers.length === 0) {
+        container.innerHTML = `
+            <p style="text-align: center; color: var(--gray); padding: 3rem;">
+                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; display: block;"></i>
+                Aucun membre trouvé.
+            </p>
+        `;
+        document.getElementById('pagination').innerHTML = '';
+        document.getElementById('bulkActionsContainer').innerHTML = '';
+        return;
+    }
+
+    const bulkContainer = document.getElementById('bulkActionsContainer');
+    if (selectedMembers.length > 0) {
+        bulkContainer.innerHTML = `
+            <div class="bulk-actions">
+                <span class="bulk-actions-text">
+                    <i class="fas fa-check-circle"></i> ${selectedMembers.length} membre(s) sélectionné(s)
+                </span>
+                <button type="button" class="btn-primary btn-danger" style="width: 200px;" onclick="deleteSelectedMembers()">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        `;
+    } else {
+        bulkContainer.innerHTML = '';
+    }
+    
+    const startIndex = (currentPage - 1) * membersPerPage;
+    const endIndex = startIndex + membersPerPage;
+    const paginated = filteredMembers.slice(startIndex, endIndex);
+    
+    let html = `
+        <table class="members-table">
+            <thead>
+                <tr>
+                    <th style="width: 30px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
+                    <th>Membre</th>
+                    <th>Service</th>
+                    <th>Sexe</th>
+                    <th>Contact</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    paginated.forEach(member => {
+        const isSelected = selectedMembers.includes(member.id);
+        html += `
+            <tr>
+                <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleMemberSelection(${member.id})"></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-red), var(--dark-red)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">${member.nom.charAt(0)}${member.prenom.charAt(0)}</div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--black);">${member.nom} ${member.prenom}</div>
+                            <div style="font-size: 0.875rem; color: var(--gray);">${member.email || 'Pas d\'email'}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${member.service_nom || 'Non défini'}</td>
+                <td>
+                    <span class="member-badge ${member.sexe.toLowerCase()}">
+                        <i class="fas fa-${member.sexe === 'Homme' ? 'male' : 'female'}"></i>
+                        ${member.sexe}
+                    </span>
+                </td>
+                <td>
+                    <div style="font-size: 0.875rem; color: var(--gray);">
+                        <i class="fas fa-phone" style="color: var(--primary-red);"></i>
+                        ${member.telephone || 'Non renseigné'}
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="editMember(${member.id})" style="width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; background: rgba(59, 130, 246, 0.1); color: var(--info); transition: var(--transition);" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteMember(${member.id})" style="width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; background: rgba(220, 38, 38, 0.1); color: var(--error); transition: var(--transition);" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+    updateSelectAllCheckbox();
+    renderPagination();
+}
+
+function toggleSelectAll() {
+    const checkbox = document.getElementById('selectAllCheckbox');
+    const startIndex = (currentPage - 1) * membersPerPage;
+    const endIndex = startIndex + membersPerPage;
+    const paginated = filteredMembers.slice(startIndex, endIndex);
+
+    if (checkbox.checked) {
+        paginated.forEach(member => {
+            if (!selectedMembers.includes(member.id)) {
+                selectedMembers.push(member.id);
+            }
+        });
+    } else {
+        paginated.forEach(member => {
+            const index = selectedMembers.indexOf(member.id);
+            if (index > -1) {
+                selectedMembers.splice(index, 1);
+            }
+        });
+    }
+    displayMembers();
+}
+
+function toggleMemberSelection(memberId) {
+    const index = selectedMembers.indexOf(memberId);
+    if (index > -1) {
+        selectedMembers.splice(index, 1);
+    } else {
+        selectedMembers.push(memberId);
+    }
+    displayMembers();
+}
+
+function updateSelectAllCheckbox() {
+    const checkbox = document.getElementById('selectAllCheckbox');
+    if (!checkbox) return;
+
+    const startIndex = (currentPage - 1) * membersPerPage;
+    const endIndex = startIndex + membersPerPage;
+    const paginated = filteredMembers.slice(startIndex, endIndex);
+    
+    const allSelected = paginated.length > 0 && paginated.every(m => selectedMembers.includes(m.id));
+    checkbox.checked = allSelected;
+}
+
+// Variable pour stocker l'action de suppression en attente
+let pendingDeleteAction = null;
+
+async function deleteSelectedMembers() {
+    if (selectedMembers.length === 0) {
+        showToast('Aucun membre sélectionné', 'info');
+        return;
+    }
+
+    // Ouvrir le modal de confirmation
+    document.getElementById('deleteModalTitle').textContent = 
+        `Supprimer ${selectedMembers.length} membre(s) ?`;
+    document.getElementById('deleteModalMessage').textContent = 
+        `Vous êtes sur le point de supprimer ${selectedMembers.length} membre(s). Cette action est irréversible.`;
+    
+    pendingDeleteAction = async () => {
+        try {
+            for (const memberId of selectedMembers) {
+                await fetch(`${API_BASE}/membres/${memberId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+            }
+
+            showSuccessAnimation();
+            showToast(`${selectedMembers.length} membre(s) supprimé(s) avec succès!`, 'success');
+            selectedMembers = [];
+            await loadServices();
+        } catch (error) {
+            showToast('Erreur lors de la suppression', 'error');
+        }
+    };
+    
+    document.getElementById('deleteConfirmModal').classList.add('show');
+}
+
+async function deleteMember(id) {
+    const member = allMembers.find(m => m.id === id);
+    const memberName = member ? `${member.prenom} ${member.nom}` : 'ce membre';
+    
+    // Ouvrir le modal de confirmation
+    document.getElementById('deleteModalTitle').textContent = 'Supprimer ce membre ?';
+    document.getElementById('deleteModalMessage').textContent = 
+        `Vous êtes sur le point de supprimer ${memberName}. Cette action est irréversible.`;
+    
+    pendingDeleteAction = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/membres/${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+
+            if (response.ok) {
+                showSuccessAnimation();
+                showToast('Membre supprimé avec succès!', 'success');
+                await loadServices();
+            } else {
+                const result = await response.json();
+                throw new Error(result.error || 'Erreur lors de la suppression');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            showToast('Erreur: ' + error.message, 'error');
+        }
+    };
+    
+    document.getElementById('deleteConfirmModal').classList.add('show');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteConfirmModal').classList.remove('show');
+    pendingDeleteAction = null;
+}
+
+async function confirmDelete() {
+    closeDeleteModal();
+    if (pendingDeleteAction) {
+        await pendingDeleteAction();
+        pendingDeleteAction = null;
+    }
+}
+
+function logout() {
+    // Ouvrir le modal de confirmation personnalisé
+    document.getElementById('logoutModal').classList.add('show');
+}
+
+function closeLogoutModal() {
+    document.getElementById('logoutModal').classList.remove('show');
+}
+
+function confirmLogout() {
+    // Fermer le modal
+    closeLogoutModal();
+    
+    // Supprimer les données de session
+    window.localStorage.removeItem('mcm_token');
+    window.localStorage.removeItem('mcm_user');
+    
+    // Afficher le toast de déconnexion
+    showToast('Déconnexion réussie. À bientôt ! 👋', 'info');
+    
+    // Rediriger après un court délai
+    setTimeout(() => {
+        window.location.href = './login.html';
+    }, 1000);
+}
+
+// ========================================
+// RESPONSIVE
+// ========================================
+window.addEventListener('resize', function() {
+    const mobileItems = document.querySelectorAll('.mobile-only');
+    const sidebar = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburger');
+    
+    if (window.innerWidth > 1024) {
+        if (sidebar) sidebar.classList.remove('open');
+        if (hamburger) hamburger.classList.remove('active');
+        mobileItems.forEach(el => el.style.display = 'none');
+    }
+});
+
+function renderPagination() {
+    const container = document.getElementById('pagination');
+    if (!container) return;
+    
+    const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    let html = `
+        <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="fas fa-chevron-left"></i>
+        </button>
+    `;
+    
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+            html += `
+                <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                    ${i}
+                </button>
+            `;
+        }
+    }
+    
+    html += `
+        <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function changePage(page) {
+    const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
+    if (page < 1 || page > totalPages) return;
+    
+    currentPage = page;
+    displayMembers();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterMembers() {
+    const searchTerm = document.getElementById('searchMembers').value.toLowerCase();
+    
+    filteredMembers = allMembers.filter(member => {
+        const fullName = `${member.nom} ${member.prenom}`.toLowerCase();
+        const email = (member.email || '').toLowerCase();
+        const service = (member.service_nom || '').toLowerCase();
+        
+        return fullName.includes(searchTerm) || 
+            email.includes(searchTerm) || 
+            service.includes(searchTerm);
+    });
+    
+    currentPage = 1;
+    selectedMembers = [];
+    displayMembers();
+}
+
+function updateStats() {
+    const totalServicesEl = document.getElementById('totalServices');
+    const totalMembersEl = document.getElementById('totalMembers');
+    const avgEl = document.getElementById('avgMembersPerService');
+    const maleEl = document.getElementById('maleMembers');
+    
+    if (totalServicesEl) totalServicesEl.textContent = services.length;
+    if (totalMembersEl) totalMembersEl.textContent = allMembers.length;
+    
+    const avg = services.length > 0 ? Math.round(allMembers.length / services.length) : 0;
+    if (avgEl) avgEl.textContent = avg;
+    
+    const males = allMembers.filter(m => m.sexe === 'Homme').length;
+    if (maleEl) maleEl.textContent = males;
+}
+
+// ========================================
+// ADD MEMBER
+// ========================================
+async function handleAddMember(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('addMemberBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Ajout en cours...</span>';
+    btn.disabled = true;
+    
+    const memberData = {
+        service_id: parseInt(getCustomSelectValue('serviceSelect')),
+        nom: document.getElementById('memberNom').value,
+        prenom: document.getElementById('memberPrenom').value,
+        sexe: getCustomSelectValue('memberSexe'),
+        date_naissance: document.getElementById('memberDateNaissance').value,
+        email: document.getElementById('memberEmail').value,
+        telephone: document.getElementById('memberTelephone').value
+    };
+
+    if (!memberData.service_id || !memberData.sexe) {
+        showToast('Veuillez remplir tous les champs obligatoires', 'warning');
+        btn.innerHTML = '<i class="fas fa-plus"></i> <span>Ajouter le Membre</span>';
+        btn.disabled = false;
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/membres`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(memberData)
+        });
+
+        if (response.ok) {
+            document.getElementById('addMemberForm').reset();
+            setCustomSelectValue('serviceSelect', '', 'Choisir un service');
+            setCustomSelectValue('memberSexe', '', 'Sélectionner le sexe');
+            
+            showSuccessAnimation();
+            showToast('Membre ajouté avec succès!', 'success');
+            await loadServices();
+        } else {
+            const result = await response.json();
+            throw new Error(result.error || 'Erreur lors de l\'ajout');
+        }
+    } catch (error) {
+        console.error('Erreur ajout:', error);
+        showToast('Erreur: ' + error.message, 'error');
+    } finally {
+        btn.innerHTML = '<i class="fas fa-plus"></i> <span>Ajouter le Membre</span>';
+        btn.disabled = false;
+    }
+}
+
+// ========================================
+// EDIT MEMBER
+// ========================================
+async function editMember(id) {
+    try {
+        const member = allMembers.find(m => m.id === id);
+        
+        if (!member) {
+            showToast('Membre non trouvé', 'error');
+            return;
+        }
+        
+        document.getElementById('editMemberId').value = member.id;
+        
+        setCustomSelectValue('editMemberService', member.service_id, member.service_nom);
+        setCustomSelectValue('editMemberSexe', member.sexe, member.sexe);
+        
+        document.getElementById('editMemberNom').value = member.nom;
+        document.getElementById('editMemberPrenom').value = member.prenom;
+        
+        let dateValue = member.date_naissance;
+        if (dateValue && dateValue.includes('T')) {
+            dateValue = dateValue.split('T')[0];
+        }
+        document.getElementById('editMemberDateNaissance').value = dateValue || '';
+        document.getElementById('editMemberEmail').value = member.email || '';
+        document.getElementById('editMemberTelephone').value = member.telephone || '';
+        
+        document.getElementById('editMemberModal').classList.add('show');
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur de chargement', 'error');
+    }
+}
+
+function closeEditMemberModal() {
+    document.getElementById('editMemberModal').classList.remove('show');
+}
+
+async function handleEditMember(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('editMemberId').value;
+    const memberData = {
+        service_id: parseInt(getCustomSelectValue('editMemberService')),
+        nom: document.getElementById('editMemberNom').value,
+        prenom: document.getElementById('editMemberPrenom').value,
+        sexe: getCustomSelectValue('editMemberSexe'),
+        date_naissance: document.getElementById('editMemberDateNaissance').value,
+        email: document.getElementById('editMemberEmail').value,
+        telephone: document.getElementById('editMemberTelephone').value
+    };
+
+    if (!memberData.service_id || !memberData.sexe) {
+        showToast('Veuillez remplir tous les champs obligatoires', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/membres/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(memberData)
+        });
+
+        if (response.ok) {
+            showSuccessAnimation();
+            showToast('Membre modifié avec succès!', 'success');
+            closeEditMemberModal();
+            await loadServices();
+        } else {
+            const result = await response.json();
+            throw new Error(result.error || 'Erreur lors de la modification');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur: ' + error.message, 'error');
+    }
+}
+
+async function deleteMember(id) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/membres/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            showSuccessAnimation();
+            showToast('Membre supprimé avec succès!', 'warning');
+            await loadServices();
+        } else {
+            const result = await response.json();
+            throw new Error(result.error || 'Erreur lors de la suppression');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur: ' + error.message, 'error');
+    }
+}
+
+// ========================================
+// STATISTICS
+// ========================================
 async function displayServiceStatistics() {
-    const serviceId = document.getElementById('statsServiceSelect').value;
+    const serviceId = getCustomSelectValue('statsServiceSelect');
     
     if (!serviceId) {
         showToast('Veuillez sélectionner un service', 'info');
@@ -534,430 +1282,14 @@ function renderStatsDisplay(members, serviceName) {
     container.innerHTML = html;
     container.classList.add('show');
     
-    // Scroll to stats
     setTimeout(() => {
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 }
 
-async function loadAllMembers() {
-    try {
-        allMembers = [];
-        
-        for (const service of services) {
-            try {
-                const response = await fetch(`${API_BASE}/membres/service/${service.id}`, {
-                    headers: getAuthHeaders()
-                });
-                
-                if (response.ok) {
-                    const serviceMembers = await response.json();
-                    serviceMembers.forEach(member => {
-                        member.service_nom = service.nom;
-                        member.service_id = service.id;
-                    });
-                    allMembers = allMembers.concat(serviceMembers);
-                }
-            } catch (error) {
-                console.error(`Erreur membres service:`, error);
-            }
-        }
-
-        filteredMembers = [...allMembers];
-        selectedMembers = [];
-        displayMembers();
-        updateStats();
-        
-    } catch (error) {
-        console.error('Erreur chargement membres:', error);
-    }
-}
-
-function displayMembers() {
-    const container = document.getElementById('membersTableContainer');
-    if (!container) return;
-    
-    if (filteredMembers.length === 0) {
-        container.innerHTML = `
-            <p style="text-align: center; color: var(--gray); padding: 3rem;">
-                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; display: block;"></i>
-                Aucun membre trouvé.
-            </p>
-        `;
-        document.getElementById('pagination').innerHTML = '';
-        document.getElementById('bulkActionsContainer').innerHTML = '';
-        return;
-    }
-
-    const bulkContainer = document.getElementById('bulkActionsContainer');
-    if (selectedMembers.length > 0) {
-        bulkContainer.innerHTML = `
-            <div class="bulk-actions">
-                <span class="bulk-actions-text">
-                    <i class="fas fa-check-circle"></i> ${selectedMembers.length} membre(s) sélectionné(s)
-                </span>
-                <button type="button" class="btn-primary btn-danger" style="width: 200px;" onclick="deleteSelectedMembers()">
-                    <i class="fas fa-trash"></i> Supprimer
-                </button>
-            </div>
-        `;
-    } else {
-        bulkContainer.innerHTML = '';
-    }
-    
-    const startIndex = (currentPage - 1) * membersPerPage;
-    const endIndex = startIndex + membersPerPage;
-    const paginated = filteredMembers.slice(startIndex, endIndex);
-    
-    let html = `
-        <table class="members-table">
-            <thead>
-                <tr>
-                    <th style="width: 30px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
-                    <th>Membre</th>
-                    <th>Service</th>
-                    <th>Sexe</th>
-                    <th>Contact</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-    paginated.forEach(member => {
-        const isSelected = selectedMembers.includes(member.id);
-        html += `
-            <tr>
-                <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleMemberSelection(${member.id})"></td>
-                <td>
-                    <div class="member-info-cell">
-                        <div class="member-avatar-small">${member.nom.charAt(0)}${member.prenom.charAt(0)}</div>
-                        <div>
-                            <div class="member-name-text">${member.nom} ${member.prenom}</div>
-                            <div class="member-email-text">${member.email || 'Pas d\'email'}</div>
-                        </div>
-                    </div>
-                </td>
-                <td>${member.service_nom || 'Non défini'}</td>
-                <td>
-                    <span class="member-badge ${member.sexe.toLowerCase()}">
-                        <i class="fas fa-${member.sexe === 'Homme' ? 'male' : 'female'}"></i>
-                        ${member.sexe}
-                    </span>
-                </td>
-                <td>
-                    <div style="font-size: 0.875rem; color: var(--gray);">
-                        <i class="fas fa-phone" style="color: var(--primary-red);"></i>
-                        ${member.telephone || 'Non renseigné'}
-                    </div>
-                </td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn-icon btn-edit" onclick="editMember(${member.id})" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="deleteMember(${member.id})" title="Supprimer">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    });
-
-    html += `
-            </tbody>
-        </table>
-    `;
-
-    container.innerHTML = html;
-    updateSelectAllCheckbox();
-    renderPagination();
-}
-
-function toggleSelectAll() {
-    const checkbox = document.getElementById('selectAllCheckbox');
-    const startIndex = (currentPage - 1) * membersPerPage;
-    const endIndex = startIndex + membersPerPage;
-    const paginated = filteredMembers.slice(startIndex, endIndex);
-
-    if (checkbox.checked) {
-        paginated.forEach(member => {
-            if (!selectedMembers.includes(member.id)) {
-                selectedMembers.push(member.id);
-            }
-        });
-    } else {
-        paginated.forEach(member => {
-            const index = selectedMembers.indexOf(member.id);
-            if (index > -1) {
-                selectedMembers.splice(index, 1);
-            }
-        });
-    }
-    displayMembers();
-}
-
-function toggleMemberSelection(memberId) {
-    const index = selectedMembers.indexOf(memberId);
-    if (index > -1) {
-        selectedMembers.splice(index, 1);
-    } else {
-        selectedMembers.push(memberId);
-    }
-    displayMembers();
-}
-
-function updateSelectAllCheckbox() {
-    const checkbox = document.getElementById('selectAllCheckbox');
-    if (!checkbox) return;
-
-    const startIndex = (currentPage - 1) * membersPerPage;
-    const endIndex = startIndex + membersPerPage;
-    const paginated = filteredMembers.slice(startIndex, endIndex);
-    
-    const allSelected = paginated.length > 0 && paginated.every(m => selectedMembers.includes(m.id));
-    checkbox.checked = allSelected;
-}
-
-async function deleteSelectedMembers() {
-    if (selectedMembers.length === 0) {
-        showToast('Aucun membre sélectionné', 'info');
-        return;
-    }
-
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedMembers.length} membre(s)?`)) return;
-
-    try {
-        for (const memberId of selectedMembers) {
-            await fetch(`${API_BASE}/membres/${memberId}`, {
-                method: 'DELETE',
-                headers: getAuthHeaders()
-            });
-        }
-
-        showSuccessAnimation();
-        showToast(`${selectedMembers.length} membre(s) supprimé(s) avec succès!`, 'success');
-        selectedMembers = [];
-        await loadServices();
-    } catch (error) {
-        showToast('Erreur lors de la suppression', 'error');
-    }
-}
-
-function renderPagination() {
-    const container = document.getElementById('pagination');
-    if (!container) return;
-    
-    const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
-    if (totalPages <= 1) {
-        container.innerHTML = '';
-        return;
-    }
-    
-    let html = `
-        <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-            <i class="fas fa-chevron-left"></i>
-        </button>
-    `;
-    
-    for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-            html += `
-                <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
-                    ${i}
-                </button>
-            `;
-        }
-    }
-    
-    html += `
-        <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    `;
-    
-    container.innerHTML = html;
-}
-
-function changePage(page) {
-    const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
-    if (page < 1 || page > totalPages) return;
-    
-    currentPage = page;
-    displayMembers();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function filterMembers() {
-    const searchTerm = document.getElementById('searchMembers').value.toLowerCase();
-    
-    filteredMembers = allMembers.filter(member => {
-        const fullName = `${member.nom} ${member.prenom}`.toLowerCase();
-        const email = (member.email || '').toLowerCase();
-        const service = (member.service_nom || '').toLowerCase();
-        
-        return fullName.includes(searchTerm) || 
-            email.includes(searchTerm) || 
-            service.includes(searchTerm);
-    });
-    
-    currentPage = 1;
-    selectedMembers = [];
-    displayMembers();
-}
-
-function updateStats() {
-    const totalServicesEl = document.getElementById('totalServices');
-    const totalMembersEl = document.getElementById('totalMembers');
-    const avgEl = document.getElementById('avgMembersPerService');
-    const maleEl = document.getElementById('maleMembers');
-    
-    if (totalServicesEl) totalServicesEl.textContent = services.length;
-    if (totalMembersEl) totalMembersEl.textContent = allMembers.length;
-    
-    const avg = services.length > 0 ? Math.round(allMembers.length / services.length) : 0;
-    if (avgEl) avgEl.textContent = avg;
-    
-    const males = allMembers.filter(m => m.sexe === 'Homme').length;
-    if (maleEl) maleEl.textContent = males;
-}
-
-async function handleAddMember(e) {
-    e.preventDefault();
-    
-    const btn = document.getElementById('addMemberBtn');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Ajout en cours...</span>';
-    btn.disabled = true;
-    
-    const memberData = {
-        service_id: parseInt(document.getElementById('serviceSelect').value),
-        nom: document.getElementById('memberNom').value,
-        prenom: document.getElementById('memberPrenom').value,
-        sexe: document.getElementById('memberSexe').value,
-        date_naissance: document.getElementById('memberDateNaissance').value,
-        email: document.getElementById('memberEmail').value,
-        telephone: document.getElementById('memberTelephone').value
-    };
-
-    try {
-        const response = await fetch(`${API_BASE}/membres`, {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify(memberData)
-        });
-
-        if (response.ok) {
-            document.getElementById('addMemberForm').reset();
-            showSuccessAnimation();
-            showToast('Membre ajouté avec succès!', 'success');
-            await loadServices();
-        } else {
-            const result = await response.json();
-            throw new Error(result.error || 'Erreur lors de l\'ajout');
-        }
-    } catch (error) {
-        console.error('Erreur ajout:', error);
-        showToast('Erreur: ' + error.message, 'error');
-    } finally {
-        btn.innerHTML = '<i class="fas fa-plus"></i> <span>Ajouter le Membre</span>';
-        btn.disabled = false;
-    }
-}
-
-async function editMember(id) {
-    try {
-        const member = allMembers.find(m => m.id === id);
-        
-        if (!member) {
-            showToast('Membre non trouvé', 'error');
-            return;
-        }
-        
-        document.getElementById('editMemberId').value = member.id;
-        document.getElementById('editMemberService').value = member.service_id || '';
-        document.getElementById('editMemberNom').value = member.nom;
-        document.getElementById('editMemberPrenom').value = member.prenom;
-        document.getElementById('editMemberSexe').value = member.sexe;
-        
-        let dateValue = member.date_naissance;
-        if (dateValue && dateValue.includes('T')) {
-            dateValue = dateValue.split('T')[0];
-        }
-        document.getElementById('editMemberDateNaissance').value = dateValue || '';
-        document.getElementById('editMemberEmail').value = member.email || '';
-        document.getElementById('editMemberTelephone').value = member.telephone || '';
-        
-        document.getElementById('editMemberModal').classList.add('show');
-    } catch (error) {
-        console.error('Erreur:', error);
-        showToast('Erreur de chargement', 'error');
-    }
-}
-
-function closeEditMemberModal() {
-    document.getElementById('editMemberModal').classList.remove('show');
-}
-
-async function handleEditMember(e) {
-    e.preventDefault();
-    
-    const id = document.getElementById('editMemberId').value;
-    const memberData = {
-        service_id: parseInt(document.getElementById('editMemberService').value),
-        nom: document.getElementById('editMemberNom').value,
-        prenom: document.getElementById('editMemberPrenom').value,
-        sexe: document.getElementById('editMemberSexe').value,
-        date_naissance: document.getElementById('editMemberDateNaissance').value,
-        email: document.getElementById('editMemberEmail').value,
-        telephone: document.getElementById('editMemberTelephone').value
-    };
-
-    try {
-        const response = await fetch(`${API_BASE}/membres/${id}`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify(memberData)
-        });
-
-        if (response.ok) {
-            showSuccessAnimation();
-            showToast('Membre modifié avec succès!', 'success');
-            closeEditMemberModal();
-            await loadServices();
-        } else {
-            const result = await response.json();
-            throw new Error(result.error || 'Erreur lors de la modification');
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showToast('Erreur: ' + error.message, 'error');
-    }
-}
-
-async function deleteMember(id) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
-
-    try {
-        const response = await fetch(`${API_BASE}/membres/${id}`, {
-            method: 'DELETE',
-            headers: getAuthHeaders()
-        });
-
-        if (response.ok) {
-            showSuccessAnimation();
-            showToast('Membre supprimé avec succès!', 'warning');
-            await loadServices();
-        } else {
-            const result = await response.json();
-            throw new Error(result.error || 'Erreur lors de la suppression');
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showToast('Erreur: ' + error.message, 'error');
-    }
-}
-
+// ========================================
+// UTILITIES
+// ========================================
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -998,16 +1330,34 @@ function showSuccessAnimation() {
 }
 
 function logout() {
-    if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) return;
+    // Ouvrir le modal de confirmation personnalisé
+    document.getElementById('logoutModal').classList.add('show');
+}
+
+function closeLogoutModal() {
+    document.getElementById('logoutModal').classList.remove('show');
+}
+
+function confirmLogout() {
+    // Fermer le modal
+    closeLogoutModal();
     
+    // Supprimer les données de session
     window.localStorage.removeItem('mcm_token');
     window.localStorage.removeItem('mcm_user');
-    showToast('Déconnexion réussie', 'info');
+    
+    // Afficher le toast de déconnexion
+    showToast('Déconnexion réussie. À bientôt ! 👋', 'info');
+    
+    // Rediriger après un court délai
     setTimeout(() => {
         window.location.href = './login.html';
     }, 1000);
 }
 
+// ========================================
+// RESPONSIVE
+// ========================================
 window.addEventListener('resize', function() {
     const mobileItems = document.querySelectorAll('.mobile-only');
     const sidebar = document.getElementById('sidebar');
